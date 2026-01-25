@@ -1,0 +1,4 @@
+[04-Jun-2024 00:45:26 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home1/credohdq/dts.credozen.in/config/database.php:18
+Stack trace:
+#0 {main}
+  thrown in /home1/credohdq/dts.credozen.in/config/database.php on line 18
