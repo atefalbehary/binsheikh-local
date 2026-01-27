@@ -11,7 +11,7 @@ return new class extends Migration
      *
      * Agent fields: qid, authorized_signatory (agent version), license, id_card, id_no
      * Agency fields: trade_license, professional_practice_certificate, cr, id_no
-Note: authorized_signatory already exists from previous migration
+     * Note: authorized_signatory already exists from previous migration
      */
     public function up(): void
     {

@@ -11,7 +11,7 @@ if (!$locale) {
     $locale = 'ar';
 }
 ?>
-<html lang="en">
+<html lang="{{ $locale }}">
 
 <head>
     <!--=============== basic  ===============-->
@@ -688,14 +688,39 @@ if (!$locale) {
                                                     <!-- Translated Full Name -->
                                                 </div>
 
-                                                <!-- Phone Number -->
-                                                <div class="cs-intputwrap">
+                                                <!-- Phone Number with Country Picker -->
+                                                <div class="cs-intputwrap phone-input-container">
                                                     <i class="fa-light fa-mobile"></i>
-                                                    <input type="text" placeholder="{{ __('messages.phone_number') }}"
-                                                        name="phone" required
-                                                        data-parsley-required-message="{{ __('messages.enter_your_phone') }}">
+                                                    
+                                                    <!-- Country Code Picker -->
+                                                    <select name="country_code" id="country_code" class="country-code-select" required
+                                                        data-parsley-required-message="{{ __('messages.select_country') ?? 'Please select a country' }}">
+                                                        <option value="">{{ __('messages.country') ?? 'Country' }}</option>
+                                                        <option value="+974" data-country="QA" data-min="8" data-max="8" selected>🇶🇦 Qatar (+974)</option>
+                                                        <option value="+971" data-country="AE" data-min="9" data-max="9">🇦🇪 UAE (+971)</option>
+                                                        <option value="+966" data-country="SA" data-min="9" data-max="9">🇸🇦 Saudi (+966)</option>
+                                                        <option value="+965" data-country="KW" data-min="8" data-max="8">🇰🇼 Kuwait (+965)</option>
+                                                        <option value="+968" data-country="OM" data-min="8" data-max="8">🇴🇲 Oman (+968)</option>
+                                                        <option value="+973" data-country="BH" data-min="8" data-max="8">🇧🇭 Bahrain (+973)</option>
+                                                        <option value="+20" data-country="EG" data-min="10" data-max="10">🇪🇬 Egypt (+20)</option>
+                                                        <option value="+1" data-country="US" data-min="10" data-max="10">🇺🇸 USA (+1)</option>
+                                                        <option value="+44" data-country="GB" data-min="10" data-max="10">🇬🇧 UK (+44)</option>
+                                                        <option value="+91" data-country="IN" data-min="10" data-max="10">🇮🇳 India (+91)</option>
+                                                        <option value="+92" data-country="PK" data-min="10" data-max="10">🇵🇰 Pakistan (+92)</option>
+                                                    </select>
+                                                    
+                                                    <!-- Phone Number Input -->
+                                                    <input type="text" placeholder="{{ __('messages.phone_number') ?? 'Phone Number' }}"
+                                                        name="phone_local" id="phone_local" class="phone-number-input"
+                                                        required
+                                                        data-parsley-required-message="{{ __('messages.enter_your_phone') }}"
+                                                        data-parsley-type="digits"
+                                                        data-parsley-type-message="{{ __('messages.phone_digits_only') ?? 'Phone number must contain only digits' }}">
+                                                    
+                                                    <!-- Hidden input for full phone with country code -->
+                                                    <input type="hidden" name="phone" id="phone_full">
+                                                    
                                                     <div class="view-view-button-verify-phone">
-                                                        <!-- Translated Phone Number -->
                                                         <button type="button"
                                                             class="verify-phone-btn">{{ __('messages.verify') }}</button>
                                                     </div>
@@ -1707,17 +1732,92 @@ if (!$locale) {
             'font-size': '14px'
         });
 
+        // Update full phone number when country or local number changes
+        function updateFullPhoneNumber() {
+            const countryCode = $('#country_code').val();
+            const localPhone = $('#phone_local').val().replace(/\D/g, ''); // Remove non-digits
+            
+            if (countryCode && localPhone) {
+                const fullPhone = countryCode + localPhone;
+                $('#phone_full').val(fullPhone);
+            } else {
+                $('#phone_full').val('');
+            }
+        }
+
+        // Auto-update full phone on input change
+        $('#country_code, #phone_local').on('change keyup', function() {
+            updateFullPhoneNumber();
+        });
+
+        // Validate phone number based on selected country
+        function validatePhoneNumber(countryCode, phoneLocal) {
+            if (!countryCode) {
+                return {
+                    valid: false,
+                    message: "{{ __('messages.select_country') ?? 'Please select a country' }}"
+                };
+            }
+
+            if (!phoneLocal || phoneLocal.length === 0) {
+                return {
+                    valid: false,
+                    message: "{{ __('messages.enter_your_phone') ?? 'Please enter your phone number' }}"
+                };
+            }
+
+            // Remove any non-digit characters
+            const cleanPhone = phoneLocal.replace(/\D/g, '');
+            
+            // Get selected option to check min/max length
+            const selectedOption = $('#country_code option:selected');
+            const minLength = parseInt(selectedOption.data('min')) || 8;
+            const maxLength = parseInt(selectedOption.data('max')) || 12;
+            const countryName = selectedOption.text();
+
+            if (cleanPhone.length < minLength || cleanPhone.length > maxLength) {
+                return {
+                    valid: false,
+                    message: `{{ __('messages.invalid_phone_length') ?? 'Phone number must be between' }} ${minLength}-${maxLength} {{ __('messages.digits') ?? 'digits' }}`
+                };
+            }
+
+            // Check if phone contains only digits
+            if (!/^\d+$/.test(cleanPhone)) {
+                return {
+                    valid: false,
+                    message: "{{ __('messages.phone_digits_only') ?? 'Phone number must contain only digits' }}"
+                };
+            }
+
+            return {
+                valid: true,
+                cleanPhone: cleanPhone
+            };
+        }
+
         // Handle click on verify phone button
         $(".verify-phone-btn").click(function () {
-            const phoneNumber = $(this).siblings("input[name='phone']").val();
+            // Get country code and local phone number
+            const countryCode = $('#country_code').val();
+            const phoneLocal = $('#phone_local').val();
 
-            if (!phoneNumber) {
-                show_msg(0, "{{ __('messages.enter_phone_first') ?? 'Please enter your phone number first' }}");
+            // Validate phone number
+            const validation = validatePhoneNumber(countryCode, phoneLocal);
+            
+            if (!validation.valid) {
+                show_msg(0, validation.message);
                 return;
             }
 
+            // Create full phone number with country code
+            const fullPhoneNumber = countryCode + validation.cleanPhone;
+            
+            // Update hidden input
+            $('#phone_full').val(fullPhoneNumber);
+
             // Send OTP to the phone number
-            sendOTP(phoneNumber);
+            sendOTP(fullPhoneNumber);
 
             // Show the OTP verification modal
             $("#phoneVerificationModal").modal("show");
@@ -1752,7 +1852,8 @@ if (!$locale) {
                 return;
             }
 
-            const phoneNumber = $("input[name='phone']").val();
+            // Get full phone number with country code
+            const phoneNumber = $("#phone_full").val();
 
             // Verify OTP
             verifyOTP(phoneNumber, otp);
@@ -1761,7 +1862,8 @@ if (!$locale) {
         // Handle resend OTP button click
         $("#resendOtpBtn").click(function () {
             if (!$(this).prop("disabled")) {
-                const phoneNumber = $("input[name='phone']").val();
+                // Get full phone number with country code
+                const phoneNumber = $("#phone_full").val();
                 sendOTP(phoneNumber);
                 startCountdown();
                 $(this).prop("disabled", true);
@@ -1815,14 +1917,15 @@ if (!$locale) {
                         $("#phoneVerificationModal").modal("hide");
 
                         // Visual indication that the phone is verified
-                        $("input[name='phone']").css("border-color", "#4CAF50");
+                        $("#phone_local").css("border-color", "#4CAF50");
+                        $("#country_code").css("border-color", "#4CAF50").prop("disabled", true);
                         $(".verify-phone-btn")
                             .text("{{ __('messages.verified') ?? 'Verified' }}")
                             .css("background-color", "#4CAF50")
                             .prop("disabled", true);
 
-                        // You may want to store the verification status
-                        $("form").append('<input type="hidden" name="phone_verified" value="1">');
+                        // Store the verification status
+                        $("#user-form").append('<input type="hidden" name="phone_verified" value="1">');
                     } else {
                         show_msg(0, response.message || "{{ __('messages.invalid_otp') ?? 'Invalid verification code' }}");
                     }
