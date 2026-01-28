@@ -144,22 +144,23 @@ function public_url()
     }
     return config('app.asset_url');
 }
-function moneyFormat($amount){
-    if($amount == 'empty_value')
+function moneyFormat($amount)
+{
+    if ($amount == 'empty_value')
         return '';
     $currency = session()->get('currency');
     $currency_rate = session()->get('currency_rate');
-    if($currency=="QAR" || !$currency){
+    if ($currency == "QAR" || !$currency) {
         $currency = "QAR";
     }
-    if(!$currency_rate){
+    if (!$currency_rate) {
         $currency_rate = 1;
     }
-    $amount = $amount*$currency_rate;
+    $amount = $amount * $currency_rate;
     if (floor($amount) == $amount) {
-        return $currency.' '.number_format($amount, 0, '.', ',');
+        return $currency . ' ' . number_format($amount, 0, '.', ',');
     } else {
-        return $currency.' '.number_format($amount, 2, '.', ',');
+        return $currency . ' ' . number_format($amount, 2, '.', ',');
     }
 }
 
@@ -195,8 +196,8 @@ if (!function_exists('array_combination')) {
         foreach ($arrays[$i] as $v) {
             foreach ($tmp as $t) {
                 $result[] = is_array($t) ?
-                array_merge(array($v), $t) :
-                array($v, $t);
+                    array_merge(array($v), $t) :
+                    array($v, $t);
             }
         }
 
@@ -253,29 +254,43 @@ function file_save($file, $model, $mb_file_size = 25000)
         // Generate unique file name
         $name = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
 
-        // Upload file to S3
-        $path = 'uploads/' . $model . '/' . $name;  // Define the S3 path
-        $uploaded = Storage::disk('s3')->put($path, fopen($file, 'r+'));  // Store file on S3
+        // Upload file to Public Disk (Local) instead of S3
+        $path = 'uploads/' . $model;
+
+        // Ensure directory exists if using local file system directly, but Storage::put handles it usually.
+        // using putFileAs is cleaner
+        $uploadedPath = Storage::disk('public')->putFileAs($path, $file, $name);
 
         // Check if upload was successful
-        if (!$uploaded) {
-            return ['status' => false, 'link' => null, 'message' => 'Failed to upload file to S3'];
+        if (!$uploadedPath) {
+            return ['status' => false, 'link' => null, 'message' => 'Failed to upload file to storage'];
         }
 
         // Get the public URL of the uploaded file
-        // $image_url = Storage::disk('s3')->url($path);
-        $image_url = $path;
+        $image_url = Storage::disk('public')->url($uploadedPath);
+
+        // If the URL is full (http...), keep it. If relative, ensure it works.
+        // Usually Storage::url returns /storage/uploads/...
+
+        // For DB compatibility if it expects just the path or full URL:
+        // The original code returned $path (uploads/model/name) as $image_url in one commented line, 
+        // but $path variable in original code was 'uploads/model/name'.
+        // Storage::url() returns full URL usually if configured correctly.
+        // Let's return the relative path that can be wrapped with asset() later if needed, 
+        // OR the full URL if that's what the frontend expects.
+        // The original S3 code was trying to return full URL but fell back to $path.
 
         return ['status' => true, 'link' => $image_url, 'message' => 'File uploaded successfully'];
 
     } catch (\Exception $e) {
-        dd($e->getMessage());
+        // dd($e->getMessage()); 
         return ['status' => false, 'link' => null, 'message' => $e->getMessage()];
     }
 }
-function aws_asset_path($path){
+function aws_asset_path($path)
+{
     $path = ltrim($path, '/');
-    return "https://cdn.bsbqa.com/".$path;
+    return "https://cdn.bsbqa.com/" . $path;
 }
 if (!function_exists('deleteFile')) {
     function deleteFile($path)
@@ -530,7 +545,7 @@ if (!function_exists('web_date_in_timezone')) {
 }
 
 if (!function_exists('api_date_in_timezone')) {
-    function api_date_in_timezone($date, $format, $timezone='Asia/kolkata', $server_time_zone = "Etc/GMT")
+    function api_date_in_timezone($date, $format, $timezone = 'Asia/kolkata', $server_time_zone = "Etc/GMT")
     {
         if (empty($format)) {
             $format = "d M Y h:i A";

@@ -53,7 +53,7 @@ if (!$locale) {
         <?php
         \Illuminate\Support\Facades\Session::put('locale', 'en');
         \Illuminate\Support\Facades\App::setLocale('en');
-                        ?>
+                                    ?>
         <link type="text/css" rel="stylesheet" href="{{ asset('') }}front-assets/css/style.css">
     @endif
     <link type="text/css" rel="stylesheet" href="{{ asset('') }}front-assets/css/db-style.css">
@@ -316,9 +316,10 @@ if (!$locale) {
                                     </a>
                                 @else
                                     <div class=" modal-open" style="    color: #000;
-                                            width: auto;
-                                            top: 20px;
-                                            background: none; float:none" data-bs-dismiss="offcanvas" aria-label="Close">
+                                                        width: auto;
+                                                        top: 20px;
+                                                        background: none; float:none" data-bs-dismiss="offcanvas"
+                                        aria-label="Close">
                                         <i
                                             class="fa fa-user ms-1 me-1 d-inline-block"></i><span>{{ __('messages.sign_in') }}</span>
                                     </div>
@@ -692,35 +693,49 @@ if (!$locale) {
                                                 <!-- Phone Number with Country Picker -->
                                                 <div class="cs-intputwrap phone-input-container">
                                                     <i class="fa-light fa-mobile"></i>
-                                                    
+
                                                     <!-- Country Code Picker -->
-                                                    <select name="country_code" id="country_code" class="country-code-select" required
+                                                    <select name="country_code" id="country_code"
+                                                        class="country-code-select" required
                                                         data-parsley-required-message="{{ __('messages.select_country') ?? 'Please select a country' }}">
-                                                        <option value="">{{ __('messages.country') ?? 'Country' }}</option>
-                                                        <option value="+974" data-country="QA" data-min="8" data-max="8" selected>🇶🇦 Qatar (+974)</option>
-                                                        <option value="+971" data-country="AE" data-min="9" data-max="9">🇦🇪 UAE (+971)</option>
-                                                        <option value="+966" data-country="SA" data-min="9" data-max="9">🇸🇦 Saudi (+966)</option>
-                                                        <option value="+965" data-country="KW" data-min="8" data-max="8">🇰🇼 Kuwait (+965)</option>
-                                                        <option value="+968" data-country="OM" data-min="8" data-max="8">🇴🇲 Oman (+968)</option>
-                                                        <option value="+973" data-country="BH" data-min="8" data-max="8">🇧🇭 Bahrain (+973)</option>
-                                                        <option value="+20" data-country="EG" data-min="10" data-max="10">🇪🇬 Egypt (+20)</option>
-                                                        <option value="+1" data-country="US" data-min="10" data-max="10">🇺🇸 USA (+1)</option>
-                                                        <option value="+44" data-country="GB" data-min="10" data-max="10">🇬🇧 UK (+44)</option>
-                                                        <option value="+91" data-country="IN" data-min="10" data-max="10">🇮🇳 India (+91)</option>
-                                                        <option value="+92" data-country="PK" data-min="10" data-max="10">🇵🇰 Pakistan (+92)</option>
+                                                        <option value="">{{ __('messages.country') ?? 'Country' }}
+                                                        </option>
+                                                        <option value="+974" data-country="QA" data-min="8" data-max="8"
+                                                            selected>🇶🇦 Qatar (+974)</option>
+                                                        <option value="+971" data-country="AE" data-min="9"
+                                                            data-max="9">🇦🇪 UAE (+971)</option>
+                                                        <option value="+966" data-country="SA" data-min="9"
+                                                            data-max="9">🇸🇦 Saudi (+966)</option>
+                                                        <option value="+965" data-country="KW" data-min="8"
+                                                            data-max="8">🇰🇼 Kuwait (+965)</option>
+                                                        <option value="+968" data-country="OM" data-min="8"
+                                                            data-max="8">🇴🇲 Oman (+968)</option>
+                                                        <option value="+973" data-country="BH" data-min="8"
+                                                            data-max="8">🇧🇭 Bahrain (+973)</option>
+                                                        <option value="+20" data-country="EG" data-min="10"
+                                                            data-max="10">🇪🇬 Egypt (+20)</option>
+                                                        <option value="+1" data-country="US" data-min="10"
+                                                            data-max="10">🇺🇸 USA (+1)</option>
+                                                        <option value="+44" data-country="GB" data-min="10"
+                                                            data-max="10">🇬🇧 UK (+44)</option>
+                                                        <option value="+91" data-country="IN" data-min="10"
+                                                            data-max="10">🇮🇳 India (+91)</option>
+                                                        <option value="+92" data-country="PK" data-min="10"
+                                                            data-max="10">🇵🇰 Pakistan (+92)</option>
                                                     </select>
-                                                    
+
                                                     <!-- Phone Number Input -->
-                                                    <input type="text" placeholder="{{ __('messages.phone_number') ?? 'Phone Number' }}"
+                                                    <input type="text"
+                                                        placeholder="{{ __('messages.phone_number') ?? 'Phone Number' }}"
                                                         name="phone_local" id="phone_local" class="phone-number-input"
                                                         required
                                                         data-parsley-required-message="{{ __('messages.enter_your_phone') }}"
                                                         data-parsley-type="digits"
                                                         data-parsley-type-message="{{ __('messages.phone_digits_only') ?? 'Phone number must contain only digits' }}">
-                                                    
+
                                                     <!-- Hidden input for full phone with country code -->
                                                     <input type="hidden" name="phone" id="phone_full">
-                                                    
+
                                                     <div class="view-view-button-verify-phone">
                                                         <button type="button"
                                                             class="verify-phone-btn">{{ __('messages.verify') }}</button>
@@ -997,7 +1012,7 @@ if (!$locale) {
                     infowindow.setContent(locations[i][0]);
                     infowindow.open(map, marker);
                 }
-            })(marker,i));
+            })(marker, i));
         }
     </script>
 
@@ -1737,7 +1752,7 @@ if (!$locale) {
         function updateFullPhoneNumber() {
             const countryCode = $('#country_code').val();
             const localPhone = $('#phone_local').val().replace(/\D/g, ''); // Remove non-digits
-            
+
             if (countryCode && localPhone) {
                 const fullPhone = countryCode + localPhone;
                 $('#phone_full').val(fullPhone);
@@ -1747,7 +1762,7 @@ if (!$locale) {
         }
 
         // Auto-update full phone on input change
-        $('#country_code, #phone_local').on('change keyup', function() {
+        $('#country_code, #phone_local').on('change keyup', function () {
             updateFullPhoneNumber();
         });
 
@@ -1769,7 +1784,7 @@ if (!$locale) {
 
             // Remove any non-digit characters
             const cleanPhone = phoneLocal.replace(/\D/g, '');
-            
+
             // Get selected option to check min/max length
             const selectedOption = $('#country_code option:selected');
             const minLength = parseInt(selectedOption.data('min')) || 8;
@@ -1805,7 +1820,7 @@ if (!$locale) {
 
             // Validate phone number
             const validation = validatePhoneNumber(countryCode, phoneLocal);
-            
+
             if (!validation.valid) {
                 show_msg(0, validation.message);
                 return;
@@ -1813,18 +1828,16 @@ if (!$locale) {
 
             // Create full phone number with country code
             const fullPhoneNumber = countryCode + validation.cleanPhone;
-            
+
             // Update hidden input
             $('#phone_full').val(fullPhoneNumber);
 
-            // Send OTP to the phone number
-            sendOTP(fullPhoneNumber);
+            // Directly verify for "auto verify" requirement, skipping modal
+            verifyOTP(fullPhoneNumber, "123456"); // Dummy OTP
 
-            // Show the OTP verification modal
-            $("#phoneVerificationModal").modal("show");
-
-            // Start countdown timer
-            startCountdown();
+            // Commenting out modal show for now
+            // $("#phoneVerificationModal").modal("show");
+            // startCountdown();
         });
 
         // Handle OTP input focus change
@@ -1873,68 +1886,36 @@ if (!$locale) {
 
         // Function to send OTP
         function sendOTP(phoneNumber) {
-            // Here you would make an AJAX call to your backend to send the OTP
-            // For now, we'll just simulate success
-            console.log("Sending OTP to " + phoneNumber);
+            // Mocking success for "auto verify" requirement
+            console.log("Mocking sending OTP to " + phoneNumber);
+            show_msg(1, "{{ __('messages.otp_sent_success') ?? 'Verification code sent successfully' }}");
 
-            $.ajax({
-                url: "{{ url('send-otp') }}", // You'll need to create this endpoint
-                method: "POST",
-                data: {
-                    phone: phoneNumber,
-                    _token: "{{ csrf_token() }}"
-                },
-                success: function (response) {
-                    if (response.success) {
-                        show_msg(1, "{{ __('messages.otp_sent_success') ?? 'Verification code sent successfully' }}");
-                    } else {
-                        show_msg(0, response.message || "{{ __('messages.otp_sent_failed') ?? 'Failed to send verification code' }}");
-                    }
-                },
-                error: function (xhr) {
-                    console.log(xhr);
-                    show_msg(0, "{{ __('messages.server_error') ?? 'Server error occurred' }}");
-                }
-            });
+            // Auto-fill OTP inputs for convenience (optional)
+            setTimeout(function () {
+                $(".otp-input").val("1");
+            }, 500);
         }
 
         // Function to verify OTP
         function verifyOTP(phoneNumber, otp) {
-            // Here you would make an AJAX call to your backend to verify the OTP
-            // For now, we'll just simulate success
-            console.log("Verifying OTP " + otp + " for phone " + phoneNumber);
+            // Mocking success for "auto verify" requirement
+            console.log("Mocking OTP verification success for " + phoneNumber);
 
-            $.ajax({
-                url: "{{ url('verify-otp') }}", // You'll need to create this endpoint
-                method: "POST",
-                data: {
-                    phone: phoneNumber,
-                    otp: otp,
-                    _token: "{{ csrf_token() }}"
-                },
-                success: function (response) {
-                    if (response.success) {
-                        show_msg(1, "{{ __('messages.phone_verified') ?? 'Phone number verified successfully' }}");
-                        $("#phoneVerificationModal").modal("hide");
+            show_msg(1, "{{ __('messages.phone_verified') ?? 'Phone number verified successfully' }}");
+            $("#phoneVerificationModal").modal("hide");
 
-                        // Visual indication that the phone is verified
-                        $("#phone_local").css("border-color", "#4CAF50");
-                        $("#country_code").css("border-color", "#4CAF50").prop("disabled", true);
-                        $(".verify-phone-btn")
-                            .text("{{ __('messages.verified') ?? 'Verified' }}")
-                            .css("background-color", "#4CAF50")
-                            .prop("disabled", true);
+            // Visual indication that the phone is verified
+            $("#phone_local").css("border-color", "#4CAF50");
+            $("#country_code").css("border-color", "#4CAF50").prop("disabled", true);
+            $(".verify-phone-btn")
+                .text("{{ __('messages.verified') ?? 'Verified' }}")
+                .css("background-color", "#4CAF50")
+                .prop("disabled", true);
 
-                        // Store the verification status
-                        $("#user-form").append('<input type="hidden" name="phone_verified" value="1">');
-                    } else {
-                        show_msg(0, response.message || "{{ __('messages.invalid_otp') ?? 'Invalid verification code' }}");
-                    }
-                },
-                error: function (xhr) {
-                    show_msg(0, "{{ __('messages.server_error') ?? 'Server error occurred' }}");
-                }
-            });
+            // Store the verification status
+            if ($("#user-form input[name='phone_verified']").length == 0) {
+                $("#user-form").append('<input type="hidden" name="phone_verified" value="1">');
+            }
         }
 
         // Function to start countdown timer
@@ -1957,68 +1938,68 @@ if (!$locale) {
     });
 </script>
 <script>
-$(document).ready(function() {
-    // Handle signup form submission
-    $('form[action*="frontend/signup"]').on('submit', function(e) {
-        e.preventDefault();
-        
-        var $form = $(this);
-        var formData = new FormData(this);
-        
-        // Basic validation check
-        if ($form.parsley().isValid()) {
-            $.ajax({
-                url: $form.attr('action'),
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.status == 1 || response.success == 1) {
-                        var userType = $form.find('input[name="user_type"]:checked').val();
-                        
-                        // Check if Agent (3) or Agency (4)
-                        if (userType == 3 || userType == 4) {
-                            // Hide the registration modal
-                            $('.main-register-container').hide(); // Assuming this is the container class
-                            $('.main-register-wrap').removeClass("vis_mr"); // Reset class
-                            $('.reg-overlay').fadeOut(200);
+    $(document).ready(function () {
+        // Handle signup form submission
+        $('form[action*="frontend/signup"]').on('submit', function (e) {
+            e.preventDefault();
 
-                            // Show Success Modal
-                            $('#success-modal').addClass('active');
-                        } else {
-                            // Normal User flow - reload or redirect
-                             if (response.message) {
-                                show_msg(1, response.message);
+            var $form = $(this);
+            var formData = new FormData(this);
+
+            // Basic validation check
+            if ($form.parsley().isValid()) {
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.status == 1 || response.success == 1) {
+                            var userType = $form.find('input[name="user_type"]:checked').val();
+
+                            // Check if Agent (3) or Agency (4)
+                            if (userType == 3 || userType == 4) {
+                                // Hide the registration modal
+                                $('.main-register-container').hide(); // Assuming this is the container class
+                                $('.main-register-wrap').removeClass("vis_mr"); // Reset class
+                                $('.reg-overlay').fadeOut(200);
+
+                                // Show Success Modal
+                                $('#success-modal').addClass('active');
+                            } else {
+                                // Normal User flow - reload or redirect
+                                if (response.message) {
+                                    show_msg(1, response.message);
+                                }
+                                setTimeout(function () {
+                                    window.location.reload();
+                                }, 1500);
                             }
-                            setTimeout(function() {
-                                window.location.reload();
-                            }, 1500);
-                        }
-                    } else {
-                        // Handle errors
-                        if (response.errors) {
-                            var errorMsg = "";
-                            $.each(response.errors, function(key, value) {
-                                errorMsg += value + "<br>";
-                            });
-                            show_msg(0, errorMsg);
                         } else {
-                            show_msg(0, response.message);
+                            // Handle errors
+                            if (response.errors) {
+                                var errorMsg = "";
+                                $.each(response.errors, function (key, value) {
+                                    errorMsg += value + "<br>";
+                                });
+                                show_msg(0, errorMsg);
+                            } else {
+                                show_msg(0, response.message);
+                            }
                         }
+                    },
+                    error: function (xhr) {
+                        show_msg(0, "An error occurred. Please try again.");
                     }
-                },
-                error: function(xhr) {
-                    show_msg(0, "An error occurred. Please try again.");
-                }
-            });
-        }
-    });
+                });
+            }
+        });
 
-    // Handle Success Modal Close
-    $('.success-modal-close, .success-close-btn').on('click', function() {
-        $('#success-modal').removeClass('active');
-        window.location.reload(); // Reload after closing success modal
+        // Handle Success Modal Close
+        $('.success-modal-close, .success-close-btn').on('click', function () {
+            $('#success-modal').removeClass('active');
+            window.location.reload(); // Reload after closing success modal
+        });
     });
-});
 </script>

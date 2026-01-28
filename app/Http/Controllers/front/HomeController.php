@@ -64,20 +64,21 @@ class HomeController extends Controller
             header("HTTP/1.1 200 Ok");
         }
     }
-    public function google_callback(Request $request){
+    public function google_callback(Request $request)
+    {
         try {
             $googleUser = Socialite::driver('Google')->stateless()->user();
-            if(!$googleUser){
+            if (!$googleUser) {
                 return redirect('/');
             }
-            
+
             // Check if user exists
-            if ($user = User::where('email', $googleUser->getEmail())->where("deleted", 0)->where('role','!=',1)->first()) {
+            if ($user = User::where('email', $googleUser->getEmail())->where("deleted", 0)->where('role', '!=', 1)->first()) {
                 // Prevent agents (role 3) and agencies (role 4) from using social login
-                if(in_array($user->role, [3, 4])) {
+                if (in_array($user->role, [3, 4])) {
                     return redirect('/')->with('error', __('messages.social_login_not_allowed_agents_agencies'));
                 }
-                
+
                 // Only allow regular users (role 2) to login via social media
                 $user->name = $googleUser->getName();
                 $user->social_type = "google";
@@ -101,17 +102,18 @@ class HomeController extends Controller
             return redirect('/')->with('error', 'Google login failed: ' . $e->getMessage());
         }
     }
-    public function facebook_callback(Request $request){
+    public function facebook_callback(Request $request)
+    {
         try {
             $facebookUser = Socialite::driver('facebook')->stateless()->redirect();
             if (method_exists($facebookUser, 'getEmail') && $facebookUser->getEmail()) {
                 // Check if user exists
-                if ($user = User::where('email', $facebookUser->getEmail())->where("deleted", 0)->where('role','!=',1)->first()) {
+                if ($user = User::where('email', $facebookUser->getEmail())->where("deleted", 0)->where('role', '!=', 1)->first()) {
                     // Prevent agents (role 3) and agencies (role 4) from using social login
-                    if(in_array($user->role, [3, 4])) {
+                    if (in_array($user->role, [3, 4])) {
                         return redirect('/')->with('error', __('messages.social_login_not_allowed_agents_agencies'));
                     }
-                    
+
                     // Only allow regular users (role 2) to login via social media
                     $user->name = $facebookUser->getName();
                     $user->social_type = "facebook";
@@ -138,7 +140,8 @@ class HomeController extends Controller
             return redirect('/')->with('error', 'Facebook login failed: ' . $e->getMessage());
         }
     }
-    function changeLang($langcode){
+    function changeLang($langcode)
+    {
         App::setLocale($langcode);
         Session::put('locale', $langcode);
         return redirect()->back();
@@ -158,7 +161,7 @@ class HomeController extends Controller
     public function check_sms(Request $request)
     {
         $page_heading = "Check SMS";
-        if($request->mobile){
+        if ($request->mobile) {
             $mobile = $request->mobile;
             $url = 'https://messaging.ooredoo.qa/bms/soap/Messenger.asmx';
             $code = 123456;
@@ -197,7 +200,7 @@ class HomeController extends Controller
     {
         $page_heading = "Home";
         $categories = Categories::where(['deleted' => 0])->orderBy('name', 'asc')->get();
-         // $recommended = Properties::with(['property_type', 'images'])->where(['is_recommended' => 1, 'active' => '1', 'deleted' => 0])->orderBy('order')->limit(3)->get();
+        // $recommended = Properties::with(['property_type', 'images'])->where(['is_recommended' => 1, 'active' => '1', 'deleted' => 0])->orderBy('order')->limit(3)->get();
         $recommended = Properties::with(['property_type', 'images'])->where(['is_recommended' => 1, 'active' => '1', 'deleted' => 0])->orderBy('order')->get();
         foreach ($recommended as $key => $val) {
             $recommended[$key]->is_fav = 0;
@@ -230,9 +233,9 @@ class HomeController extends Controller
 
         $recommended_ser = Service::where(['is_recommended' => 1, 'active' => '1', 'deleted' => 0])->orderBy('created_at', 'desc')->limit(6)->get();
 
-        $prj = Projects::select('id', 'name','name_ar')->where(['active' => '1', 'deleted' => 0])->orderBy('created_at', 'desc')->get();
+        $prj = Projects::select('id', 'name', 'name_ar')->where(['active' => '1', 'deleted' => 0])->orderBy('created_at', 'desc')->get();
 
-        $locations = ProjectCountry::select('id', 'name','name_ar')->where(['active' => '1', 'deleted' => 0])->orderBy('created_at', 'desc')->get();
+        $locations = ProjectCountry::select('id', 'name', 'name_ar')->where(['active' => '1', 'deleted' => 0])->orderBy('created_at', 'desc')->get();
 
         $reviews = Reviews::where(['deleted' => 0, 'active' => 1])->limit(10)->latest()->get();
 
@@ -245,7 +248,7 @@ class HomeController extends Controller
             }
         }
 
-        return view('front_end.index', compact('page_heading', 'recommended', 'categories', 'recommended_prj', 'recommended_ser', 'prj','locations','reviews', 'popup'));
+        return view('front_end.index', compact('page_heading', 'recommended', 'categories', 'recommended_prj', 'recommended_ser', 'prj', 'locations', 'reviews', 'popup'));
     }
 
     public function property_listing()
@@ -265,7 +268,7 @@ class HomeController extends Controller
         $type = $_GET['filter'] ?? 'BUY_RENT';
         $pr_text = __('messages.price');
 
-        $properties = Properties::select('properties.*')->where(['properties.active' => '1', 'properties.deleted' => 0])->leftjoin('projects','projects.id','properties.project_id');
+        $properties = Properties::select('properties.*')->where(['properties.active' => '1', 'properties.deleted' => 0])->leftjoin('projects', 'projects.id', 'properties.project_id');
         if (isset($type) && $type != 'BUY_RENT') {
             //Log::info(Properties::saleType[$type]);
             //$properties = $properties->where('sale_type',Properties::saleType[$type]);
@@ -274,7 +277,7 @@ class HomeController extends Controller
         if ($unit_number) {
             $properties = $properties->whereRaw("(properties.apartment_no like '%$unit_number%')");
         }
-        if ($sort =="latest") {
+        if ($sort == "latest") {
             $properties = $properties->orderBy('properties.created_at', 'desc')->orderBy('properties.order', 'asc');
         }
         if ($sort == "price_low_to_high") {
@@ -297,7 +300,7 @@ class HomeController extends Controller
         if ($sort == "floor_high_to_low") {
             $properties = $properties->orderByRaw('CAST(properties.floor_no AS DECIMAL) DESC, properties.order ASC');
         }
-        if ($sort =="order") {
+        if ($sort == "order") {
             $properties = $properties->orderBy('properties.is_featured', 'desc')->orderBy('properties.order', 'asc');
         }
         // Apply default ordering by order field
@@ -318,14 +321,14 @@ class HomeController extends Controller
             $properties = $properties->where('projects.country', $location_id);
         }
         if (isset($bedrooms) && $bathrooms) {
-            $bed_bath_text = ($bedrooms == "0" ? __('messages.studio') : $bedrooms . ' '.__('messages.beds')) . ' & ' . $bathrooms . ' '.__('messages.baths');
+            $bed_bath_text = ($bedrooms == "0" ? __('messages.studio') : $bedrooms . ' ' . __('messages.beds')) . ' & ' . $bathrooms . ' ' . __('messages.baths');
         } else if (isset($bedrooms)) {
-            $bed_bath_text = $bedrooms == "0" ? __('messages.studio') : $bedrooms . ' '.__('messages.beds');
+            $bed_bath_text = $bedrooms == "0" ? __('messages.studio') : $bedrooms . ' ' . __('messages.beds');
         } else if ($bathrooms) {
-            $bed_bath_text = $bathrooms . ' '.__('messages.baths');
+            $bed_bath_text = $bathrooms . ' ' . __('messages.baths');
         }
 
-//        if (isset($bedrooms)) {
+        //        if (isset($bedrooms)) {
 //            if ($bedrooms == "6+") {
 //                $properties = $properties->where('bedrooms', '>=', 6);
 //            } else {
@@ -336,12 +339,10 @@ class HomeController extends Controller
             if ($bedrooms == "6+") {
                 $properties = $properties->where('bedrooms', '>=', 6);
             } else {
-                if($bedrooms == '0')
+                if ($bedrooms == '0')
                     $properties = $properties->where('bedrooms', $bedrooms);
-                else
-                {
-                    if($bedrooms)
-                    {
+                else {
+                    if ($bedrooms) {
                         $properties = $properties->where('bedrooms', $bedrooms);
                     }
                 }
@@ -372,22 +373,22 @@ class HomeController extends Controller
         }
 
         $categories = Categories::where(['deleted' => 0])->orderBy('name', 'asc')->get();
-        $prj = Projects::select('id', 'name')->where(['active' => '1', 'deleted' => 0,'country'=>$location_id])->orderBy('created_at', 'desc')->get();
-        $locations = ProjectCountry::select('id', 'name','name_ar')->where(['active' => '1', 'deleted' => 0])->orderBy('created_at', 'desc')->get();
+        $prj = Projects::select('id', 'name')->where(['active' => '1', 'deleted' => 0, 'country' => $location_id])->orderBy('created_at', 'desc')->get();
+        $locations = ProjectCountry::select('id', 'name', 'name_ar')->where(['active' => '1', 'deleted' => 0])->orderBy('created_at', 'desc')->get();
 
         $bed_bath_text = __('messages.room_baths');
         if (isset($bedrooms) && $bathrooms) {
-            $bed_bath_text = ($bedrooms == "0" ? __('messages.studio') : $bedrooms . ' '.__('messages.beds')) . ' & ' . $bathrooms . ' '.__('messages.baths');
+            $bed_bath_text = ($bedrooms == "0" ? __('messages.studio') : $bedrooms . ' ' . __('messages.beds')) . ' & ' . $bathrooms . ' ' . __('messages.baths');
         } else if (isset($bedrooms)) {
-            $bed_bath_text = $bedrooms == "0" ? __('messages.studio') : $bedrooms . ' '.__('messages.beds');
+            $bed_bath_text = $bedrooms == "0" ? __('messages.studio') : $bedrooms . ' ' . __('messages.beds');
         } else if ($bathrooms) {
-            $bed_bath_text = $bathrooms . ' '.__('messages.baths');
+            $bed_bath_text = $bathrooms . ' ' . __('messages.baths');
         }
         if ($price_from || $price_to) {
             $pr_text = $price_from . ' - ' . $price_to;
         }
 
-        return view('front_end.properties', compact('page_heading', 'properties', 'categories', 'prj', 'sale_type', 'property_type', 'bedrooms', 'bathrooms', 'price_from', 'price_to', 'project_id', 'bed_bath_text', 'pr_text','locations','location_id','sort','unit_number'));
+        return view('front_end.properties', compact('page_heading', 'properties', 'categories', 'prj', 'sale_type', 'property_type', 'bedrooms', 'bathrooms', 'price_from', 'price_to', 'project_id', 'bed_bath_text', 'pr_text', 'locations', 'location_id', 'sort', 'unit_number'));
     }
 
     public function property_details($slug)
@@ -425,7 +426,7 @@ class HomeController extends Controller
 //                $similar = $fallback;
 //            }
 //        }
-        if($similar) {
+        if ($similar) {
             foreach ($similar as $key => $val) {
                 $similar[$key]->is_fav = 0;
                 if (Auth::check() && (Auth::user()->role != '1')) {
@@ -440,10 +441,11 @@ class HomeController extends Controller
 
         $cur_month = Carbon::now();
         $cur_month->startOfMonth();
-        if(isset($property->project->end_date) && $property->project->end_date){
-            $targetDate = Carbon::createFromFormat('Y-m', $property->project->end_date)->endOfMonth();;
+        if (isset($property->project->end_date) && $property->project->end_date) {
+            $targetDate = Carbon::createFromFormat('Y-m', $property->project->end_date)->endOfMonth();
+            ;
             $monthsDifference = $cur_month->diffInMonths($targetDate);
-        }else{
+        } else {
             $monthsDifference = $settings->month_count;
         }
 
@@ -468,14 +470,15 @@ class HomeController extends Controller
             $totalPercentage += $percentageRate;
             $month = $cur_month->addMonth()->format('M-y');
             $months[$i]['month'] = $month;
-            $months[$i]['month_list'] = $formatted_date = Carbon::createFromFormat('M-y', $month)->format('F - Y');;
-            $months[$i]['val'] = $i+1;
+            $months[$i]['month_list'] = $formatted_date = Carbon::createFromFormat('M-y', $month)->format('F - Y');
+            ;
+            $months[$i]['val'] = $i + 1;
             $months[$i]['ordinal'] = $this->getOrdinalSuffix($i + 1);
             $months[$i]['payment'] = round($monthlyPayment, 2);
             $months[$i]['remaining_amount'] = round($remainingAmount, 2);
             $months[$i]['total_percentage'] = round($totalPercentage, 2);
         }
-        return view('front_end.property_details', compact('page_heading', 'property', 'similar', 'settings', 'months','monthCount'));
+        return view('front_end.property_details', compact('page_heading', 'property', 'similar', 'settings', 'months', 'monthCount'));
 
     }
     public function getOrdinalSuffix($number)
@@ -485,10 +488,14 @@ class HomeController extends Controller
         }
 
         switch ($number % 10) {
-            case 1:return $number . 'st';
-            case 2:return $number . 'nd';
-            case 3:return $number . 'rd';
-            default:return $number . 'th';
+            case 1:
+                return $number . 'st';
+            case 2:
+                return $number . 'nd';
+            case 3:
+                return $number . 'rd';
+            default:
+                return $number . 'th';
         }
     }
 
@@ -512,13 +519,13 @@ class HomeController extends Controller
 
         $floors_with_properties = [];
 
-        foreach ($floors as $k=>$floor_no) {
+        foreach ($floors as $k => $floor_no) {
             $properties = Properties::where([
                 'active' => '1',
                 'deleted' => 0,
                 'floor_no' => $floor_no,
                 'project_id' => $project->id
-            ])->get(['id', 'name','name_ar', 'slug', 'floor_no', 'apartment_no', 'sale_type']);
+            ])->get(['id', 'name', 'name_ar', 'slug', 'floor_no', 'apartment_no', 'sale_type']);
             $floors_with_properties[$k]['floor'] = $floor_no;
             $floors_with_properties[$k]['prop'] = $properties;
         }
@@ -554,7 +561,7 @@ class HomeController extends Controller
 
 
         $page_heading = $project->name;
-        return view('front_end.project_details', compact('page_heading', 'project', 'similar','floors','floors_with_properties'));
+        return view('front_end.project_details', compact('page_heading', 'project', 'similar', 'floors', 'floors_with_properties'));
     }
     public function project_listing()
     {
@@ -601,7 +608,7 @@ class HomeController extends Controller
     {
         $page_heading = "Photos";
         //$photos = Photo::where(['deleted' => 0, 'active' => 1])->latest()->get();
-        $folders = Folder::where(['deleted' => 0])->orderBy('is_pinned','DESC')->get();
+        $folders = Folder::where(['deleted' => 0])->orderBy('is_pinned', 'DESC')->get();
 
         // Add has_photos, has_videos, and has_blogs properties to each folder
         foreach ($folders as $folder) {
@@ -792,7 +799,8 @@ class HomeController extends Controller
         $status = "0";
         $message = "";
         $errors = [];
-        $validator = Validator::make($request->all(),
+        $validator = Validator::make(
+            $request->all(),
             [
                 'email' => ['required', 'email'],
                 'password' => 'required',
@@ -810,44 +818,44 @@ class HomeController extends Controller
             return response()->json(['status' => 0, 'message' => __('messages.validation_error_occurred'), 'errors' => $errors]);
         }
 
-    if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-        // Check if user account is deleted
-        if (Auth::user()->deleted == 1) {
-            session()->pull("user_id");
-            Auth::logout();
-            return response()->json(['status' => 0, 'message' => __('messages.account_deleted')]);
-        }
-        
-        // Check if user is admin (role 1) - admins cannot login via frontend
-        if (Auth::user()->role == 1) {
-            session()->pull("user_id");
-            Auth::logout();
-            return response()->json(['status' => 0, 'message' => __('messages.invalid_credentials')]);
-        }
-        
-        // Check if account is active
-        if (!Auth::user()->active) {
-            session()->pull("user_id");
-            Auth::logout();
-            return response()->json(['status' => 0, 'message' => __('messages.account_deactivated_by_admin')]);
-        }
-        
-        // Check if account is verified/approved (only for agents role 3 and agencies role 4, not regular users role 2)
-        if ((Auth::user()->role == 3 || Auth::user()->role == 4) && !Auth::user()->verified) {
-            session()->pull("user_id");
-            Auth::logout();
-            return response()->json(['status' => 0, 'message' => __('messages.account_need_approve_from_admin')]);
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            // Check if user account is deleted
+            if (Auth::user()->deleted == 1) {
+                session()->pull("user_id");
+                Auth::logout();
+                return response()->json(['status' => 0, 'message' => __('messages.account_deleted')]);
+            }
+
+            // Check if user is admin (role 1) - admins cannot login via frontend
+            if (Auth::user()->role == 1) {
+                session()->pull("user_id");
+                Auth::logout();
+                return response()->json(['status' => 0, 'message' => __('messages.invalid_credentials')]);
+            }
+
+            // Check if account is active
+            if (!Auth::user()->active) {
+                session()->pull("user_id");
+                Auth::logout();
+                return response()->json(['status' => 0, 'message' => __('messages.account_deactivated_by_admin')]);
+            }
+
+            // Check if account is verified/approved (only for agents role 3 and agencies role 4, not regular users role 2)
+            if ((Auth::user()->role == 3 || Auth::user()->role == 4) && !Auth::user()->verified) {
+                session()->pull("user_id");
+                Auth::logout();
+                return response()->json(['status' => 0, 'message' => __('messages.account_need_approve_from_admin')]);
+            }
+
+            $request->session()->put('user_id', Auth::user()->id);
+            if ($request->timezone) {
+                $request->session()->put('user_timezone', $request->timezone);
+            }
+            return response()->json(['status' => 1, 'message' => __('messages.logged_in_successfully')]);
+
         }
 
-        $request->session()->put('user_id', Auth::user()->id);
-        if ($request->timezone) {
-            $request->session()->put('user_timezone', $request->timezone);
-        }
-        return response()->json(['status' => 1, 'message' => __('messages.logged_in_successfully')]);
-
-    }
-
-    return response()->json(['status' => 0, 'message' => __('messages.invalid_credentials')]);
+        return response()->json(['status' => 0, 'message' => __('messages.invalid_credentials')]);
     }
     public function signup(Request $request)
     {
@@ -886,25 +894,24 @@ class HomeController extends Controller
                 $status = "0";
                 $message = __('messages.validation_error_occurred');
                 $errors = $validator->messages();
+                return response()->json(['success' => $status, 'status' => $status, 'message' => $message, 'errors' => $errors]);
             }
             // if ($request->password != $request->cpassword) {
             if (1 != 1) {
                 $status = "0";
                 $message = "Password Not Matching";
-                return response()->json(['success' => $status,'status' => $status, 'message' => $message, 'errors' => $errors]);
+                return response()->json(['success' => $status, 'status' => $status, 'message' => $message, 'errors' => $errors]);
             } else {
 
-                if($request->user_type == 2)
-                {
-                    if(Session::get('phone_verified') != $request->phone)
-                    {
+                // Bypass Verification Flag - set to false to enable OTP check
+                $bypass_verification = true;
+
+                if ($request->user_type == 2) {
+                    if (!$bypass_verification && Session::get('phone_verified') != $request->phone) {
                         $status = "0";
                         $message = __('messages.you_should_verify_the_otp');
-                        $errors['phone'] = $request->phone . " ".__('messages.you_should_verify_the_otp');
-                        return response()->json(['success' => 0,'status' => $status, 'message' => $message,'errors' => $errors  ]);
-//
-//                        $message = __('messages.you_should_verify_the_otp');
-//                        $errors['phone'] = $request->phone . " ".__('messages.you_should_verify_the_otp');
+                        $errors['phone'] = $request->phone . " " . __('messages.you_should_verify_the_otp');
+                        return response()->json(['success' => 0, 'status' => $status, 'message' => $message, 'errors' => $errors]);
                     }
 
                 }
@@ -912,8 +919,8 @@ class HomeController extends Controller
                 if ($check_exist) {
                     $status = "0";
                     $message = "Email should be unique";
-                    $errors['email'] = $request->email . " ".__('messages.already_added');
-                    return response()->json(['success' => $status,'status' => $status, 'message' => $message, 'errors' => $errors]);
+                    $errors['email'] = $request->email . " " . __('messages.already_added');
+                    return response()->json(['success' => $status, 'status' => $status, 'message' => $message, 'errors' => $errors]);
                     //  echo json_encode(['status' => $status, 'errors' => $errors]);die();
                 }
 
@@ -945,8 +952,8 @@ class HomeController extends Controller
                 }
 
 
-                if ($request->user_type == 3 ) {
-                    $ins['id_no'] = $request->id_no??'';
+                if ($request->user_type == 3) {
+                    $ins['id_no'] = $request->id_no ?? '';
                     if ($request->file("license")) {
                         $response = image_upload($request, 'profile', 'license');
                         if ($response['status']) {
@@ -980,7 +987,7 @@ class HomeController extends Controller
 
 
                 if ($request->user_type == 4) {
-                    $ins['id_no'] = $request->id_no??'';
+                    $ins['id_no'] = $request->id_no ?? '';
                     if ($request->file("professional_practice_certificate")) {
                         $response = image_upload($request, 'profile', 'professional_practice_certificate');
                         if ($response['status']) {
@@ -1035,30 +1042,34 @@ class HomeController extends Controller
                 //     }
                 // }
 
-                if($request->user_type == 2)
-                {
+                if ($request->user_type == 2) {
                     $ins['verified'] = 1;
                 }
-                if ($user_id = User::create($ins)->id) {
-                    $status = "1";
-                    if($request->user_type == 2)
-                    {
-                        Auth::attempt(['email' => $request->email, 'password' => $request->password, 'role' => $request->user_type]);
-                        $request->session()->put('user_id', Auth::user()->id);
-                        if ($request->timezone) {
-                            $request->session()->put('user_timezone', $request->timezone);
+                try {
+                    if ($user_id = User::create($ins)->id) {
+                        $status = "1";
+                        if ($request->user_type == 2) {
+                            Auth::attempt(['email' => $request->email, 'password' => $request->password, 'role' => $request->user_type]);
+                            $request->session()->put('user_id', Auth::user()->id);
+                            if ($request->timezone) {
+                                $request->session()->put('user_timezone', $request->timezone);
+                            }
+                            $message = __('messages.registration_completed_without_verification');
+                            $errors = '';
+                        } else {
+                            $message = __('messages.registration_completed');
+                            $errors = '';
                         }
-                        $message = __('messages.registration_completed_without_verification');
+                    } else {
+                        $status = "0";
+                        $message = __('messages.something_went_wrong');
                         $errors = '';
                     }
-                    else {
-                        $message = __('messages.registration_completed');
-                        $errors = '';
-                    }
-                } else {
+                } catch (\Exception $e) {
                     $status = "0";
-                    $message = __('messages.something_went_wrong');
-                    $errors = '';
+                    $message = "Error: " . $e->getMessage();
+                    \Illuminate\Support\Facades\Log::error("Registration Error: " . $e->getMessage());
+                    $errors = $e->getMessage();
                 }
             }
             return response()->json(['success' => $status, 'message' => $message, 'errors' => $errors]);
@@ -1077,7 +1088,7 @@ class HomeController extends Controller
     {
         $user_id = Auth::user()->id;
         $page_heading = "My Profile";
-        $countries = Country::orderBy('name', 'asc')->select('name','name_ar', 'code_iso', 'phone_code')->get();
+        $countries = Country::orderBy('name', 'asc')->select('name', 'name_ar', 'code_iso', 'phone_code')->get();
         return view('front_end.my_profile', compact('page_heading', 'countries'));
     }
     public function update_profile(Request $request)
@@ -1088,7 +1099,8 @@ class HomeController extends Controller
             $status = "0";
             $message = "";
             $errors = [];
-            $validator = Validator::make($request->all(),
+            $validator = Validator::make(
+                $request->all(),
                 [
                     'name' => 'required',
                     'email' => 'required',
@@ -1110,8 +1122,9 @@ class HomeController extends Controller
                 if ($check_exist) {
                     $status = "0";
                     $message = "Email should be unique 1111";
-                    $errors['email'] = $request->email . " ".__('messages.already_added');
-                    echo json_encode(['status' => $status, 'message' => $message, 'errors' => $errors]);die();
+                    $errors['email'] = $request->email . " " . __('messages.already_added');
+                    echo json_encode(['status' => $status, 'message' => $message, 'errors' => $errors]);
+                    die();
                 }
 
                 $ins = [
@@ -1126,7 +1139,7 @@ class HomeController extends Controller
                     'postal_code' => $request->postal_code,
                     'updated_at' => gmdate('Y-m-d H:i:s'),
                 ];
-//                if ($user_type == 3 || $user_type == 4) {
+                //                if ($user_type == 3 || $user_type == 4) {
 //                    $ins['id_no'] = $request->id_no??'';
 //                    if ($request->file("professional_practice_certificate")) {
 //                        $response = image_upload($request, 'profile', 'professional_practice_certificate');
@@ -1137,7 +1150,7 @@ class HomeController extends Controller
 //                }
 
                 if ($request->user_type == 3 || $request->user_type == 4) {
-                    $ins['id_no'] = $request->id_no??'';
+                    $ins['id_no'] = $request->id_no ?? '';
                     if ($request->file("professional_practice_certificate")) {
                         $response = image_upload($request, 'profile', 'professional_practice_certificate');
                         if ($response['status']) {
@@ -1176,7 +1189,8 @@ class HomeController extends Controller
                     $errors = '';
                 }
             }
-            echo json_encode(['status' => $status, 'message' => $message, 'errors' => $errors]);die();
+            echo json_encode(['status' => $status, 'message' => $message, 'errors' => $errors]);
+            die();
         } else {
             abort(404);
         }
@@ -1192,22 +1206,23 @@ class HomeController extends Controller
     public function my_bookings()
     {
         $page_heading = "My Bookings";
-        $bookings = Properties::with('project')->select('properties.*','bookings.created_at as booking_date')->where(['bookings.user_id' => Auth::user()->id,'type'=>'Down Payment'])->rightjoin('bookings', 'bookings.property_id', 'properties.id')->orderBy('bookings.created_at', 'desc')->get();
+        $bookings = Properties::with('project')->select('properties.*', 'bookings.created_at as booking_date')->where(['bookings.user_id' => Auth::user()->id, 'type' => 'Down Payment'])->rightjoin('bookings', 'bookings.property_id', 'properties.id')->orderBy('bookings.created_at', 'desc')->get();
         $settings = Settings::find(1);
         $cur_month = Carbon::now();
         $cur_month->startOfMonth();
 
-        foreach($bookings as $key=>$val){
-            $paid_mount = Booking::where(['bookings.user_id' => Auth::user()->id,'property_id'=>$val->id])->sum('amount');
+        foreach ($bookings as $key => $val) {
+            $paid_mount = Booking::where(['bookings.user_id' => Auth::user()->id, 'property_id' => $val->id])->sum('amount');
             $ser_amt = ($settings->service_charge_perc / 100) * $val->price;
             $total = $val->price + $ser_amt;
             $down_payment = ($settings->advance_perc / 100) * $total;
             $pending_amt = $total - $down_payment;
 
-            if(isset($val->project->end_date) && $val->project->end_date){
-                $targetDate = Carbon::createFromFormat('Y-m', $val->project->end_date)->endOfMonth();;
+            if (isset($val->project->end_date) && $val->project->end_date) {
+                $targetDate = Carbon::createFromFormat('Y-m', $val->project->end_date)->endOfMonth();
+                ;
                 $monthsDifference = $cur_month->diffInMonths($targetDate);
-            }else{
+            } else {
                 $monthsDifference = $settings->month_count;
             }
 
@@ -1234,7 +1249,7 @@ class HomeController extends Controller
             $bookings[$key]['paid_mount'] = $paid_mount;
 
         }
-        return view('front_end.my_bookings', compact('page_heading','bookings','settings'));
+        return view('front_end.my_bookings', compact('page_heading', 'bookings', 'settings'));
     }
 
     public function my_reservations()
@@ -1247,23 +1262,20 @@ class HomeController extends Controller
         if (!$customer) {
             abort(404);
         }
-        if($customer ->role == 4)
-        {
+        if ($customer->role == 4) {
             $agentIds = $customer->agencyUsers->pluck('id')->toArray();
 
             $reservations = \App\Models\Reservation::with(['agent', 'property'])
-            ->whereIn('agent_id', $agentIds)
-            ->orderBy('created_at', 'desc')
-            ->get();
-            return view('front_end.my_reservations', compact('page_heading','reservations','settings'));
-        }
-        else
-        {
+                ->whereIn('agent_id', $agentIds)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            return view('front_end.my_reservations', compact('page_heading', 'reservations', 'settings'));
+        } else {
             $reservations = \App\Models\Reservation::with(['agent', 'property'])
-            ->where('agent_id', $id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-            return view('front_end.my_reservations', compact('page_heading','reservations','settings'));
+                ->where('agent_id', $id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            return view('front_end.my_reservations', compact('page_heading', 'reservations', 'settings'));
 
         }
         // $bookings = Properties::with(['project', 'images'])->select('properties.*','reservations.created_at as booking_date')->where(['reservations.user_id' => Auth::user()->id])->rightjoin('reservations', 'reservations.property_id', 'properties.id')->orderBy('reservations.created_at', 'desc')->get();
@@ -1274,7 +1286,7 @@ class HomeController extends Controller
         // foreach($bookings as $key=>$val){
         //     // Get paid amount from reservations table
         //     $paid_mount = \App\Models\Reservation::where(['user_id' => Auth::user()->id, 'property_id' => $val->id])->sum('amount');
-            
+
         //     $ser_amt = ($settings->service_charge_perc / 100) * $val->price;
         //     $total = $val->price + $ser_amt;
         //     $down_payment = ($settings->advance_perc / 100) * $total;
@@ -1308,7 +1320,7 @@ class HomeController extends Controller
         //     $bookings[$key]['months'] = $months;
         //     $bookings[$key]['paid_mount'] = $paid_mount;
         // }
-        
+
     }
 
     public function my_employees()
@@ -1322,7 +1334,7 @@ class HomeController extends Controller
         }
 
         // Get employees for agency users (role 4 = agency)
-        if($customer->role == 4) {
+        if ($customer->role == 4) {
             $employees = $customer->agencyUsers()
                 ->where('role', 3) // role 3 = agent/employee
                 ->orderBy('created_at', 'desc')
@@ -1362,8 +1374,7 @@ class HomeController extends Controller
         // Initialize agents variable
         $agents = collect();
 
-        if($customer ->role == 4)
-        {
+        if ($customer->role == 4) {
             // Get agents for this agency
             $agents = $customer->agencyUsers()
                 ->where('role', 3) // role 3 = agent/employee
@@ -1374,18 +1385,16 @@ class HomeController extends Controller
             $agentIds = $customer->agencyUsers->pluck('id')->toArray();
 
             $visits = \App\Models\VisiteSchedule::with(['agent', 'project'])
-            ->whereIn('agent_id', $agentIds)
-            ->orderBy('created_at', 'desc')
-            ->get();
-            return view('front_end.visit_schedule', compact('page_heading','visits', 'properties', 'projects', 'agents'));
-        }
-        else
-        {
+                ->whereIn('agent_id', $agentIds)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            return view('front_end.visit_schedule', compact('page_heading', 'visits', 'properties', 'projects', 'agents'));
+        } else {
             $visits = \App\Models\VisiteSchedule::with(['agent', 'project'])
-            ->where('agent_id', $id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-            return view('front_end.visit_schedule', compact('page_heading','visits', 'properties', 'projects', 'agents'));
+                ->where('agent_id', $id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            return view('front_end.visit_schedule', compact('page_heading', 'visits', 'properties', 'projects', 'agents'));
 
         }
 
@@ -1442,7 +1451,7 @@ class HomeController extends Controller
         }
 
         // Get clients for this agent/agency
-        if($user->role == 4) {
+        if ($user->role == 4) {
             // For agency, get all clients registered by their agents
             $agentIds = $user->agencyUsers()->pluck('id')->toArray();
             $agentIds[] = $id; // Include agency's own registrations
@@ -1472,7 +1481,7 @@ class HomeController extends Controller
         }
 
         // Get clients based on user role
-        if($user->role == 4) {
+        if ($user->role == 4) {
             $agentIds = $user->agencyUsers()->pluck('id')->toArray();
             $agentIds[] = $id;
 
@@ -1489,23 +1498,23 @@ class HomeController extends Controller
 
         // Apply filters if provided
         if ($request->has('from_date') && $request->from_date) {
-            $clients = $clients->filter(function($client) use ($request) {
+            $clients = $clients->filter(function ($client) use ($request) {
                 return $client->created_at >= $request->from_date;
             });
         }
 
         if ($request->has('to_date') && $request->to_date) {
-            $clients = $clients->filter(function($client) use ($request) {
+            $clients = $clients->filter(function ($client) use ($request) {
                 return $client->created_at <= $request->to_date . ' 23:59:59';
             });
         }
 
         if ($request->has('search') && $request->search) {
             $search = strtolower($request->search);
-            $clients = $clients->filter(function($client) use ($search) {
+            $clients = $clients->filter(function ($client) use ($search) {
                 return stripos($client->client_name, $search) !== false ||
-                       stripos($client->email, $search) !== false ||
-                       stripos($client->phone, $search) !== false;
+                    stripos($client->email, $search) !== false ||
+                    stripos($client->phone, $search) !== false;
             });
         }
 
@@ -1571,7 +1580,8 @@ class HomeController extends Controller
             $status = "0";
             $message = "";
             $errors = [];
-            $validator = Validator::make($request->all(),
+            $validator = Validator::make(
+                $request->all(),
                 [
                     'cur_password' => 'required',
                     'password' => 'required|confirmed',
@@ -1601,7 +1611,8 @@ class HomeController extends Controller
                     $errors = '';
                 }
             }
-            echo json_encode(['status' => $status, 'message' => $message, 'errors' => $errors]);die();
+            echo json_encode(['status' => $status, 'message' => $message, 'errors' => $errors]);
+            die();
         } else {
             abort(404);
         }
@@ -1613,19 +1624,19 @@ class HomeController extends Controller
         $gatewayId = "19960487";
         $secretKey = "5jpTМ5jlbKxEla2a";
         $amount_to_pay = 0.25;
-        $amount = (string) number_format((float)$amount_to_pay, 2, '.', '');
-Log::info($amount);
-Log::info("lovemama");
+        $amount = (string) number_format((float) $amount_to_pay, 2, '.', '');
+        Log::info($amount);
+        Log::info("lovemama");
 
         $referenceId = $this->generateReferenceId();
         $hashable_string = "gatewayId=" . $gatewayId . ",amount=" . "5.25" . ",referenceId=" . $referenceId;
         $signature = base64_encode(hash_hmac('sha256', $hashable_string, $secretKey, true));
-Log::info($signature);
-Log::info($referenceId);
+        Log::info($signature);
+        Log::info($referenceId);
 
 
 
-        
+
         $returnUrl = url('qib_payment_status');
 
         return view('front_end.qib', compact('gatewayId', 'secretKey', 'amount', 'referenceId', 'hashable_string', 'signature', 'returnUrl'));
@@ -1700,9 +1711,9 @@ Log::info($referenceId);
             return redirect()->route('frontend.my_reservations')->with('error', $request->reason);
         }
     }
-    public function book_now(Properties $property,Request $request)
+    public function book_now(Properties $property, Request $request)
     {
-        if($request->submit=="book"){
+        if ($request->submit == "book") {
             $with_management_fee = $request->with_management_fee;
             $page_heading = "Book Now";
             $settings = Settings::find(1);
@@ -1710,10 +1721,10 @@ Log::info($referenceId);
             $ser_amt = ($settings->service_charge_perc / 100) * $property->price;
             $total = $property->price + $ser_amt;
             // $down_payment = ($settings->advance_perc / 100) * $total;
-            if($with_management_fee){
-                $down_payment = (($settings->advance_perc+$settings->service_charge_perc) / 100) * $property->price;
-            }else{
-                $down_payment = ($settings->advance_perc/100) * $property->price;
+            if ($with_management_fee) {
+                $down_payment = (($settings->advance_perc + $settings->service_charge_perc) / 100) * $property->price;
+            } else {
+                $down_payment = ($settings->advance_perc / 100) * $property->price;
             }
 
 
@@ -1727,17 +1738,17 @@ Log::info($referenceId);
             // $amount_to_pay = 0.1;
             $pending_amt = $total - $amount_to_pay;
 
-        $gatewayId = "19960487";
-        $secretKey = "5jpTМ5jlbKxEla2a";
-            $amount = (string) number_format((float)$amount_to_pay, 2, '.', '');
-Log::info($amount);
-Log::info("lovemama");
+            $gatewayId = "19960487";
+            $secretKey = "5jpTМ5jlbKxEla2a";
+            $amount = (string) number_format((float) $amount_to_pay, 2, '.', '');
+            Log::info($amount);
+            Log::info("lovemama");
 
             $referenceId = $this->generateReferenceId();
             $hashable_string = "gatewayId=" . $gatewayId . ",amount=" . "5.25" . ",referenceId=" . $referenceId;
             $signature = base64_encode(hash_hmac('sha256', $hashable_string, $secretKey, true));
-Log::info($signature);
-Log::info($referenceId);
+            Log::info($signature);
+            Log::info($referenceId);
             $returnUrl = url('qib_payment_status');
 
             $temp['user_id'] = Auth::user()->id;
@@ -1748,20 +1759,20 @@ Log::info($referenceId);
             $temp['pending_amt'] = $pending_amt;
             TempBooking::insert($temp);
             return view('front_end.qib', compact('gatewayId', 'secretKey', 'amount', 'referenceId', 'hashable_string', 'signature', 'returnUrl'));
-        }else{
+        } else {
             $page_heading = "Reserve Now";
-            $amount_to_pay =  10000;
-        $gatewayId = "19960487";
-        $secretKey = "5jpTМ5jlbKxEla2a";
-            $amount = (string) number_format((float)$amount_to_pay, 2, '.', '');
-Log::info($amount);
-Log::info("lovemama");
+            $amount_to_pay = 10000;
+            $gatewayId = "19960487";
+            $secretKey = "5jpTМ5jlbKxEla2a";
+            $amount = (string) number_format((float) $amount_to_pay, 2, '.', '');
+            Log::info($amount);
+            Log::info("lovemama");
 
             $referenceId = $this->generateReferenceId();
             $hashable_string = "gatewayId=" . $gatewayId . ",amount=" . "5.25" . ",referenceId=" . $referenceId;
             $signature = base64_encode(hash_hmac('sha256', $hashable_string, $secretKey, true));
-Log::info($signature);
-Log::info($referenceId);
+            Log::info($signature);
+            Log::info($referenceId);
             $returnUrl = url('qib_reserve_payment_status');
 
             $temp['user_id'] = Auth::user()->id;
@@ -1774,9 +1785,9 @@ Log::info($referenceId);
 
     }
 
-    public function specific_book_now(Properties $property,Request $request)
+    public function specific_book_now(Properties $property, Request $request)
     {
-        if($request->submit=="book"){
+        if ($request->submit == "book") {
             $with_management_fee = $request->with_management_fee;
             $page_heading = "Specific Book Now";
             $settings = Settings::find(1);
@@ -1785,9 +1796,9 @@ Log::info($referenceId);
             $ser_amt = ($settings->service_charge_perc / 100) * $property->price;
             $total = $property->price + $ser_amt;
             // $down_payment = ($settings->advance_perc / 100) * $total;
-            if($with_management_fee){
+            if ($with_management_fee) {
                 $down_payment = $down_payment + $ser_amt;
-            }else{
+            } else {
                 $down_payment = $down_payment;
             }
 
@@ -1802,17 +1813,17 @@ Log::info($referenceId);
             // $amount_to_pay = 0.1;
             $pending_amt = $total - $amount_to_pay;
 
-        $gatewayId = "19960487";
-        $secretKey = "5jpTМ5jlbKxEla2a";
-            $amount = (string) number_format((float)$amount_to_pay, 2, '.', '');
-Log::info($amount);
-Log::info("lovemama");
+            $gatewayId = "19960487";
+            $secretKey = "5jpTМ5jlbKxEla2a";
+            $amount = (string) number_format((float) $amount_to_pay, 2, '.', '');
+            Log::info($amount);
+            Log::info("lovemama");
 
             $referenceId = $this->generateReferenceId();
             $hashable_string = "gatewayId=" . $gatewayId . ",amount=" . "5.25" . ",referenceId=" . $referenceId;
             $signature = base64_encode(hash_hmac('sha256', $hashable_string, $secretKey, true));
-Log::info($signature);
-Log::info($referenceId);
+            Log::info($signature);
+            Log::info($referenceId);
             $returnUrl = url('qib_payment_status');
 
             $temp['user_id'] = Auth::user()->id;
@@ -1823,20 +1834,20 @@ Log::info($referenceId);
             $temp['pending_amt'] = $pending_amt;
             TempBooking::insert($temp);
             return view('front_end.qib', compact('gatewayId', 'secretKey', 'amount', 'referenceId', 'hashable_string', 'signature', 'returnUrl'));
-        }else{
+        } else {
             $page_heading = "Reserve Now";
-            $amount_to_pay =  10000;
-        $gatewayId = "19960487";
-        $secretKey = "5jpTМ5jlbKxEla2a";
-            $amount = (string) number_format((float)$amount_to_pay, 2, '.', '');
-Log::info($amount);
-Log::info("lovemama");
+            $amount_to_pay = 10000;
+            $gatewayId = "19960487";
+            $secretKey = "5jpTМ5jlbKxEla2a";
+            $amount = (string) number_format((float) $amount_to_pay, 2, '.', '');
+            Log::info($amount);
+            Log::info("lovemama");
 
             $referenceId = $this->generateReferenceId();
             $hashable_string = "gatewayId=" . $gatewayId . ",amount=" . "5.25" . ",referenceId=" . $referenceId;
             $signature = base64_encode(hash_hmac('sha256', $hashable_string, $secretKey, true));
-Log::info($signature);
-Log::info($referenceId);
+            Log::info($signature);
+            Log::info($referenceId);
             $returnUrl = url('qib_reserve_payment_status');
 
             $temp['user_id'] = Auth::user()->id;
@@ -1973,7 +1984,7 @@ Log::info($referenceId);
             // Send SMS using Ooredoo API (same as in check_sms method)
             $url = 'https://messaging.ooredoo.qa/bms/soap/Messenger.asmx';
             try {
-                $result =$this->sendSmsWithAuth(
+                $result = $this->sendSmsWithAuth(
                     username: "6480~BinAlSheikh",
                     password: "QQatar@777",
                     from: "BinAlsheikh",
@@ -1981,7 +1992,7 @@ Log::info($referenceId);
                     text: $otp,
                     type: 0
                 );
-                $message_id =  $result['data']['id'];
+                $message_id = $result['data']['id'];
                 sleep(2);
 
                 try {
@@ -2003,7 +2014,7 @@ Log::info($referenceId);
                     echo "Delivered to " . $status['data']['status']['SMSC_DELIVERED'] . " recipient(s).";
                 }
 
-// Check for failures
+                // Check for failures
                 if (isset($status['data']['status']['REJECTED_BLACKLISTED'])) {
                     echo "Failed (blacklisted): " . $status['data']['status']['REJECTED_BLACKLISTED'];
                 }
@@ -2078,8 +2089,8 @@ Log::info($referenceId);
     public function thmx_currency_convert()
     {
         $url = 'https://api.exchangerate-api.com/v4/latest/QAR';
-        if(!session()->get('currency')){
-            session()->put('currency','QAR');
+        if (!session()->get('currency')) {
+            session()->put('currency', 'QAR');
         }
         try {
             $json = file_get_contents($url);
@@ -2104,15 +2115,16 @@ Log::info($referenceId);
     public function checkout(Properties $property)
     {
         $page_heading = "Chekout";
-        if($property->sale_type==1){
+        if ($property->sale_type == 1) {
             $settings = Settings::find(1);
 
             $cur_month = Carbon::now();
             $cur_month->startOfMonth();
-            if(isset($property->project->end_date) && $property->project->end_date){
-                $targetDate = Carbon::createFromFormat('Y-m', $property->project->end_date)->endOfMonth();;
+            if (isset($property->project->end_date) && $property->project->end_date) {
+                $targetDate = Carbon::createFromFormat('Y-m', $property->project->end_date)->endOfMonth();
+                ;
                 $monthsDifference = $cur_month->diffInMonths($targetDate);
-            }else{
+            } else {
                 $monthsDifference = $settings->month_count;
             }
 
@@ -2142,9 +2154,9 @@ Log::info($referenceId);
                 $months[$i]['remaining_amount'] = round($remainingAmount, 2);
                 $months[$i]['total_percentage'] = round($totalPercentage, 2);
             }
-            return view('front_end.checkout', compact('page_heading','property','settings','months'));
-        }else{
-            return view('front_end.rent_checkout', compact('page_heading','property'));
+            return view('front_end.checkout', compact('page_heading', 'property', 'settings', 'months'));
+        } else {
+            return view('front_end.rent_checkout', compact('page_heading', 'property'));
         }
 
     }
@@ -2152,7 +2164,7 @@ Log::info($referenceId);
     public function specific_checkout(Properties $property, Request $request)
     {
         $page_heading = "Specific Checkout";
-        if($property->sale_type==1){
+        if ($property->sale_type == 1) {
             $settings = Settings::find(1);
             $advance_amount = $request->advance_amount;
             $rental_duration = $request->rental_duration;
@@ -2185,9 +2197,9 @@ Log::info($referenceId);
                 $months[$i]['remaining_amount'] = round($remainingAmount, 2);
                 $months[$i]['total_percentage'] = round($totalPercentage, 2);
             }
-            return view('front_end.specific_checkout', compact('page_heading','property','settings','months', 'down_payment_p','ser_amt', 'downPaymentPercentage', 'rental_duration'));
-        }else{
-            return view('front_end.rent_checkout', compact('page_heading','property'));
+            return view('front_end.specific_checkout', compact('page_heading', 'property', 'settings', 'months', 'down_payment_p', 'ser_amt', 'downPaymentPercentage', 'rental_duration'));
+        } else {
+            return view('front_end.rent_checkout', compact('page_heading', 'property'));
         }
     }
     public function calculate_emi(Request $request)
@@ -2243,7 +2255,7 @@ Log::info($referenceId);
         }
         $downPaymentPercentage = round($downPaymentPercentage, 2);
         $total_payment_with_handover = round($total_payment + $handover_amount, 2);
-        $html = view('front_end.calculate_emi', compact('down_payment', 'ser_amt','ser_percentage', 'months','downPaymentPercentage', 'handover_amount', 'handOverPaymentPercentage', 'total_payment_with_handover' ))->render();
+        $html = view('front_end.calculate_emi', compact('down_payment', 'ser_amt', 'ser_percentage', 'months', 'downPaymentPercentage', 'handover_amount', 'handOverPaymentPercentage', 'total_payment_with_handover'))->render();
         return response()->json(['html' => $html]);
     }
     public function get_payment_dates(Request $request)
@@ -2256,8 +2268,8 @@ Log::info($referenceId);
 
         $rent = $property->price;
         $deposit = $rent;
-        $administrative_fee  = $rent/2;
-        $total = $rent+$deposit+$administrative_fee;
+        $administrative_fee = $rent / 2;
+        $total = $rent + $deposit + $administrative_fee;
         $down_payment = $total;
 
         $monthCount = $rental_duration;
@@ -2270,12 +2282,12 @@ Log::info($referenceId);
             $months[$i]['payment'] = round($monthlyPayment, 2);
             $total_rent += $monthlyPayment;
         }
-        $html = view('front_end.rent_plan', compact('down_payment', 'months','total_rent'))->render();
+        $html = view('front_end.rent_plan', compact('down_payment', 'months', 'total_rent'))->render();
         return response()->json(['html' => $html]);
     }
-    public function book_rent_now(Properties $property,Request $request)
+    public function book_rent_now(Properties $property, Request $request)
     {
-        if($request->submit=="book"){
+        if ($request->submit == "book") {
             $property_id = $request->property_id;
             $rental_duration = $request->desired_rental_duration;
             $cur_month = Carbon::now();
@@ -2283,21 +2295,21 @@ Log::info($referenceId);
 
             $rent = $property->price;
             $deposit = $rent;
-            $administrative_fee  = $rent/2;
-            $total = $rent+$deposit+$administrative_fee;
+            $administrative_fee = $rent / 2;
+            $total = $rent + $deposit + $administrative_fee;
             $amount_to_pay = $total;
 
-        $gatewayId = "19960487";
-        $secretKey = "5jpTМ5jlbKxEla2a";
-            $amount = (string) number_format((float)$amount_to_pay, 2, '.', '');
-Log::info($amount);
-Log::info("lovemama");
-      
+            $gatewayId = "19960487";
+            $secretKey = "5jpTМ5jlbKxEla2a";
+            $amount = (string) number_format((float) $amount_to_pay, 2, '.', '');
+            Log::info($amount);
+            Log::info("lovemama");
+
             $referenceId = $this->generateReferenceId();
             $hashable_string = "gatewayId=" . $gatewayId . ",amount=" . "5.25" . ",referenceId=" . $referenceId;
             $signature = base64_encode(hash_hmac('sha256', $hashable_string, $secretKey, true));
-Log::info($signature);
-Log::info($referenceId);
+            Log::info($signature);
+            Log::info($referenceId);
             $returnUrl = url('qib_payment_status');
 
             // $temp['user_id'] = Auth::user()->id;
@@ -2308,20 +2320,20 @@ Log::info($referenceId);
             // $temp['pending_amt'] = $pending_amt;
             // TempBooking::insert($temp);
             return view('front_end.qib', compact('gatewayId', 'secretKey', 'amount', 'referenceId', 'hashable_string', 'signature', 'returnUrl'));
-        }else{
+        } else {
             $page_heading = "Reserve Now";
-            $amount_to_pay =  1000;
-        $gatewayId = "19960487";
-        $secretKey = "5jpTМ5jlbKxEla2a";
-            $amount = (string) number_format((float)$amount_to_pay, 2, '.', '');
-Log::info($amount);
-Log::info("lovemama");
+            $amount_to_pay = 1000;
+            $gatewayId = "19960487";
+            $secretKey = "5jpTМ5jlbKxEla2a";
+            $amount = (string) number_format((float) $amount_to_pay, 2, '.', '');
+            Log::info($amount);
+            Log::info("lovemama");
 
             $referenceId = $this->generateReferenceId();
             $hashable_string = "gatewayId=" . $gatewayId . ",amount=" . "5.25" . ",referenceId=" . $referenceId;
             $signature = base64_encode(hash_hmac('sha256', $hashable_string, $secretKey, true));
-Log::info($signature);
-Log::info($referenceId);
+            Log::info($signature);
+            Log::info($referenceId);
             $returnUrl = url('qib_reserve_payment_status');
 
             // $temp['user_id'] = Auth::user()->id;
@@ -2349,8 +2361,8 @@ Log::info($referenceId);
             ->leftjoin('projects', 'projects.id', 'properties.project_id');
 
         if ($sale_type) {
-            if($sale_type != 3){
-            $properties = $properties->whereIn('sale_type', [$sale_type, 3]);
+            if ($sale_type != 3) {
+                $properties = $properties->whereIn('sale_type', [$sale_type, 3]);
             }
         }
         if ($property_type) {
@@ -2366,12 +2378,10 @@ Log::info($referenceId);
             if ($bedrooms == "6+") {
                 $properties = $properties->where('bedrooms', '>=', 6);
             } else {
-                if($bedrooms == '0')
+                if ($bedrooms == '0')
                     $properties = $properties->where('bedrooms', $bedrooms);
-                else
-                {
-                    if($bedrooms)
-                    {
+                else {
+                    if ($bedrooms) {
                         $properties = $properties->where('bedrooms', $bedrooms);
                     }
                 }
@@ -2409,10 +2419,11 @@ Log::info($referenceId);
 
             $cur_month = Carbon::now();
             $cur_month->startOfMonth();
-            if(isset($property->project->end_date) && $property->project->end_date){
-                $targetDate = Carbon::createFromFormat('Y-m', $property->project->end_date)->endOfMonth();;
+            if (isset($property->project->end_date) && $property->project->end_date) {
+                $targetDate = Carbon::createFromFormat('Y-m', $property->project->end_date)->endOfMonth();
+                ;
                 $monthsDifference = $cur_month->diffInMonths($targetDate);
-            }else{
+            } else {
                 $monthsDifference = $settings->month_count;
             }
 
@@ -2429,7 +2440,7 @@ Log::info($referenceId);
             $monthlyPayment = $payableEmiAmount / $monthCount;
             $percentageRate = (100 - $settings->advance_perc) / $monthCount;
 
-//            $months = [];
+            //            $months = [];
 //            $totalPercentage = $settings->advance_perc;
 //            $downPaymentPercentage = $settings->advance_perc;
 //            $remainingAmount = $payableEmiAmount;
@@ -2457,7 +2468,7 @@ Log::info($referenceId);
                 $remainingAmount -= $monthlyPayment;
                 $totalPercentage += $percentageRate;
                 $totalPayment += $monthlyPayment;
-                $month = $cur_month->copy()->addMonths($i+1)->format('M-y');
+                $month = $cur_month->copy()->addMonths($i + 1)->format('M-y');
                 $months[] = [
                     'ordinal' => $this->getOrdinalSuffix($i + 1),
                     'month' => $month,
@@ -2499,7 +2510,7 @@ Log::info($referenceId);
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
-//    public function downloadPaymentPlan(Request $request)
+    //    public function downloadPaymentPlan(Request $request)
 //    {
 //        try {
 //            // Get property details
@@ -2614,7 +2625,7 @@ Log::info($referenceId);
                 $remainingAmount -= $monthlyPayment;
                 $totalPercentage += $monthlyPercentage;
                 $totalPayment += $monthlyPayment;
-                $month = $cur_month->copy()->addMonths($i+1)->format('M-y');
+                $month = $cur_month->copy()->addMonths($i + 1)->format('M-y');
                 $months[] = [
                     'ordinal' => $this->getOrdinalSuffix($i + 1),
                     'month' => $month,
@@ -2643,13 +2654,13 @@ Log::info($referenceId);
             $payment_plan = 'Custom Payment Plan';
             $payment_term = 'Custom Payment Terms';
             // Generate PDF with bookmarks
-            $unit_number =  $property->apartment_no;
-            $balcony_size =  $property->balcony_size;
-            $gross_area =  $property->gross_area;
-            $floor_no =  $property->floor_no;
+            $unit_number = $property->apartment_no;
+            $balcony_size = $property->balcony_size;
+            $gross_area = $property->gross_area;
+            $floor_no = $property->floor_no;
             $project_name = $property->project ? $property->project->name : '';
             $management_fees_percentage = $settings->service_charge_perc;
-            $pdf = $this->getPdfCalulator($payment_plan, $payment_term, $property, $ser_amt, $total, $full_price_calc, $down_payment, $downPaymentPercentage, $months, $settings, $rental_duration, $logoBase64, $waterMarkBase64, $project_name, $hand_over_amount, $handOverPaymentPercentage,$management_fees_percentage );
+            $pdf = $this->getPdfCalulator($payment_plan, $payment_term, $property, $ser_amt, $total, $full_price_calc, $down_payment, $downPaymentPercentage, $months, $settings, $rental_duration, $logoBase64, $waterMarkBase64, $project_name, $hand_over_amount, $handOverPaymentPercentage, $management_fees_percentage);
 
             return $pdf->download('payment_calculator_' . $property->apartment_no . '.pdf');
 
@@ -2674,7 +2685,7 @@ Log::info($referenceId);
      * @param string $waterMarkBase64
      * @return mixed
      */
-//    public function getPdf(string $payment_plan, string $payment_term, $property, $ser_amt, $total, $full_price_calc, $down_payment, $downPaymentPercentage, array $months, $settings, $rental_duration, string $logoBase64, string $waterMarkBase64, string $project_name)
+    //    public function getPdf(string $payment_plan, string $payment_term, $property, $ser_amt, $total, $full_price_calc, $down_payment, $downPaymentPercentage, array $months, $settings, $rental_duration, string $logoBase64, string $waterMarkBase64, string $project_name)
 //    {
 //        $ppp = $project_name;
 //        $pdf = PDF::loadView('front_end.pdf.payment_plan', [
@@ -2724,7 +2735,7 @@ Log::info($referenceId);
 //        return $pdf;
 //    }
 
-    public function getPdfCalulator(string $payment_plan, string $payment_term, $property, $ser_amt, $total, $full_price_calc, $down_payment, $downPaymentPercentage, array $months, $settings, $rental_duration, string $logoBase64, string $waterMarkBase64, string $project_name, string $handOverPayment, string $handOverPaymentPercentage, string  $managment_fees_percentage)
+    public function getPdfCalulator(string $payment_plan, string $payment_term, $property, $ser_amt, $total, $full_price_calc, $down_payment, $downPaymentPercentage, array $months, $settings, $rental_duration, string $logoBase64, string $waterMarkBase64, string $project_name, string $handOverPayment, string $handOverPaymentPercentage, string $managment_fees_percentage)
     {
         $ppp = $project_name;
         $pdf = PDF::loadView('front_end.pdf.calculator_plan', [
@@ -2779,7 +2790,7 @@ Log::info($referenceId);
         return $pdf;
     }
 
-    public function getPdf(string $payment_plan, string $payment_term, $property, $ser_amt, $total, $full_price_calc, $down_payment, $downPaymentPercentage, array $months, $settings, $rental_duration, string $logoBase64, string $waterMarkBase64, string $project_name, string $handOverPayment, string $handOverPaymentPercentage, string  $managment_fees_percentage)
+    public function getPdf(string $payment_plan, string $payment_term, $property, $ser_amt, $total, $full_price_calc, $down_payment, $downPaymentPercentage, array $months, $settings, $rental_duration, string $logoBase64, string $waterMarkBase64, string $project_name, string $handOverPayment, string $handOverPaymentPercentage, string $managment_fees_percentage)
     {
         $ppp = $project_name;
         $pdf = PDF::loadView('front_end.pdf.payment_plan', [
@@ -2846,7 +2857,7 @@ Log::info($referenceId);
                 ]);
             }
 
-            
+
             $validator = Validator::make($request->all(), [
                 'email' => 'required|email|exists:users,email'
             ]);
@@ -3015,7 +3026,7 @@ Log::info($referenceId);
 
     public function update_forget_password(Request $request)
     {
-         //$user_id = Auth::user()->id;
+        //$user_id = Auth::user()->id;
         try {
             $validator = Validator::make($request->all(), [
                 'email' => 'required|email|exists:users,email',
@@ -3095,7 +3106,7 @@ Log::info($referenceId);
     {
         try {
             $user = Auth::user();
-            
+
             // Check if user is authenticated
             if (!$user) {
                 return response()->json([
@@ -3167,14 +3178,14 @@ Log::info($referenceId);
             if ($user->role == 4) {
                 // Agency: Use selected agent ID
                 $agentId = $request->selected_agent_id;
-                
+
                 // Verify that the selected agent belongs to this agency
                 $selectedAgent = User::where('id', $agentId)
                     ->where('agency_id', $user->id)
                     ->where('role', 3)
                     ->where('active', 1)
                     ->first();
-                    
+
                 if (!$selectedAgent) {
                     return response()->json([
                         'success' => false,
