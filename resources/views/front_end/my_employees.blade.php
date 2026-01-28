@@ -120,122 +120,74 @@
                                                     </thead>
                                                     <tbody>
                                                         @forelse($employees ?? [] as $index => $employee)
-                                                        <!-- Main Row -->
-                                                        <tr class="main-row" data-id="{{ $employee->id }}">
-                                                            <td>
-                                                                <input type="checkbox" class="employee-checkbox" value="{{ $employee->id }}">
-                                                            </td>
-                                                            <td>
-                                                                <div class="agent-info">
-                                                                    <div class="agent-avatar">
-                                                                        <i class="fas fa-user"></i>
-                                                                        <div class="status-dot"></div>
-                                                                    </div>
-                                                                    <span class="agent-name">{{ $employee->name }}</span>
-                                                                </div>
-                                                            </td>
-                                                            <td>{{ \Auth::user()->name }}</td>
-                                                            <td><span data-date="{{ $employee->created_at }}">{{ web_date_in_timezone($employee->created_at, 'd-M-Y') }}</span></td>
-                                                            <td>
-                                                                <div class="status-section">
-                                                                    <span class="status-text {{ $employee->active ? 'text-success' : 'text-danger' }}">
-                                                                        {{ $employee->active ? __('messages.active') : __('messages.inactive') }}
-                                                                    </span>
-                                                                    <button class="btn btn-sm btn-info">{{ __('messages.view') }}</button>
-                                                                    <i class="fas fa-chevron-down expand-icon" style="margin-left: 10px; cursor: pointer;"></i>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                        
-                                                        <!-- Detail Row -->
-                                                        <tr class="detail-row" data-parent="{{ $employee->id }}" style="display: none;">
-                                                            <td colspan="5">
-                                                                <div class="detail-content">
-                                                                    <div class="agent-info-header">
-                                                                        <h6>{{ __('messages.agent_info') }}</h6>
-                                                                        <div class="header-actions">
-                                                                            <div class="form-indicator">
-                                                                                <span class="badge badge-info">1 {{ __('messages.active_form_submitted') }}</span>
-                                                                            </div>
+                                                            <!-- Main Row -->
+                                                            <tr class="main-row" data-id="{{ $employee->id }}">
+                                                                <td>
+                                                                    <input type="checkbox" class="employee-checkbox" value="{{ $employee->id }}">
+                                                                </td>
+                                                                <td>
+                                                                    <div class="agent-info">
+                                                                        <div class="agent-avatar">
+                                                                            <i class="fas fa-user"></i>
+                                                                            <div class="status-dot"></div>
                                                                         </div>
+                                                                        <span class="agent-name">{{ $employee->name }}</span>
                                                                     </div>
-                                                                    
-                                                                    <div class="agent-info-grid">
-                                                                        <!-- Left Column -->
-                                                                        <div class="info-column">
-                                                                            <div class="info-card">
-                                                                                <div class="info-icon">
-                                                                                    <i class="fas fa-user"></i>
-                                                                                </div>
-                                                                                <div class="info-content">
-                                                                                    <label>{{ __('messages.agency_name') }}</label>
-                                                                                    <span>{{ \Auth::user()->name ?? __('messages.not_available') }}</span>
-                                                                                </div>
-                                                                            </div>
-                                                                            
-                                                                            <div class="info-card">
-                                                                                <div class="info-icon">
-                                                                                    <i class="fas fa-envelope"></i>
-                                                                                </div>
-                                                                                <div class="info-content">
-                                                                                    <label>{{ __('messages.agent_email_address') }}</label>
-                                                                                    <span>{{ $employee->email ?? __('messages.not_available') }}</span>
-                                                                                </div>
-                                                                            </div>
-                                                                            
-                                                                            <div class="info-card">
-                                                                                <div class="info-icon">
-                                                                                    <i class="fas fa-id-card"></i>
-                                                                                </div>
-                                                                                <div class="info-content">
-                                                                                    <label>{{ __('messages.id_card') }}</label>
-                                                                                    @if($employee->id_no)
-                                                                                        <a href="{{ aws_asset_path($employee->id_no) }}" target="_blank" class="btn btn-sm btn-info">
-                                                                                            <i class="fas fa-eye"></i> {{ __('messages.view_id_card') }}
-                                                                                        </a>
-                                                                                    @else
-                                                                                        <span>{{ __('messages.not_available') }}</span>
-                                                                                    @endif
-                                                                                </div>
-                                                                            </div>
+                                                                </td>
+                                                                <td>{{ \Auth::user()->name }}</td>
+                                                                <td><span data-date="{{ $employee->created_at }}">{{ web_date_in_timezone($employee->created_at, 'd-M-Y') }}</span></td>
+                                                                <td>
+                                                                    <div class="status-section">
+                                                                        <div class="status-section">
+                                                                        <div class="onoffswitch status-onoffswitch">
+                                                                            <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox status-toggle-checkbox" 
+                                                                                   id="statusSwitch_{{ $employee->id }}" 
+                                                                                   data-id="{{ $employee->id }}" 
+                                                                                   {{ $employee->active ? 'checked' : '' }}>
+                                                                            <label class="onoffswitch-label" for="statusSwitch_{{ $employee->id }}">
+                                                                                <span class="onoffswitch-inner"></span>
+                                                                                <span class="onoffswitch-switch"></span>
+                                                                            </label>
                                                                         </div>
-                                                                        
-                                                                        <!-- Right Column -->
-                                                                        <div class="info-column">
-                                                                            <div class="info-card">
-                                                                                <div class="info-icon">
-                                                                                    <i class="fas fa-phone"></i>
-                                                                                </div>
-                                                                                <div class="info-content">
-                                                                                    <label>{{ __('messages.agent_phone_number') }}</label>
-                                                                                    <span>{{ $employee->phone ?? __('messages.not_available') }}</span>
-                                                                                </div>
-                                                                            </div>
-                                                                            
-                                                                            <div class="info-card">
-                                                                                <div class="info-icon">
-                                                                                    <i class="fas fa-certificate"></i>
-                                                                                </div>
-                                                                                <div class="info-content">
-                                                                                    <label>{{ __('messages.professional_license') }}</label>
-                                                                                    @if($employee->discount_number)
-                                                                                        <a href="{{ aws_asset_path($employee->discount_number) }}" target="_blank" class="btn btn-sm btn-info">
-                                                                                            <i class="fas fa-eye"></i> {{ __('messages.view_license') }}
-                                                                                        </a>
-                                                                                    @else
-                                                                                        <span>{{ __('messages.not_available') }}</span>
-                                                                                    @endif
+                                                                        <div class="spinner-border spinner-border-sm text-primary d-none ms-2 status-spinner" role="status"></div>
+
+                                                                        <button class="btn btn-sm btn-info ms-3">{{ __('messages.view') }}</button>
+                                                                        <i class="fas fa-chevron-down expand-icon ms-2" style="cursor: pointer;"></i>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+
+                                                            <!-- Detail Row -->
+                                                            <tr class="detail-row" data-parent="{{ $employee->id }}" style="display: none;">
+                                                                <td colspan="5">
+                                                                    <div class="detail-content">
+                                                                        <div class="agent-info-header">
+                                                                            <h6>{{ __('messages.agent_info') }}</h6>
+                                                                            <div class="header-actions">
+                                                                                <div class="form-indicator">
+<span class="badge badge-info">1 {{ __('messages.active_form_submitted') }}</span>
+                                                                                        <i class="fas fa-certificate"></i>
+                                                                                    </div>
+                                                                                    <div class="info-content">
+                                                                                        <label>{{ __('messages.professional_license') }}</label>
+                                                                                        @if($employee->discount_number)
+                                                                                            <a href="{{ aws_asset_path($employee->discount_number) }}" target="_blank" class="btn btn-sm btn-info">
+                                                                                                <i class="fas fa-eye"></i> {{ __('messages.view_license') }}
+                                                                                            </a>
+                                                                                        @else
+                                                                                            <span>{{ __('messages.not_available') }}</span>
+                                                                                        @endif
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
+                                                                </td>
+                                                            </tr>
                                                         @empty
-                                                        <tr>
-                                                            <td colspan="5" class="text-center">{{ __('messages.no_employees_found') }}</td>
-                                                        </tr>
+                                                            <tr>
+                                                                <td colspan="5" class="text-center">{{ __('messages.no_employees_found') }}</td>
+                                                            </tr>
                                                         @endforelse
                                                     </tbody>
                                                 </table>
@@ -636,6 +588,35 @@
         font-weight: 600;
     }
 
+    /* Status On/Off Switch Customization */
+    .status-onoffswitch {
+        width: 110px; /* Wider to fit Active/Inactive */
+        margin-right: 10px;
+    }
+    
+    .status-onoffswitch .onoffswitch-inner:before {
+        content: "Active";
+        background-color: #28a745;
+        color: #fff;
+        padding-left: 10px;
+    }
+    
+    .status-onoffswitch .onoffswitch-inner:after {
+        content: "Inactive";
+        background-color: #dc3545;
+        color: #fff;
+        padding-right: 10px;
+        text-align: right;
+    }
+    
+    .status-onoffswitch .onoffswitch-switch {
+        right: 86px; /* Adjusted for wider switch (110 - 24) */
+    }
+    
+    .status-onoffswitch .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+        right: 0px; 
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .agent-info-grid {
@@ -739,72 +720,6 @@
                 const expandIcon = row.querySelector('.expand-icon');
                 
                 if (detailRow.style.display === 'none' || detailRow.style.display === '') {
-                    // Close all other detail rows
-                    document.querySelectorAll('.detail-row').forEach(detail => {
-                        detail.style.display = 'none';
-                    });
-                    document.querySelectorAll('.expand-icon').forEach(icon => {
-                        icon.classList.remove('fa-chevron-up');
-                        icon.classList.add('fa-chevron-down');
-                    });
-                    
-                    // Open this detail row
-                    detailRow.style.display = 'table-row';
-                    expandIcon.classList.remove('fa-chevron-down');
-                    expandIcon.classList.add('fa-chevron-up');
-                } else {
-                    // Close this detail row
-                    detailRow.style.display = 'none';
-                    expandIcon.classList.remove('fa-chevron-up');
-                    expandIcon.classList.add('fa-chevron-down');
-                }
-            });
-        });
-        
-        // Employee search functionality
-        document.getElementById('employeeSearch').addEventListener('input', function() {
-            filterEmployees();
-        });
-        
-        // Employee date filtering functionality
-        document.getElementById('fromDate').addEventListener('change', function() {
-            filterEmployees();
-        });
-        
-        document.getElementById('toDate').addEventListener('change', function() {
-            filterEmployees();
-        });
-        
-        function filterEmployees() {
-            const searchTerm = document.getElementById('employeeSearch').value.toLowerCase();
-            const fromDate = document.getElementById('fromDate').value;
-            const toDate = document.getElementById('toDate').value;
-            const rows = document.querySelectorAll('#employeesTable tbody tr.main-row');
-            
-            rows.forEach(row => {
-                const agentName = row.querySelector('.agent-name').textContent.toLowerCase();
-                const agencyName = row.cells[2].textContent.toLowerCase();
-                const createdDateText = row.cells[3].textContent.toLowerCase();
-                
-                // Extract created date from the created date cell
-                const createdDateSpan = row.cells[3].querySelector('span[data-date]');
-                const createdDateValue = createdDateSpan ? createdDateSpan.getAttribute('data-date') : null;
-                
-                let showRow = true;
-                
-                // Apply search filter
-                if (searchTerm && !agentName.includes(searchTerm) && !agencyName.includes(searchTerm) && !createdDateText.includes(searchTerm)) {
-                    showRow = false;
-                }
-                
-                // Apply date filter
-                if (showRow && (fromDate || toDate)) {
-                    if (createdDateValue) {
-                        const createdDate = new Date(createdDateValue);
-                        const fromDateObj = fromDate ? new Date(fromDate) : null;
-                        const toDateObj = toDate ? new Date(toDate) : null;
-                        
-                        // Set time to start of day for inclusive comparison
                         if (fromDateObj) {
                             fromDateObj.setHours(0, 0, 0, 0);
                         }
@@ -996,3 +911,150 @@
     });
 </script>
 @stop
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            // Toggle expand/collapse
+            $(document).on('click', '.expand-icon', function() {
+                let $icon = $(this);
+                let $row = $icon.closest('tr.main-row');
+                let $detailsRow = $row.next('tr.details-row');
+                
+                $detailsRow.toggle();
+                $icon.toggleClass('fa-chevron-down fa-chevron-up');
+            });
+            
+            // View button also toggles
+            $(document).on('click', '.btn-info', function(e) {
+                e.preventDefault();
+                $(this).siblings('.expand-icon').click();
+            });
+        
+            // Employee search functionality output
+            var searchInput = document.getElementById('employeeSearch');
+            if(searchInput) {
+                searchInput.addEventListener('input', function() {
+                    filterEmployees();
+                });
+            }
+            
+            // Employee date filtering functionality
+            var fromDate = document.getElementById('fromDate');
+            if(fromDate) {
+                fromDate.addEventListener('change', function() {
+                    filterEmployees();
+                });
+            }
+            
+            var toDate = document.getElementById('toDate');
+            if(toDate) {
+                toDate.addEventListener('change', function() {
+                    filterEmployees();
+                });
+            }
+            
+            function filterEmployees() {
+                const searchTerm = document.getElementById('employeeSearch').value.toLowerCase();
+                const fromDate = document.getElementById('fromDate').value;
+                const toDate = document.getElementById('toDate').value;
+                const rows = document.querySelectorAll('#employeesTable tbody tr.main-row');
+                
+                rows.forEach(row => {
+                    const agentName = row.querySelector('.agent-name').textContent.toLowerCase();
+                    const agencyName = row.cells[2].textContent.toLowerCase();
+                    const createdDateText = row.cells[3].textContent.toLowerCase();
+                    
+                    // Extract created date from the created date cell
+                    const createdDateSpan = row.cells[3].querySelector('span[data-date]');
+                    const createdDateValue = createdDateSpan ? createdDateSpan.getAttribute('data-date') : null;
+                    
+                    let showRow = true;
+                    
+                    // Apply search filter
+                    if (searchTerm && !agentName.includes(searchTerm) && !agencyName.includes(searchTerm) && !createdDateText.includes(searchTerm)) {
+                        showRow = false;
+                    }
+                    
+                    // Apply date filter
+                    if (fromDate && createdDateValue) {
+                        const from = new Date(fromDate);
+                        const created = new Date(createdDateValue);
+                        if (created < from) showRow = false;
+                    }
+                    
+                    if (toDate && createdDateValue) {
+                        const to = new Date(toDate);
+                        const created = new Date(createdDateValue);
+                        if (created > to) showRow = false;
+                    }
+                    
+                    row.style.display = showRow ? '' : 'none';
+                });
+                
+                updateSelectedCount();
+            }
+
+            // Status Toggle Functionality
+            $(document).on('change', '.status-toggle-checkbox', function(e) {
+                console.log('Toggle switch changed for ID:', $(this).data('id')); 
+                
+                e.preventDefault();
+                
+                let $checkbox = $(this);
+                let employeeId = $checkbox.data('id');
+                let newStatus = $checkbox.is(':checked') ? 1 : 0;
+                
+                console.log('New status will be:', newStatus);
+
+                let $container = $checkbox.closest('.status-section'); 
+                let $spinner = $container.find('.status-spinner');
+
+                // Optimistic UI
+                $spinner.removeClass('d-none');
+                $checkbox.prop('disabled', true);
+
+                $.ajax({
+                    url: "{{ route('update_employee_status') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        id: employeeId,
+                        active: newStatus
+                    },
+                    success: function(response) {
+                        console.log('AJAX Success:', response);
+                        if (response.status === 'success') {
+                            // Success codes...
+                            let $dot = $checkbox.closest('tr').find('.status-dot');
+                            if (newStatus) {
+                                $dot.css('background-color', '#28a745');
+                            } else {
+                                $dot.css('background-color', '#dc3545');
+                            }
+
+                            toastr.success(response.message);
+                        } else {
+                            console.error('AJAX Logic Error:', response);
+                            $checkbox.prop('checked', !newStatus);
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('AJAX Error:', xhr);
+                        $checkbox.prop('checked', !newStatus);
+                        let msg = 'An error occurred';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            msg = xhr.responseJSON.message;
+                        }
+                        toastr.error(msg);
+                    },
+                    complete: function() {
+                        $spinner.addClass('d-none');
+                        $checkbox.prop('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
+@endpush

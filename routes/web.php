@@ -21,7 +21,7 @@ Route::get('/clear', function () {
 });
 
 Route::get('/', 'App\Http\Controllers\front\HomeController@index')->name('home');
-Route::get('/google41802e3e0f5e94ab.html', function() {
+Route::get('/google41802e3e0f5e94ab.html', function () {
     return File::get(public_path('google41802e3e0f5e94ab.html'));
 });
 Route::get('/property-details/{slug}', 'App\Http\Controllers\front\HomeController@property_details');
@@ -79,254 +79,255 @@ Route::post('/store_nearest_branch_details', 'App\Http\Controllers\front\HomeCon
 Route::get('/change_currency/{slug}', 'App\Http\Controllers\front\HomeController@change_currency');
 Route::post('save_subscribe', 'App\Http\Controllers\front\HomeController@save_subscribe');
 
-Route::namespace('App\Http\Controllers\admin')->prefix('admin')->middleware('admin')->name('admin.')->group(function () {
+Route::
+        namespace('App\Http\Controllers\admin')->prefix('admin')->middleware('admin')->name('admin.')->group(function () {
 
-    Route::get('change-password', 'AdminController@changePassword')->name('change.password');
+            Route::get('change-password', 'AdminController@changePassword')->name('change.password');
 
-    Route::post('change-password', 'AdminController@changePasswordSave')->name('change.password.save');
+            Route::post('change-password', 'AdminController@changePasswordSave')->name('change.password.save');
 
-    Route::match(array('GET', 'POST'), 'change_password', 'UsersController@change_password');
+            Route::match(array('GET', 'POST'), 'change_password', 'UsersController@change_password');
 
-    Route::get('logout', 'LoginController@logout')->name('logout');
+            Route::get('logout', 'LoginController@logout')->name('logout');
 
-    Route::get('dashboard', 'DashboardController@dashboard')->name('dashboard');
+            Route::get('dashboard', 'DashboardController@dashboard')->name('dashboard');
 
-    Route::get('bookings', 'DashboardController@bookings')->name('bookings');
+            Route::get('bookings', 'DashboardController@bookings')->name('bookings');
 
-    Route::get("categories", "CategoryController@index");
+            Route::get("categories", "CategoryController@index");
 
-    Route::get("categories/create", "CategoryController@create");
+            Route::get("categories/create", "CategoryController@create");
 
-    Route::post("categories/change_status", "CategoryController@change_status");
+            Route::post("categories/change_status", "CategoryController@change_status");
 
-    Route::get("categories/edit/{id}", "CategoryController@edit");
+            Route::get("categories/edit/{id}", "CategoryController@edit");
 
-    Route::delete("categories/delete/{id}", "CategoryController@destroy");
+            Route::delete("categories/delete/{id}", "CategoryController@destroy");
 
-    Route::post("save_categories", "CategoryController@store");
+            Route::post("save_categories", "CategoryController@store");
 
-    Route::get("amenities", "AmenitiesController@index");
+            Route::get("amenities", "AmenitiesController@index");
 
-    Route::get("amenities/create", "AmenitiesController@create");
+            Route::get("amenities/create", "AmenitiesController@create");
 
-    Route::post("amenities/change_status", "AmenitiesController@change_status");
+            Route::post("amenities/change_status", "AmenitiesController@change_status");
 
-    Route::get("amenities/edit/{id}", "AmenitiesController@edit");
+            Route::get("amenities/edit/{id}", "AmenitiesController@edit");
 
-    Route::delete("amenities/delete/{id}", "AmenitiesController@destroy");
+            Route::delete("amenities/delete/{id}", "AmenitiesController@destroy");
 
-    Route::post("save_amenities", "AmenitiesController@store");
+            Route::post("save_amenities", "AmenitiesController@store");
 
-    Route::get("properties", "PropertyController@index");
+            Route::get("properties", "PropertyController@index");
 
-    Route::get("property/create", "PropertyController@create");
+            Route::get("property/create", "PropertyController@create");
 
-    Route::post("property/change_status", "PropertyController@change_status");
+            Route::post("property/change_status", "PropertyController@change_status");
 
-    Route::get("property/edit/{id}", "PropertyController@edit");
+            Route::get("property/edit/{id}", "PropertyController@edit");
 
-    Route::delete("property/delete/{id}", "PropertyController@destroy");
+            Route::delete("property/delete/{id}", "PropertyController@destroy");
 
-    Route::post("save_property", "PropertyController@store");
+            Route::post("save_property", "PropertyController@store");
 
-    Route::delete("property/delete_image/{id}", "PropertyController@delete_image");
-    Route::post("property/delete_multiple_images", "PropertyController@delete_multiple_images");
-    Route::delete('properties/deleteAll', "PropertyController@deleteAll")->name('properties.deleteAll');
+            Route::delete("property/delete_image/{id}", "PropertyController@delete_image");
+            Route::post("property/delete_multiple_images", "PropertyController@delete_multiple_images");
+            Route::delete('properties/deleteAll', "PropertyController@deleteAll")->name('properties.deleteAll');
 
-    Route::get("blog", "BlogController@index");
+            Route::get("blog", "BlogController@index");
 
-    Route::get("blog/create", "BlogController@create");
+            Route::get("blog/create", "BlogController@create");
 
-    Route::post("blog/change_status", "BlogController@change_status");
+            Route::post("blog/change_status", "BlogController@change_status");
 
-    Route::get("blog/edit/{id}", "BlogController@edit");
+            Route::get("blog/edit/{id}", "BlogController@edit");
 
-    Route::delete("blog/delete/{id}", "BlogController@destroy");
+            Route::delete("blog/delete/{id}", "BlogController@destroy");
 
-    Route::post("save_blog", "BlogController@store");
+            Route::post("save_blog", "BlogController@store");
 
 
-    Route::get("photos", "GalleryController@index");
+            Route::get("photos", "GalleryController@index");
 
-    Route::get("photos/create", "GalleryController@create");
+            Route::get("photos/create", "GalleryController@create");
 
-    Route::post("photos/change_status", "GalleryController@change_status");
+            Route::post("photos/change_status", "GalleryController@change_status");
 
-    Route::delete("photos/delete/{id}", "GalleryController@destroy");
+            Route::delete("photos/delete/{id}", "GalleryController@destroy");
 
-    Route::post("save_photos", "GalleryController@store");
-    Route::delete('photos/deleteAll', "GalleryController@deleteAll")->name('photos.deleteAll');
+            Route::post("save_photos", "GalleryController@store");
+            Route::delete('photos/deleteAll', "GalleryController@deleteAll")->name('photos.deleteAll');
 
 
-    Route::get("videos", "VideoController@index");
-    Route::get("videos/create", "VideoController@create");
-    Route::post("videos/change_status", "VideoController@change_status");
-    Route::get("videos/edit/{id}", "VideoController@edit");
-    Route::delete("videos/delete/{id}", "VideoController@destroy");
-    Route::post("save_videos", "VideoController@store");
-    Route::delete('videos/deleteAll', "VideoController@deleteAll")->name('videos.deleteAll');
+            Route::get("videos", "VideoController@index");
+            Route::get("videos/create", "VideoController@create");
+            Route::post("videos/change_status", "VideoController@change_status");
+            Route::get("videos/edit/{id}", "VideoController@edit");
+            Route::delete("videos/delete/{id}", "VideoController@destroy");
+            Route::post("save_videos", "VideoController@store");
+            Route::delete('videos/deleteAll', "VideoController@deleteAll")->name('videos.deleteAll');
 
-    Route::get("folders", "FolderController@index");
-    Route::get("folders/create", "FolderController@create");
-    Route::post("folders/change_status", "FolderController@change_status");
-    Route::get("folders/edit/{id}", "FolderController@edit");
-    Route::delete("folders/delete/{id}", "FolderController@destroy");
-    Route::post("save_folders", "FolderController@store");
-    Route::delete('folders/deleteAll', "FolderController@deleteAll")->name('folders.deleteAll');
+            Route::get("folders", "FolderController@index");
+            Route::get("folders/create", "FolderController@create");
+            Route::post("folders/change_status", "FolderController@change_status");
+            Route::get("folders/edit/{id}", "FolderController@edit");
+            Route::delete("folders/delete/{id}", "FolderController@destroy");
+            Route::post("save_folders", "FolderController@store");
+            Route::delete('folders/deleteAll', "FolderController@deleteAll")->name('folders.deleteAll');
 
-    Route::get("projects", "ProjectController@index");
+            Route::get("projects", "ProjectController@index");
 
-    Route::get("project/create", "ProjectController@create");
+            Route::get("project/create", "ProjectController@create");
 
-    Route::post("project/change_status", "ProjectController@change_status");
+            Route::post("project/change_status", "ProjectController@change_status");
 
-    Route::get("project/edit/{id}", "ProjectController@edit");
+            Route::get("project/edit/{id}", "ProjectController@edit");
 
-    Route::delete("project/delete/{id}", "ProjectController@destroy");
+            Route::delete("project/delete/{id}", "ProjectController@destroy");
 
-    Route::post("save_project", "ProjectController@store");
+            Route::post("save_project", "ProjectController@store");
 
-    Route::delete("project/delete_image/{id}", "ProjectController@delete_image");
+            Route::delete("project/delete_image/{id}", "ProjectController@delete_image");
 
 
-    Route::get("services", "ServiceController@index");
+            Route::get("services", "ServiceController@index");
 
-    Route::get("service/create", "ServiceController@create");
+            Route::get("service/create", "ServiceController@create");
 
-    Route::post("service/change_status", "ServiceController@change_status");
+            Route::post("service/change_status", "ServiceController@change_status");
 
-    Route::get("service/edit/{id}", "ServiceController@edit");
+            Route::get("service/edit/{id}", "ServiceController@edit");
 
-    Route::delete("service/delete/{id}", "ServiceController@destroy");
+            Route::delete("service/delete/{id}", "ServiceController@destroy");
 
-    Route::post("save_service", "ServiceController@store");
+            Route::post("save_service", "ServiceController@store");
 
-    Route::get("subscribers", "SubscriberController@index");
+            Route::get("subscribers", "SubscriberController@index");
 
-    Route::delete("subscribers/delete/{id}", "SubscriberController@destroy");
+            Route::delete("subscribers/delete/{id}", "SubscriberController@destroy");
 
-    Route::get("pages", "PageController@index");
+            Route::get("pages", "PageController@index");
 
-    Route::get("page/edit/{id}", "PageController@edit");
+            Route::get("page/edit/{id}", "PageController@edit");
 
-    Route::delete("page/delete/{id}", "PageController@destroy");
+            Route::delete("page/delete/{id}", "PageController@destroy");
 
-    Route::post("save_page", "PageController@store");
+            Route::post("save_page", "PageController@store");
 
-    Route::post("page/change_status", "PageController@change_status");
+            Route::post("page/change_status", "PageController@change_status");
 
-    Route::get('settings', 'SettingsController@settings')->name('settings');
-    Route::post("setting_store", "SettingsController@setting_store")->name('setting_store');
+            Route::get('settings', 'SettingsController@settings')->name('settings');
+            Route::post("setting_store", "SettingsController@setting_store")->name('setting_store');
 
-    Route::get("project_countries", "ProjectCountriesController@index");
+            Route::get("project_countries", "ProjectCountriesController@index");
 
-    Route::get("project_countries/create", "ProjectCountriesController@create");
+            Route::get("project_countries/create", "ProjectCountriesController@create");
 
-    Route::post("project_countries/change_status", "ProjectCountriesController@change_status");
+            Route::post("project_countries/change_status", "ProjectCountriesController@change_status");
 
-    Route::get("project_countries/edit/{id}", "ProjectCountriesController@edit");
+            Route::get("project_countries/edit/{id}", "ProjectCountriesController@edit");
 
-    Route::delete("project_countries/delete/{id}", "ProjectCountriesController@destroy");
+            Route::delete("project_countries/delete/{id}", "ProjectCountriesController@destroy");
 
-    Route::post("save_project_countries", "ProjectCountriesController@store");
+            Route::post("save_project_countries", "ProjectCountriesController@store");
 
-    Route::get("reviews", "ReviewsController@index");
+            Route::get("reviews", "ReviewsController@index");
 
-    Route::get("reviews/create", "ReviewsController@create");
+            Route::get("reviews/create", "ReviewsController@create");
 
-    Route::post("reviews/change_status", "ReviewsController@change_status");
+            Route::post("reviews/change_status", "ReviewsController@change_status");
 
-    Route::get("reviews/edit/{id}", "ReviewsController@edit");
+            Route::get("reviews/edit/{id}", "ReviewsController@edit");
 
-    Route::delete("reviews/delete/{id}", "ReviewsController@destroy");
+            Route::delete("reviews/delete/{id}", "ReviewsController@destroy");
 
-    Route::post("save_reviews", "ReviewsController@store");
+            Route::post("save_reviews", "ReviewsController@store");
 
 
-    Route::get("career", "CareerController@index");
+            Route::get("career", "CareerController@index");
 
-    Route::get("career/create", "CareerController@create");
+            Route::get("career/create", "CareerController@create");
 
-    Route::post("career/change_status", "CareerController@change_status");
+            Route::post("career/change_status", "CareerController@change_status");
 
-    Route::get("career/edit/{id}", "CareerController@edit");
+            Route::get("career/edit/{id}", "CareerController@edit");
 
-    Route::delete("career/delete/{id}", "CareerController@destroy");
+            Route::delete("career/delete/{id}", "CareerController@destroy");
 
-    Route::post("save_career", "CareerController@store");
-    Route::get("job_application", "CareerController@applications");
-    Route::delete('job_application/deleteAll', "CareerController@deleteAll")->name('job_application.deleteAll');
-    Route::post('job_application/downloadCSV', "CareerController@downloadCSV")->name('job_application.downloadCSV');
-    Route::delete("career/delete_application/{id}", "CareerController@delete_application");
+            Route::post("save_career", "CareerController@store");
+            Route::get("job_application", "CareerController@applications");
+            Route::delete('job_application/deleteAll', "CareerController@deleteAll")->name('job_application.deleteAll');
+            Route::post('job_application/downloadCSV', "CareerController@downloadCSV")->name('job_application.downloadCSV');
+            Route::delete("career/delete_application/{id}", "CareerController@delete_application");
 
-    Route::get("agencies", "AgencyController@index");
-    Route::get("agent", "AgentController@index");
+            Route::get("agencies", "AgencyController@index");
+            Route::get("agent", "AgentController@index");
 
-    Route::get("customer/{role?}", "CustomerController@index");
+            Route::get("customer/{role?}", "CustomerController@index");
 
-    Route::get("customer/create", "CustomerController@create");
+            Route::get("customer/create", "CustomerController@create");
 
-    Route::post("customer/change_status", "CustomerController@change_status");
+            Route::post("customer/change_status", "CustomerController@change_status");
 
-    Route::get("customer/edit/{id}", "CustomerController@edit");
+            Route::get("customer/edit/{id}", "CustomerController@edit");
 
-    Route::get("customer/download-document/{filename}", "CustomerController@downloadDocument");
-    Route::delete("customer/delete/{id}", "CustomerController@destroy");
+            Route::get("customer/download-document/{filename}", "CustomerController@downloadDocument");
+            Route::delete("customer/delete/{id}", "CustomerController@destroy");
 
-    Route::delete('customer/deleteAll', "CustomerController@deleteAll")->name('customer.deleteAll');
+            Route::delete('customer/deleteAll', "CustomerController@deleteAll")->name('customer.deleteAll');
 
-    Route::get('customer/details/{id}', 'CustomerController@details')->name('admin.customer.details');
-    Route::get('customer/approve/{id}', 'CustomerController@approve')->name('admin.customer.approve');
-    Route::post('customer/update-commission', 'CustomerController@updateCommission')->name('admin.customer.update-commission');
-    Route::post('customer/update-discount', 'CustomerController@updateDiscount')->name('admin.customer.update-discount');
-    Route::post('customer/update-apartments', 'CustomerController@updateApartments')->name('admin.customer.update-apartments');
+            Route::get('customer/details/{id}', 'CustomerController@details')->name('admin.customer.details');
+            Route::get('customer/approve/{id}', 'CustomerController@approve')->name('admin.customer.approve');
+            Route::post('customer/update-commission', 'CustomerController@updateCommission')->name('admin.customer.update-commission');
+            Route::post('customer/update-discount', 'CustomerController@updateDiscount')->name('admin.customer.update-discount');
+            Route::post('customer/update-apartments', 'CustomerController@updateApartments')->name('admin.customer.update-apartments');
 
-    Route::get('agency/details/{id}', 'AgencyController@details')->name('admin.agency.details');
-    Route::post('agency/update-reservation-commission', 'AgencyController@updateReservationCommission')->name('admin.agency.update-reservation-commission');
-    Route::post('agency/update-reservation-status', 'AgencyController@updateReservationStatus')->name('admin.agency.update-reservation-status');
-    
-    // Export routes
-    Route::get('agency/export-employees', 'AgencyController@exportEmployees')->name('admin.agency.export-employees');
-    Route::get('agency/export-reservations', 'AgencyController@exportReservations')->name('admin.agency.export-reservations');
-    Route::get('agency/export-visit-schedules', 'AgencyController@exportVisitSchedules')->name('admin.agency.export-visit-schedules');
-    
-    // Delete routes
-    Route::post('agency/delete-employees', 'AgencyController@deleteEmployees')->name('admin.agency.delete-employees');
-    Route::post('agency/delete-reservations', 'AgencyController@deleteReservations')->name('admin.agency.delete-reservations');
-    Route::post('agency/delete-visit-schedules', 'AgencyController@deleteVisitSchedules')->name('admin.agency.delete-visit-schedules');
-   
-    Route::get('agent/details/{id}', 'AgentController@details')->name('admin.agent.details');
-    Route::post('agent/update-reservation-commission', 'AgentController@updateReservationCommission')->name('admin.agent.update-reservation-commission');
-    Route::post('agent/update-reservation-status', 'AgentController@updateReservationStatus')->name('admin.agent.update-reservation-status');
-    
-    // AJAX data loading routes
-    Route::get('agent/reservations', 'AgentController@getReservations')->name('admin.agent.reservations');
-    Route::get('agent/visit-schedules', 'AgentController@getVisitSchedules')->name('admin.agent.visit-schedules');
-    
-    // Agent management routes
-    Route::post('agent/change_status', 'AgentController@change_status')->name('admin.agent.change_status');
-    Route::delete('agent/delete/{id}', 'AgentController@destroy')->name('admin.agent.delete');
-    Route::get('agent/approve/{id}', 'AgentController@approve')->name('admin.agent.approve');
-    Route::delete('agent/deleteAll', 'AgentController@deleteAll')->name('admin.agent.deleteAll');
-    Route::get('agent/download-document/{filename}', 'AgentController@downloadDocument')->name('admin.agent.download-document');
-    
-    // Export routes
-    Route::get('agent/export-employees', 'AgentController@exportEmployees')->name('admin.agent.export-employees');
-    Route::get('agent/export-reservations', 'AgentController@exportReservations')->name('admin.agent.export-reservations');
-    Route::get('agent/export-visit-schedules', 'AgentController@exportVisitSchedules')->name('admin.agent.export-visit-schedules');
-    
-    // Delete routes
-    Route::post('agent/delete-employees', 'AgentController@deleteEmployees')->name('admin.agent.delete-employees');
-    Route::post('agent/delete-reservations', 'AgentController@deleteReservations')->name('admin.agent.delete-reservations');
-    Route::post('agent/delete-visit-schedules', 'AgentController@deleteVisitSchedules')->name('admin.agent.delete-visit-schedules');
-    Route::post('agent/reject', 'AgentController@rejectAgent')->name('admin.agent.reject');
-    Route::post('agent/delete-agent', 'AgentController@deleteAgent')->name('admin.agent.delete-agent');
+            Route::get('agency/details/{id}', 'AgencyController@details')->name('admin.agency.details');
+            Route::post('agency/update-reservation-commission', 'AgencyController@updateReservationCommission')->name('admin.agency.update-reservation-commission');
+            Route::post('agency/update-reservation-status', 'AgencyController@updateReservationStatus')->name('admin.agency.update-reservation-status');
 
-    // Popups routes
-    Route::resource('popups', 'PopupController');
-    Route::post('popups/change_status', 'PopupController@changeStatus');
+            // Export routes
+            Route::get('agency/export-employees', 'AgencyController@exportEmployees')->name('admin.agency.export-employees');
+            Route::get('agency/export-reservations', 'AgencyController@exportReservations')->name('admin.agency.export-reservations');
+            Route::get('agency/export-visit-schedules', 'AgencyController@exportVisitSchedules')->name('admin.agency.export-visit-schedules');
 
-});
+            // Delete routes
+            Route::post('agency/delete-employees', 'AgencyController@deleteEmployees')->name('admin.agency.delete-employees');
+            Route::post('agency/delete-reservations', 'AgencyController@deleteReservations')->name('admin.agency.delete-reservations');
+            Route::post('agency/delete-visit-schedules', 'AgencyController@deleteVisitSchedules')->name('admin.agency.delete-visit-schedules');
+
+            Route::get('agent/details/{id}', 'AgentController@details')->name('admin.agent.details');
+            Route::post('agent/update-reservation-commission', 'AgentController@updateReservationCommission')->name('admin.agent.update-reservation-commission');
+            Route::post('agent/update-reservation-status', 'AgentController@updateReservationStatus')->name('admin.agent.update-reservation-status');
+
+            // AJAX data loading routes
+            Route::get('agent/reservations', 'AgentController@getReservations')->name('admin.agent.reservations');
+            Route::get('agent/visit-schedules', 'AgentController@getVisitSchedules')->name('admin.agent.visit-schedules');
+
+            // Agent management routes
+            Route::post('agent/change_status', 'AgentController@change_status')->name('admin.agent.change_status');
+            Route::delete('agent/delete/{id}', 'AgentController@destroy')->name('admin.agent.delete');
+            Route::get('agent/approve/{id}', 'AgentController@approve')->name('admin.agent.approve');
+            Route::delete('agent/deleteAll', 'AgentController@deleteAll')->name('admin.agent.deleteAll');
+            Route::get('agent/download-document/{filename}', 'AgentController@downloadDocument')->name('admin.agent.download-document');
+
+            // Export routes
+            Route::get('agent/export-employees', 'AgentController@exportEmployees')->name('admin.agent.export-employees');
+            Route::get('agent/export-reservations', 'AgentController@exportReservations')->name('admin.agent.export-reservations');
+            Route::get('agent/export-visit-schedules', 'AgentController@exportVisitSchedules')->name('admin.agent.export-visit-schedules');
+
+            // Delete routes
+            Route::post('agent/delete-employees', 'AgentController@deleteEmployees')->name('admin.agent.delete-employees');
+            Route::post('agent/delete-reservations', 'AgentController@deleteReservations')->name('admin.agent.delete-reservations');
+            Route::post('agent/delete-visit-schedules', 'AgentController@deleteVisitSchedules')->name('admin.agent.delete-visit-schedules');
+            Route::post('agent/reject', 'AgentController@rejectAgent')->name('admin.agent.reject');
+            Route::post('agent/delete-agent', 'AgentController@deleteAgent')->name('admin.agent.delete-agent');
+
+            // Popups routes
+            Route::resource('popups', 'PopupController');
+            Route::post('popups/change_status', 'PopupController@changeStatus');
+
+        });
 
 Route::any('/check_sms', 'App\Http\Controllers\front\HomeController@check_sms')
 ;
@@ -347,6 +348,7 @@ Route::middleware('user')->group(function () {
     Route::get('my-bookings', 'App\Http\Controllers\front\HomeController@my_bookings')->name('frontend.my_bookings');
     Route::get('my-reservations', 'App\Http\Controllers\front\HomeController@my_reservations')->name('frontend.my_reservations');
     Route::get('my-employees', 'App\Http\Controllers\front\HomeController@my_employees')->name('frontend.my_employees');
+    Route::post('update-employee-status', 'App\Http\Controllers\front\HomeController@updateEmployeeStatus')->name('update_employee_status');
     Route::get('visit-schedule', 'App\Http\Controllers\front\HomeController@visit_schedule')->name('frontend.visit_schedule');
     Route::post('visit-schedule/store', 'App\Http\Controllers\front\HomeController@store_visit_schedule')->name('frontend.store_visit_schedule');
     Route::get('client-list', 'App\Http\Controllers\front\HomeController@client_list')->name('frontend.client_list');

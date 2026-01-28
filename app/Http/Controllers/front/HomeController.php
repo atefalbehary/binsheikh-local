@@ -1347,6 +1347,75 @@ class HomeController extends Controller
         return view('front_end.my_employees', compact('page_heading', 'employees'));
     }
 
+    public function updateEmployeeStatus(Request $request)
+    {
+        // Note: Using standard Request here to avoid tight coupling if FormRequest fails validation redirect.
+        // But for cleaner code, we should use the FormRequest.
+        // Let's manually validate using the logic from the requested FormRequest or inject it.
+        // Given the AJAX nature, manual validation returning JSON is often safer against redirects.
+        // However, I will use strict manual validation here to mimic the Request class but control the JSON response perfectly.
+
+        try {
+            \Log::info('updateEmployeeStatus called', $request->all());
+
+            $validator = Validator::make($request->all(), [
+                'id' => 'required|exists:users,id',
+                'active' => 'required|boolean'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $validator->errors()->first()
+                ]);
+            }
+
+            $user = User::findOrFail($request->id);
+
+            // Security check: Ensure the authenticated user (Agency) owns this employee
+            if (Auth::user()->id != $user->agency_id) {
+                \Log::warning('Unauthorized status update', ['auth_id' => Auth::id(), 'target_id' => $user->id]);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unauthorized action.'
+                ]);
+            }
+
+            // Ensure we are only modifying users with role 3 (Employee/Agent)
+            if ($user->role != 3) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid user role.'
+                ]);
+            }
+
+            // Direct DB update to ensure persistence avoids any model event/mutator interference
+            $newStatus = (int) $request->active;
+
+            \DB::table('users')
+                ->where('id', $user->id)
+                ->update([
+                    'active' => $newStatus,
+                    'updated_at' => now()
+                ]);
+
+            \Log::info('Employee status updated via DB', ['id' => $user->id, 'new_status' => $newStatus]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Employee status updated successfully.',
+                'new_status' => $newStatus
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Exception in updateEmployeeStatus', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong: ' . $e->getMessage()
+            ]);
+        }
+    }
+
     public function visit_schedule()
     {
 

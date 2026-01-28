@@ -53,7 +53,7 @@ if (!$locale) {
         <?php
         \Illuminate\Support\Facades\Session::put('locale', 'en');
         \Illuminate\Support\Facades\App::setLocale('en');
-                                    ?>
+                                        ?>
         <link type="text/css" rel="stylesheet" href="{{ asset('') }}front-assets/css/style.css">
     @endif
     <link type="text/css" rel="stylesheet" href="{{ asset('') }}front-assets/css/db-style.css">
@@ -316,9 +316,9 @@ if (!$locale) {
                                     </a>
                                 @else
                                     <div class=" modal-open" style="    color: #000;
-                                                        width: auto;
-                                                        top: 20px;
-                                                        background: none; float:none" data-bs-dismiss="offcanvas"
+                                                            width: auto;
+                                                            top: 20px;
+                                                            background: none; float:none" data-bs-dismiss="offcanvas"
                                         aria-label="Close">
                                         <i
                                             class="fa fa-user ms-1 me-1 d-inline-block"></i><span>{{ __('messages.sign_in') }}</span>
@@ -1937,6 +1937,8 @@ if (!$locale) {
         }
     });
 </script>
+@stack('scripts')
+</body>
 <script>
     $(document).ready(function () {
         // Handle signup form submission
