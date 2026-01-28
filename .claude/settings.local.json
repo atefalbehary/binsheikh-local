@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan migrate:*)",
+      "Bash(php artisan tinker --execute=\"\\\\DB::statement\\(''DROP TABLE IF EXISTS clients''\\);\")",
+      "Bash(php artisan:*)"
+    ]
+  }
+}

@@ -1077,7 +1077,7 @@ class HomeController extends Controller
     {
         $user_id = Auth::user()->id;
         $page_heading = "My Profile";
-        $countries = Country::orderBy('name', 'asc')->select('name','name_ar', 'code_iso')->get();
+        $countries = Country::orderBy('name', 'asc')->select('name','name_ar', 'code_iso', 'phone_code')->get();
         return view('front_end.my_profile', compact('page_heading', 'countries'));
     }
     public function update_profile(Request $request)
@@ -1389,7 +1389,165 @@ class HomeController extends Controller
 
         }
 
-        
+
+    }
+
+    public function register_client(Request $request)
+    {
+        $request->validate([
+            'client_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'country_code' => 'required|string|max:10',
+            'phone' => 'required|string|max:20',
+            'project_id' => 'required|exists:projects,id',
+            'nationality' => 'required|string|max:10',
+            'apartment_no' => 'required|string|max:255',
+            'apartment_type' => 'required|string|in:studio,1bhk,2bhk,3bhk',
+        ]);
+
+        try {
+            $client = \App\Models\Client::create([
+                'agent_id' => Auth::user()->id,
+                'client_name' => $request->client_name,
+                'email' => $request->email,
+                'country_code' => $request->country_code,
+                'phone' => $request->phone,
+                'project_id' => $request->project_id,
+                'nationality' => $request->nationality,
+                'apartment_no' => $request->apartment_no,
+                'apartment_type' => $request->apartment_type,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Client registered successfully!',
+                'client' => $client
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to register client. Please try again.'
+            ], 500);
+        }
+    }
+
+    public function client_list()
+    {
+        $page_heading = "Client List";
+        $id = Auth::user()->id;
+        $user = User::find($id);
+
+        if (!$user) {
+            abort(404);
+        }
+
+        // Get clients for this agent/agency
+        if($user->role == 4) {
+            // For agency, get all clients registered by their agents
+            $agentIds = $user->agencyUsers()->pluck('id')->toArray();
+            $agentIds[] = $id; // Include agency's own registrations
+
+            $clients = \App\Models\Client::with(['agent', 'project'])
+                ->whereIn('agent_id', $agentIds)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            // For individual agents (role 3), get only their clients
+            $clients = \App\Models\Client::with(['agent', 'project'])
+                ->where('agent_id', $id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view('front_end.client_list', compact('page_heading', 'clients'));
+    }
+
+    public function export_clients(Request $request)
+    {
+        $id = Auth::user()->id;
+        $user = User::find($id);
+
+        if (!$user) {
+            abort(404);
+        }
+
+        // Get clients based on user role
+        if($user->role == 4) {
+            $agentIds = $user->agencyUsers()->pluck('id')->toArray();
+            $agentIds[] = $id;
+
+            $clients = \App\Models\Client::with(['agent', 'project'])
+                ->whereIn('agent_id', $agentIds)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            $clients = \App\Models\Client::with(['agent', 'project'])
+                ->where('agent_id', $id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        // Apply filters if provided
+        if ($request->has('from_date') && $request->from_date) {
+            $clients = $clients->filter(function($client) use ($request) {
+                return $client->created_at >= $request->from_date;
+            });
+        }
+
+        if ($request->has('to_date') && $request->to_date) {
+            $clients = $clients->filter(function($client) use ($request) {
+                return $client->created_at <= $request->to_date . ' 23:59:59';
+            });
+        }
+
+        if ($request->has('search') && $request->search) {
+            $search = strtolower($request->search);
+            $clients = $clients->filter(function($client) use ($search) {
+                return stripos($client->client_name, $search) !== false ||
+                       stripos($client->email, $search) !== false ||
+                       stripos($client->phone, $search) !== false;
+            });
+        }
+
+        // Generate CSV
+        $filename = 'clients_' . date('Y-m-d_H-i-s') . '.csv';
+        $handle = fopen('php://output', 'w');
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        // Add CSV headers
+        fputcsv($handle, [
+            'Client Name',
+            'Email',
+            'Phone',
+            'Country Code',
+            'Project',
+            'Nationality',
+            'Apartment No',
+            'Apartment Type',
+            'Registered By',
+            'Registration Date'
+        ]);
+
+        // Add data rows
+        foreach ($clients as $client) {
+            fputcsv($handle, [
+                $client->client_name,
+                $client->email,
+                $client->phone,
+                $client->country_code,
+                $client->project ? $client->project->name : 'N/A',
+                $client->nationality,
+                $client->apartment_no,
+                strtoupper($client->apartment_type),
+                $client->agent ? $client->agent->name : 'N/A',
+                web_date_in_timezone($client->created_at, 'd-M-Y H:i')
+            ]);
+        }
+
+        fclose($handle);
+        exit;
     }
 
     public function fav_property(Request $request)

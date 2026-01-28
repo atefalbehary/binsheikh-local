@@ -47,6 +47,10 @@
                                                         @if(\Auth::user()->role == 4 || \Auth::user()->role == 3)
                                                             <li><a href="{{ url('visit-schedule') }}">{{ __('messages.my_visit_schedule') }}</a></li>
                                                         @endif
+                                                        @if(\Auth::user()->role == 4 || \Auth::user()->role == 3)
+                                                            <li><a href="{{ url('client-list') }}">Client List</a></li>
+                                                        @endif
+                                                        <li><a href="javascript:void(0);" id="clientRegistrationBtn">Client Registration</a></li>
                                                     </ul>
                                                     <a href="{{ url('user/logout') }}" class="hum_log-out_btn"><i class="fa-light fa-power-off"></i> {{ __('messages.log_out') }}</a>
                                                 </div>
@@ -461,11 +465,109 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Client Registration Modal -->
+                    <div class="modal fade" id="clientRegistrationModal" tabindex="-1" role="dialog" aria-labelledby="clientRegistrationModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                            <div class="modal-content custom-modal-content custom-modal-content-lg">
+                                <div class="modal-header custom-modal-header">
+                                    <button type="button" class="close custom-close-btn" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body custom-modal-body text-left">
+                                    <form id="clientRegistrationForm">
+                                        <div class="cs-intputwrap">
+                                            <i class="fa-light fa-user"></i>
+                                            <input type="text" placeholder="Client Name" name="client_name" required>
+                                        </div>
+
+                                        <div class="cs-intputwrap">
+                                            <i class="fa-light fa-envelope"></i>
+                                            <input type="email" placeholder="Email Address" name="email" required>
+                                        </div>
+
+                                        <div class="phone-number-row">
+                                            <div class="cs-intputwrap country-code-wrap">
+                                                <i class="fa-light fa-flag"></i>
+                                                <select name="country_code" required>
+                                                    <option value="">Code</option>
+                                                    @foreach($countries as $country)
+                                                        @if(!empty($country->phone_code) && $country->phone_code != '' && $country->phone_code != '0')
+                                                            <option value="+{{$country->phone_code}}" @if($country->phone_code == '974') selected @endif>+{{$country->phone_code}} - {{$country->name}}</option>
+                                                        @endif
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="cs-intputwrap phone-number-wrap">
+                                                <i class="fa-light fa-mobile"></i>
+                                                <input type="text" placeholder="Phone Number" name="phone" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="cs-intputwrap">
+                                            <i class="fa-light fa-building"></i>
+                                            <select name="project_id" required>
+                                                <option value="">Select Project</option>
+                                                @foreach(\App\Models\Projects::where('active','1')->where('deleted', 0)->get() as $project)
+                                                    <option value="{{$project->id}}">{{$project->name}}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="cs-intputwrap">
+                                            <i class="fa-light fa-globe"></i>
+                                            <select name="nationality" required>
+                                                <option value="">Select Nationality</option>
+                                                @foreach($countries as $country)
+                                                    <option value="{{$country->code_iso}}">{{$country->name}}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="cs-intputwrap">
+                                            <i class="fa-light fa-home"></i>
+                                            <input type="text" placeholder="Apartment Number (e.g., 1201 - A)" name="apartment_no" required>
+                                        </div>
+
+                                        <div class="apartment-type-selection">
+                                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">Apartment Type</label>
+                                            <div class="apartment-type-buttons">
+                                                <button type="button" class="apartment-type-btn" data-value="studio">Studio</button>
+                                                <button type="button" class="apartment-type-btn active" data-value="1bhk">1 BHK</button>
+                                                <button type="button" class="apartment-type-btn" data-value="2bhk">2 BHK</button>
+                                                <button type="button" class="apartment-type-btn" data-value="3bhk">3 BHK</button>
+                                            </div>
+                                            <input type="hidden" name="apartment_type" id="apartment_type_input" value="1bhk">
+                                        </div>
+
+                                        <button type="submit" class="commentssubmit">Register Client</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 @stop
 
 @section('script')
 <script>
 $(document).ready(function() {
+    // Open client registration modal
+    $('#clientRegistrationBtn').click(function() {
+        $('#clientRegistrationModal').modal('show');
+    });
+
+    // Apartment Type Button Selection
+    $('.apartment-type-btn').click(function() {
+        // Remove active class from all buttons
+        $('.apartment-type-btn').removeClass('active');
+
+        // Add active class to clicked button
+        $(this).addClass('active');
+
+        // Update hidden input
+        $('#apartment_type_input').val($(this).data('value'));
+    });
+
     // Open forget password modal
     $('#forgetPasswordBtn').click(function() {
         $('#forgetPasswordModal').modal('show');
@@ -653,43 +755,97 @@ $(document).ready(function() {
             }
         });
     });
+
+    // Handle client registration form submission
+    $('#clientRegistrationForm').on('submit', function(e) {
+        e.preventDefault();
+
+        var formData = $(this).serialize();
+        var submitBtn = $(this).find('button[type="submit"]');
+        var originalText = submitBtn.text();
+
+        // Show loading state
+        submitBtn.prop('disabled', true).text('Registering...');
+
+        $.ajax({
+            url: '{{ url("register-client") }}',
+            type: 'POST',
+            data: formData,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Client registered successfully!');
+                    $('#clientRegistrationModal').modal('hide');
+                    // Reset form
+                    $('#clientRegistrationForm')[0].reset();
+                    // Reset apartment type to default
+                    $('.apartment-type-btn').removeClass('active');
+                    $('.apartment-type-btn[data-value="1bhk"]').addClass('active');
+                    $('#apartment_type_input').val('1bhk');
+                } else {
+                    alert(response.message || 'Something went wrong. Please try again.');
+                }
+            },
+            error: function(xhr) {
+                var errorMessage = 'Something went wrong. Please try again.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                alert(errorMessage);
+            },
+            complete: function() {
+                // Reset button state
+                submitBtn.prop('disabled', false).text(originalText);
+            }
+        });
+    });
 });
 </script>
 
 <style>
 /* Modal Container */
-.custom-modal-content {
-    background: white;
-    border-radius: 20px;
-    border: none;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    max-width: 400px;
-    margin: 0 auto;
-    position: relative;
-    overflow: hidden;
-}
+
+    .custom-modal-content {
+        background: white;
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        max-width: 400px;
+        margin: 20px auto;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .custom-modal-content-lg {
+        max-width: 900px;
+        max-height: 92vh;
+        overflow-y: auto;
+        margin: 40px auto;
+    }
 
 /* Modal Header */
 .custom-modal-header {
     border: none;
     padding: 0;
     position: relative;
-    height: 50px;
+    height: 10px;
 }
 
 .custom-close-btn {
     position: absolute;
-    top: 15px;
+    top: 12px;
     right: 15px;
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     background: #f5f5f5;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 15px;
     color: #666;
     cursor: pointer;
     z-index: 10;
@@ -708,7 +864,7 @@ $(document).ready(function() {
 
 /* Modal Body */
 .custom-modal-body {
-    padding: 40px 30px 30px;
+    padding: 20px 30px 40px;
     text-align: center;
 }
 
@@ -1114,40 +1270,163 @@ $(document).ready(function() {
     border: 1px dashed #dee2e6;
 }
 
+/* Client Registration Modal Input Fields */
+#clientRegistrationModal .cs-intputwrap {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+#clientRegistrationModal .cs-intputwrap i {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 15px;
+    z-index: 1;
+}
+
+#clientRegistrationModal .cs-intputwrap input,
+#clientRegistrationModal .cs-intputwrap select {
+    width: 100%;
+    padding: 12px 20px 12px 50px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    color: #333;
+}
+
+#clientRegistrationModal .cs-intputwrap input:focus,
+#clientRegistrationModal .cs-intputwrap select:focus {
+    outline: none;
+    border-color: #f4e4bc;
+    box-shadow: 0 0 0 3px rgba(244, 228, 188, 0.2);
+}
+
+#clientRegistrationModal .cs-intputwrap input::placeholder {
+    color: #999;
+}
+
+#clientRegistrationModal .cs-intputwrap select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 20px center;
+    padding-right: 45px;
+}
+
+/* Phone Number Row */
+#clientRegistrationModal .phone-number-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+#clientRegistrationModal .phone-number-row .country-code-wrap {
+    flex: 0 0 240px;
+    margin-bottom: 0;
+}
+
+#clientRegistrationModal .phone-number-row .phone-number-wrap {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+#clientRegistrationModal .commentssubmit {
+    width: 100%;
+    padding: 12px 20px;
+    background: #f4e4bc;
+    border: none;
+    border-radius: 8px;
+    color: #333;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 5px;
+}
+
+#clientRegistrationModal .commentssubmit:hover {
+    background: #e6d4a8;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(244, 228, 188, 0.4);
+}
+
+/* Apartment Type Selection */
+.apartment-type-selection {
+    margin: 15px 0 10px;
+    text-align: center;
+}
+
+.apartment-type-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.apartment-type-btn {
+    padding: 6px 16px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+}
+
+.apartment-type-btn:hover {
+    background: #f8f9fa;
+    border-color: #aaa;
+}
+
+.apartment-type-btn.active {
+    background: #f4e4bc;
+    border-color: #f4e4bc;
+    color: #333;
+}
+
 /* Responsive Design */
 @media (max-width: 480px) {
     .custom-modal-content {
         margin: 20px;
         max-width: none;
     }
-    
+
     .custom-modal-body {
         padding: 30px 20px 20px;
     }
-    
+
     .lock-icon-container {
         width: 80px;
         height: 80px;
     }
-    
+
     .lock-icon {
         font-size: 2rem;
     }
-    
+
     .custom-modal-title {
         font-size: 1.2rem;
     }
-    
+
     .file-view-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
     }
-    
+
     .file-view-label {
         width: 100%;
     }
-    
+
     .view-file-btn {
         align-self: flex-end;
     }

@@ -349,6 +349,9 @@ Route::middleware('user')->group(function () {
     Route::get('my-employees', 'App\Http\Controllers\front\HomeController@my_employees')->name('frontend.my_employees');
     Route::get('visit-schedule', 'App\Http\Controllers\front\HomeController@visit_schedule')->name('frontend.visit_schedule');
     Route::post('visit-schedule/store', 'App\Http\Controllers\front\HomeController@store_visit_schedule')->name('frontend.store_visit_schedule');
+    Route::get('client-list', 'App\Http\Controllers\front\HomeController@client_list')->name('frontend.client_list');
+    Route::post('register-client', 'App\Http\Controllers\front\HomeController@register_client')->name('frontend.register_client');
+    Route::get('export-clients', 'App\Http\Controllers\front\HomeController@export_clients')->name('frontend.export_clients');
     Route::get('book-now/{property}', 'App\Http\Controllers\front\HomeController@book_now')->name('frontend.book_now');
     Route::get('specific-book-now/{property}', 'App\Http\Controllers\front\HomeController@specific_book_now')->name('frontend.book_now');
     Route::get('book-rent-now/{property}', 'App\Http\Controllers\front\HomeController@book_rent_now')->name('frontend.book_rent_now');

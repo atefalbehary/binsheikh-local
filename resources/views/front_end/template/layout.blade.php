@@ -16,6 +16,7 @@ if (!$locale) {
 <head>
     <!--=============== basic  ===============-->
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>{{ config('global.site_name') }} | {{ $page_heading }}</title>
 
