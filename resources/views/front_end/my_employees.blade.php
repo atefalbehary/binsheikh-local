@@ -99,7 +99,7 @@
                                                     
                                                     <div class="action-buttons">
                                                         <button class="btn btn-primary btn-sm" id="exportEmployeesBtn">{{ __('messages.export') }}</button>
-                                                        <button class="btn btn-danger btn-sm" id="deleteEmployeesBtn">{{ __('messages.delete') }}</button>
+                                                        <!-- <button class="btn btn-danger btn-sm" id="deleteEmployeesBtn">{{ __('messages.delete') }}</button> -->
                                                     </div>
                                                 </div>
                                             </div>
@@ -161,19 +161,73 @@
                                                             <tr class="detail-row" data-parent="{{ $employee->id }}" style="display: none;">
                                                                 <td colspan="5">
                                                                     <div class="detail-content">
-                                                                        <div class="agent-info-header">
-                                                                            <h6>{{ __('messages.agent_info') }}</h6>
+                                                                        <div class="agency-info-header">
+                                                                            <h5>{{ __('messages.agent_info') }}</h5>
                                                                             <div class="header-actions">
-                                                                                <div class="form-indicator">
-<span class="badge badge-info">1 {{ __('messages.active_form_submitted') }}</span>
+                                                                                {{-- Actions removed as this is 'My Employees' view --}}
+                                                                            </div>
+                                                                        </div>
+                                                                        
+                                                                        <div class="agency-info-grid">
+                                                                            <!-- Left Column -->
+                                                                            <div class="info-column">
+                                                                                <div class="info-card">
+                                                                                    <div class="info-icon">
+                                                                                        <i class="fas fa-building"></i>
+                                                                                    </div>
+                                                                                    <div class="info-content">
+                                                                                        <label>{{ __('messages.agency_name') }}</label>
+                                                                                        <span>{{ \Auth::user()->name }}</span>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <div class="info-card">
+                                                                                    <div class="info-icon">
+                                                                                        <i class="fas fa-envelope"></i>
+                                                                                    </div>
+                                                                                    <div class="info-content">
+                                                                                        <label>{{ __('messages.email') }}</label>
+                                                                                        <span>{{ $employee->email }}</span>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <div class="info-card">
+                                                                                    <div class="info-icon">
+                                                                                        <i class="fas fa-id-card"></i>
+                                                                                    </div>
+                                                                                    <div class="info-content">
+                                                                                        <label>{{ __('messages.id_card') }}</label>
+                                                                                        @if(!empty($employee->id_card))
+                                                                                            <button class="view-btn" onclick="window.open('{{ aws_asset_path($employee->id_card) }}', '_blank')">{{ __('messages.view') }}</button>
+                                                                                        @else
+                                                                                            <span>{{ __('messages.not_available') }}</span>
+                                                                                        @endif
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                            
+                                                                            <!-- Right Column -->
+                                                                            <div class="info-column">
+                                                                                <div class="info-card">
+                                                                                    <div class="info-icon">
+                                                                                        <i class="fas fa-phone"></i>
+                                                                                    </div>
+                                                                                    <div class="info-content">
+                                                                                        <label>{{ __('messages.phone') }}</label>
+                                                                                        <span>{{ $employee->phone }}</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                                
+                                                                                <div class="info-card">
+                                                                                    <div class="info-icon">
                                                                                         <i class="fas fa-certificate"></i>
                                                                                     </div>
                                                                                     <div class="info-content">
                                                                                         <label>{{ __('messages.professional_license') }}</label>
-                                                                                        @if($employee->discount_number)
-                                                                                            <a href="{{ aws_asset_path($employee->discount_number) }}" target="_blank" class="btn btn-sm btn-info">
-                                                                                                <i class="fas fa-eye"></i> {{ __('messages.view_license') }}
-                                                                                            </a>
+                                                                                        @if(!empty($employee->license))
+                                                                                            <button class="view-btn" onclick="window.open('{{ aws_asset_path($employee->license) }}', '_blank')">{{ __('messages.view') }}</button>
+                                                                                        @elseif(!empty($employee->discount_number)) 
+                                                                                            <button class="view-btn" onclick="window.open('{{ aws_asset_path($employee->discount_number) }}', '_blank')">{{ __('messages.view') }}</button>
                                                                                         @else
                                                                                             <span>{{ __('messages.not_available') }}</span>
                                                                                         @endif
@@ -499,11 +553,47 @@
     }
     
     /* Agent Info Grid */
-    .agent-info-grid {
+    .agent-info-grid, .agency-info-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
     }
+
+    .agency-info-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .agency-info-header h5 {
+        margin: 0;
+        font-weight: bold;
+        color: #333;
+        font-size: 16px;
+    }
+    
+    .view-btn {
+        padding: 5px 15px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 5px;
+    }
+    
+    .view-btn:hover {
+        background: #0056b3;
+        color: white;
+    }
+
     
     /* Detail Row Styles */
     .detail-row {
@@ -555,7 +645,7 @@
     .info-icon {
         width: 40px;
         height: 40px;
-        background: linear-gradient(135deg, #ffd700, #ffed4e);
+        background: linear-gradient(135deg, #007bff, #0056b3);
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -564,7 +654,7 @@
     }
     
     .info-icon i {
-        color: #333;
+        color: white;
         font-size: 18px;
     }
     
@@ -619,7 +709,7 @@
 
     /* Responsive */
     @media (max-width: 768px) {
-        .agent-info-grid {
+        .agent-info-grid, .agency-info-grid {
             grid-template-columns: 1fr;
         }
         
@@ -711,54 +801,18 @@
         });
         
         // View button functionality
+        // View button functionality - just trigger the expand icon
         document.querySelectorAll('.btn-info').forEach(button => {
             button.addEventListener('click', function(e) {
+                e.preventDefault();
                 e.stopPropagation();
                 const row = this.closest('.main-row');
-                const rowId = row.getAttribute('data-id');
-                const detailRow = document.querySelector(`.detail-row[data-parent="${rowId}"]`);
                 const expandIcon = row.querySelector('.expand-icon');
-                
-                if (detailRow.style.display === 'none' || detailRow.style.display === '') {
-                        if (fromDateObj) {
-                            fromDateObj.setHours(0, 0, 0, 0);
-                        }
-                        if (toDateObj) {
-                            toDateObj.setHours(23, 59, 59, 999);
-                        }
-                        createdDate.setHours(0, 0, 0, 0);
-                        
-                        if (fromDateObj && createdDate < fromDateObj) {
-                            showRow = false;
-                        }
-                        if (toDateObj && createdDate > toDateObj) {
-                            showRow = false;
-                        }
-                    } else {
-                        // If no data-date attribute, try to parse from the displayed text
-                        showRow = false;
-                    }
-                }
-                
-                if (showRow) {
-                    row.style.display = '';
-                    // Also show the corresponding detail row
-                    const rowId = row.getAttribute('data-id');
-                    const detailRow = document.querySelector(`.detail-row[data-parent="${rowId}"]`);
-                    if (detailRow) {
-                        detailRow.style.display = '';
-                    }
-                } else {
-                    row.style.display = 'none';
-                    // Also hide the corresponding detail row
-                    const rowId = row.getAttribute('data-id');
-                    const detailRow = document.querySelector(`.detail-row[data-parent="${rowId}"]`);
-                    if (detailRow) {
-                        detailRow.style.display = 'none';
-                    }
+                if (expandIcon) {
+                    expandIcon.click();
                 }
             });
-        }
+        });
         
         // Export functionality
         document.getElementById('exportEmployeesBtn').addEventListener('click', function() {
@@ -915,21 +969,9 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Toggle expand/collapse
-            $(document).on('click', '.expand-icon', function() {
-                let $icon = $(this);
-                let $row = $icon.closest('tr.main-row');
-                let $detailsRow = $row.next('tr.details-row');
-                
-                $detailsRow.toggle();
-                $icon.toggleClass('fa-chevron-down fa-chevron-up');
-            });
-            
-            // View button also toggles
-            $(document).on('click', '.btn-info', function(e) {
-                e.preventDefault();
-                $(this).siblings('.expand-icon').click();
-            });
+            // View button (handled in main script)
+            // Removed conflicting handlers
+
         
             // Employee search functionality output
             var searchInput = document.getElementById('employeeSearch');

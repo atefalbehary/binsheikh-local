@@ -952,13 +952,10 @@ nav li ul a:after {
 	width: 100%;
 	height: 100%;
 	z-index: 1000;
-	overflow-y: auto;
-	overflow-x: hidden;
+	overflow: auto;
 	display: none;
-	align-items: flex-start;
+	align-items: center;
 	justify-content: center;
-	padding: 20px;
-	-webkit-overflow-scrolling: touch;
 }
 
 .main-register_box {
@@ -969,28 +966,21 @@ nav li ul a:after {
 }
 
 .main-register-holder {
-	width: min(100% - 20px, 760px);
+	width: min(100% - 25px, 950px);
 	margin-inline: auto;
 	position: relative;
-	max-height: calc(100vh - 40px);
-	display: flex;
-	flex-direction: column;
 }
 
 .main-register-wrap {
-	padding-left: 400px;
+	padding-left: 500px;
 	background: #fff;
-	overflow: visible;
+	overflow: hidden;
 	border-radius: 10px;
 	transition: all .3s ease-in-out;
 	transform: scale(.9);
 	opacity: 0;
 	box-shadow: 0px 0px 0px 8px rgba(255, 255, 255, 0.2);
 	position: relative;
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	min-height: 0;
 }
 
 .vis_mr {
@@ -1001,7 +991,7 @@ nav li ul a:after {
 .main-register_bg {
 	position: absolute;
 	left: 0;
-	width: 400px;
+	width: 500px;
 	top: 0;
 	bottom: 0;
 	background: #fff;
@@ -1134,16 +1124,12 @@ nav li ul a:after {
 }
 
 .main-register {
+	float: left;
 	width: 100%;
 	position: relative;
-	padding: 48px 18px 18px 18px;
+	padding: 80px 30px 30px 30px;
 	background: #fff;
-	overflow-y: auto;
-	overflow-x: hidden;
-	flex: 1;
-	min-height: 0;
-	max-height: calc(100vh - 80px);
-	border-radius: 0 10px 10px 0;
+	overflow: hidden;
 }
 
 .vis_mr {
@@ -1155,11 +1141,11 @@ nav li ul a:after {
 	position: absolute;
 	left: 0;
 	top: 0;
-	padding-right: 50px;
+	padding-right: 60px;
 	right: 0;
 	border-bottom: 1px solid #eee;
-	height: 50px;
-	line-height: 50px;
+	height: 60px;
+	line-height: 60px;
 	overflow: hidden;
 }
 
@@ -1167,17 +1153,17 @@ nav li ul a:after {
 	position: absolute;
 	right: 0;
 	top: 0;
-	width: 50px;
-	height: 50px;
-	line-height: 50px;
+	width: 60px;
+	height: 60px;
+	line-height: 60px;
 	cursor: pointer;
-	font-size: 1.3em;
+	font-size: 1.5em;
 	transition: all .4s ease-in-out;
 	background: #fff;
 	border-bottom: 1px solid #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .close-modal:hover {
@@ -1192,13 +1178,13 @@ nav li ul a:after {
 }
 
 .main-register .tabs-menu li a {
-	height: 50px;
-	line-height: 50px;
+	height: 60px;
+	line-height: 60px;
 	float: left;
 	width: 100%;
 	background: #f9f9f9;
 	text-transform: uppercase;
-	font-size: .75em;
+	font-size: .9em;
 	font-weight: 500;
 	color: #000;
 	border-right: 1px solid #eee;
@@ -1372,42 +1358,18 @@ nav li ul a:after {
 	display: none;
 }
 
-/* Registration Form Compact Styling */
-.main-register label {
-	font-size: 10px;
-	margin-bottom: 4px;
-	display: block;
-	font-weight: 500;
-}
-
-.main-register .custom-form textarea {
-	min-height: 80px;
-	max-height: 100px;
-	padding: 10px 14px;
-	font-size: 10px;
-}
-
-.main-register .form-control {
-	font-size: 10px;
-	padding: 8px 12px;
-}
-
-.stp-bot {
-	padding-bottom: 50px;
-}
-
 /*-------------Forms---------------------------------------*/
 .cs-intputwrap {
 	position: relative;
-	margin-bottom: 8px;
+	margin-bottom: 14px;
 }
 
 .cs-intputwrap i {
 	position: absolute;
-	left: 14px;
+	left: 20px;
 	top: 50%;
 	transform: translateY(-50%);
-	font-size: 1em;
+	font-size: 1.4em;
 	color: var(--main-color);
 	z-index: 10;
 }
@@ -1421,7 +1383,7 @@ nav li ul a:after {
 	border: 1px solid #eee;
 	background: #f9f9f9;
 	box-shadow: 0px 10px 14px 0px rgba(12, 0, 46, 0);
-	height: 38px;
+	height: 56px;
 	width: 100%;
 	padding: 10px 14px 10px 36px;
 	border-radius: 4px;
@@ -9636,94 +9598,97 @@ a:hover {
 } */
 /* Success Modal Styles */
 .success-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 10000;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    display: none; /* Initially hidden, toggled by JS to flex */
-    align-items: center;
-    justify-content: center;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 10000;
+	background: rgba(0, 0, 0, 0.6);
+	backdrop-filter: blur(4px);
+	display: none;
+	/* Initially hidden, toggled by JS to flex */
+	align-items: center;
+	justify-content: center;
 }
 
 .success-modal-overlay.active {
-    display: flex;
+	display: flex;
 }
 
 .success-modal-box {
-    background: #fff;
-    width: 100%;
-    max-width: 500px;
-    padding: 40px;
-    border-radius: 20px;
-    position: relative;
-    text-align: center;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    margin: 20px;
+	background: #fff;
+	width: 100%;
+	max-width: 500px;
+	padding: 40px;
+	border-radius: 20px;
+	position: relative;
+	text-align: center;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+	margin: 20px;
 }
 
 .success-modal-close {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
-    cursor: pointer;
-    font-size: 1.2em;
-    color: #666;
-    transition: all 0.3s;
-    border: 1px solid #eee;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	cursor: pointer;
+	font-size: 1.2em;
+	color: #666;
+	transition: all 0.3s;
+	border: 1px solid #eee;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .success-modal-close:hover {
-    color: #000;
-    background: #f9f9f9;
+	color: #000;
+	background: #f9f9f9;
 }
 
 .success-icon {
-    font-size: 80px;
-    color: #5d8b6e; /* Green color suitable for success */
-    margin-bottom: 20px;
+	font-size: 80px;
+	color: #5d8b6e;
+	/* Green color suitable for success */
+	margin-bottom: 20px;
 }
 
 .success-modal-content h3 {
-    font-size: 24px;
-    font-weight: 700;
-    color: #5d8b6e;
-    margin-bottom: 15px;
-    text-transform: uppercase;
+	font-size: 24px;
+	font-weight: 700;
+	color: #5d8b6e;
+	margin-bottom: 15px;
+	text-transform: uppercase;
 }
 
 .success-modal-content p {
-    font-size: 16px;
-    color: #666;
-    line-height: 1.6;
-    margin-bottom: 30px;
-    text-align: center;
+	font-size: 16px;
+	color: #666;
+	line-height: 1.6;
+	margin-bottom: 30px;
+	text-align: center;
 }
 
 .success-close-btn {
-    background: #4a7059; /* Matching green button */
-    color: #fff;
-    border: none;
-    padding: 12px 40px;
-    border-radius: 30px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
+	background: #4a7059;
+	/* Matching green button */
+	color: #fff;
+	border: none;
+	padding: 12px 40px;
+	border-radius: 30px;
+	font-size: 16px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s;
 }
 
 .success-close-btn:hover {
-    background: #3d5c49;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(74, 112, 89, 0.3);
+	background: #3d5c49;
+	transform: translateY(-2px);
+	box-shadow: 0 5px 15px rgba(74, 112, 89, 0.3);
 }

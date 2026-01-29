@@ -61,6 +61,7 @@ Route::get('contact-us', 'App\Http\Controllers\front\ContactUsController@index')
 Route::get('about-us', 'App\Http\Controllers\front\AboutUsController@index')->name('frontend.about_us');
 Route::get('privacy-policy', 'App\Http\Controllers\front\HomeController@privacy_policy')->name('frontend.privacy_policy');
 Route::get('data-deletion', 'App\Http\Controllers\front\HomeController@data_deletion')->name('frontend.data_deletion');
+Route::get('terms-conditions', 'App\Http\Controllers\front\HomeController@terms_conditions')->name('frontend.terms_conditions');
 
 
 Route::get('/qib', 'App\Http\Controllers\front\HomeController@qib');

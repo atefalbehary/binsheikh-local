@@ -66,13 +66,14 @@
                                         <div class="table-container">
                                             <table class="table table-hover" id="reservationsTable">
                                                 <thead>
-                                                    <tr>
                                                         <th width="50">
                                                             <input type="checkbox" id="selectAllReservations" onclick="toggleAllReservations(this)">
                                                         </th>
-                                                        <th>{{ __('messages.property_name') }}</th>
+                                                        <!-- <th>{{ __('messages.property_name') }}</th> -->
                                                         <th>{{ __('messages.unit_number') }}</th>
                                                         <th>{{ __('messages.project') }}</th>
+                                                        <th>{{ __('messages.agent_name') }}</th>
+                                                        <th>{{ __('messages.client_phone') }}</th>
                                                         <th>{{ __('messages.reservation_date') }}</th>
                                                     </tr>
                                                 </thead>
@@ -83,7 +84,7 @@
                                                         <td>
                                                             <input type="checkbox" class="reservation-checkbox" value="{{ $reservation->id }}">
                                                         </td>
-                                                        <td>
+                                                        <!-- <td>
                                                             <div class="property-info">
                                                                 <div class="property-avatar">
                                                                     @if(isset($reservation->property->images[0]))
@@ -94,9 +95,11 @@
                                                                 </div>
                                                                 <span class="property-name">{{ $reservation->property->name ?? 'N/A' }}</span>
                                                             </div>
-                                                        </td>
+                                                        </td> -->
                                                         <td>{{ $reservation->property->apartment_no ?? 'N/A' }}</td>
-                                                        <td>{{ $reservation->property->project->name ?? 'N/A' }}</td>
+                                                        <td>{{ $reservation->property->project->name ?? 'N/A' }}</td> 
+                                                        <td>{{ $reservation->agent->name ?? 'N/A' }}</td>
+                                                        <td>{{ $reservation->client->phone ?? 'N/A' }}</td>
                                                         <td>
                                                             <div class="reservation-section">
                                                                 <span class="reservation-date" data-date="{{ $reservation->created_at }}">{{ web_date_in_timezone($reservation->created_at, 'd-M-Y') }}</span>
@@ -108,7 +111,7 @@
 
                                                     <!-- Detail Row -->
                                                     <tr class="detail-row" data-parent="{{ $reservation->id }}" style="display: none;">
-                                                        <td colspan="5">
+                                                        <td colspan="6">
                                                             <div class="detail-content">
                                                                 <div class="reservation-info-header">
                                                                     <h6>{{ __('messages.reservation_details') }}</h6>
@@ -284,7 +287,7 @@
                                                     </div>
                                                     @empty
                                                     <tr>
-                                                        <td colspan="5" class="text-center">{{ __('messages.no_reservations_found') }}</td>
+                                                        <td colspan="6" class="text-center">{{ __('messages.no_reservations_found') }}</td>
                                                     </tr>
                                                     @endforelse
                                                 </tbody>

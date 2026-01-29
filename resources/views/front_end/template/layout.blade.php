@@ -53,7 +53,7 @@ if (!$locale) {
         <?php
         \Illuminate\Support\Facades\Session::put('locale', 'en');
         \Illuminate\Support\Facades\App::setLocale('en');
-                                        ?>
+                                                                                                                                                ?>
         <link type="text/css" rel="stylesheet" href="{{ asset('') }}front-assets/css/style.css">
     @endif
     <link type="text/css" rel="stylesheet" href="{{ asset('') }}front-assets/css/db-style.css">
@@ -315,11 +315,12 @@ if (!$locale) {
                                         </div>
                                     </a>
                                 @else
-                                    <div class=" modal-open" style="    color: #000;
-                                                            width: auto;
-                                                            top: 20px;
-                                                            background: none; float:none" data-bs-dismiss="offcanvas"
-                                        aria-label="Close">
+                                    <div class=" modal-open"
+                                        style="    color: #000;
+                                                                                                                                                                    width: auto;
+                                                                                                                                                                    top: 20px;
+                                                                                                                                                                    background: none; float:none"
+                                        data-bs-dismiss="offcanvas" aria-label="Close">
                                         <i
                                             class="fa fa-user ms-1 me-1 d-inline-block"></i><span>{{ __('messages.sign_in') }}</span>
                                     </div>
@@ -633,7 +634,7 @@ if (!$locale) {
                                 <div class="tab">
                                     <div id="tab-2" class="tab-content">
                                         <div class="custom-form">
-                                            <form id="user-form" method="POST" action="{{ url('frontend/signup') }}"
+                                            <form id="register-form" method="POST" action="{{ url('frontend/signup') }}"
                                                 data-parsley-validate="true">
                                                 @csrf()
                                                 <!-- User Type Selection -->
@@ -665,7 +666,7 @@ if (!$locale) {
                                                                 <i class="fa-light fa-user"></i>
                                                                 <input type="text"
                                                                     placeholder="{{ __('messages.first_name') }}"
-                                                                    name="first_name" id="first_name"
+                                                                    name="first_name" id="first_name" required
                                                                     data-parsley-required-message="{{ __('messages.enter_first_name') }}">
                                                             </div>
                                                         </div>
@@ -674,7 +675,7 @@ if (!$locale) {
                                                                 <i class="fa-light fa-user"></i>
                                                                 <input type="text"
                                                                     placeholder="{{ __('messages.last_name') }}"
-                                                                    name="last_name" id="last_name"
+                                                                    name="last_name" id="last_name" required
                                                                     data-parsley-required-message="{{ __('messages.enter_last_name') }}">
                                                             </div>
                                                         </div>
@@ -753,21 +754,6 @@ if (!$locale) {
 
 
 
-                                                <!-- License Upload for Agents/Agencies -->
-                                                <div class="cs-intsputwrap agent_div d-none">
-                                                    <label for="d"
-                                                        style="float:{{ $locale == 'ar' ? 'right' : 'left' }}"
-                                                        id="id_card_label">{{ __('messages.id_card') }}</label>
-                                                    <input type="file" class="form-control agent_inp" name="id_card"
-                                                        required
-                                                        data-parsley-required-message="{{ __('messages.select_id_card') }}"
-                                                        data-parsley-trigger="change"
-                                                        data-parsley-fileextension="jpg,png,jpeg,pdf"
-                                                        data-parsley-fileextension-message="{{ __('messages.file_extension_message') }}"
-                                                        data-parsley-max-file-size="5120"
-                                                        data-parsley-max-file-size-message="{{ __('messages.max_file_size_message') }}"
-                                                        accept="image/*,application/pdf">
-                                                </div>
                                                 <div class="cs-intsputwrap agency_div d-none">
                                                     <label for="d"
                                                         style="float:{{ $locale == 'ar' ? 'right' : 'left' }}">{{ __('messages.professional_practice_certificate') }}</label>
@@ -830,15 +816,14 @@ if (!$locale) {
                                                         @endif
                                                     </select>
                                                 </div>
-
-                                                <!-- License Upload for Agents/Agencies -->
+                                                <!-- Computer Card for Agencies (formerly License) -->
                                                 <div class="cs-intsputwrap agent_agency_div d-none">
                                                     <label for="d"
                                                         style="float:{{ $locale == 'ar' ? 'right' : 'left' }}"
-                                                        id="license_label">{{ __('messages.license') }}</label>
+                                                        id="computer_card_label">{{ __('messages.computer_card') ?? 'Computer Card' }}</label>
                                                     <input type="file" class="form-control agent_agency_inp"
-                                                        name="license" required
-                                                        data-parsley-required-message="{{ __('messages.select_license') }}"
+                                                        name="computer_card" required
+                                                        data-parsley-required-message="{{ __('messages.select_computer_card') ?? 'Please select a computer card' }}"
                                                         data-parsley-trigger="change"
                                                         data-parsley-fileextension="jpg,png,jpeg,pdf"
                                                         data-parsley-fileextension-message="{{ __('messages.file_extension_message') }}"
@@ -847,35 +832,8 @@ if (!$locale) {
                                                         accept="image/*,application/pdf">
                                                 </div>
 
-                                                <!-- QID Upload for Agents ONLY -->
-                                                <div class="cs-intsputwrap agent_div d-none">
-                                                    <label for="qid"
-                                                        style="float:{{ $locale == 'ar' ? 'right' : 'left' }}">{{ __('messages.qid') }}</label>
-                                                    <input type="file" class="form-control agent_inp" name="qid"
-                                                        required
-                                                        data-parsley-required-message="{{ __('messages.select_qid') }}"
-                                                        data-parsley-trigger="change"
-                                                        data-parsley-fileextension="jpg,png,jpeg,pdf"
-                                                        data-parsley-fileextension-message="{{ __('messages.file_extension_message') }}"
-                                                        data-parsley-max-file-size="2048"
-                                                        data-parsley-max-file-size-message="{{ __('messages.max_file_size') }}"
-                                                        accept="image/*,application/pdf">
-                                                </div>
 
-                                                <!-- Authorized Signatory for Agents -->
-                                                <div class="cs-intsputwrap agent_div d-none">
-                                                    <label for="agent_authorized_signatory"
-                                                        style="float:{{ $locale == 'ar' ? 'right' : 'left' }}">{{ __('messages.authorized_signatory') }}</label>
-                                                    <input type="file" class="form-control agent_inp"
-                                                        name="agent_authorized_signatory" required
-                                                        data-parsley-required-message="{{ __('messages.select_authorized_signatory') }}"
-                                                        data-parsley-trigger="change"
-                                                        data-parsley-fileextension="jpg,png,jpeg,pdf"
-                                                        data-parsley-fileextension-message="{{ __('messages.file_extension_message') }}"
-                                                        data-parsley-max-file-size="2048"
-                                                        data-parsley-max-file-size-message="{{ __('messages.max_file_size') }}"
-                                                        accept="image/*,application/pdf">
-                                                </div>
+
 
                                                 <!-- Trade License for Agencies ONLY -->
                                                 <div class="cs-intsputwrap agency_div d-none">
@@ -953,21 +911,24 @@ if (!$locale) {
     </div>
 
     <!-- Success Modal -->
-    <div class="success-modal-overlay" id="success-modal" style="display: none;">
-        <div class="success-modal-box">
+    <div class="success-modal-overlay" id="success-modal"
+        style="display: none;position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999; justify-content: center; align-items: center;">
+        <div class="success-modal-box"
+            style="background: #fff; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; position: relative;">
             <div class="success-modal-close"><i class="fa-regular fa-xmark"></i></div>
             <div class="success-modal-content">
                 <div class="success-icon">
                     <i class="fa-solid fa-circle-check"></i>
                 </div>
                 <h3>SUCCESS!</h3>
-                <p>Your account has been successfully submitted for<br>Bin Al Sheikh Company to approve</p>
+                <p>{{ __('messages.success_message') }}</p>
                 <div class="success-btn-wrap">
                     <button class="success-close-btn">Close</button>
                 </div>
             </div>
         </div>
     </div>
+
     <!-- Main end -->
     <!--=============== scripts  ===============-->
     <script src="{{ asset('') }}front-assets/js/jquery.min.js"></script>
@@ -1091,6 +1052,7 @@ if (!$locale) {
                     $(".user_agent_name_div").removeClass("d-none");
                     $("#first_name").attr("required", "");
                     $("#last_name").attr("required", "");
+                    $("#phone_local").attr("required", "");
                     $(".company_name_div").addClass("d-none");
                     $("#name").removeAttr("required");
 
@@ -1100,9 +1062,9 @@ if (!$locale) {
                 } else if ($(this).val() == 3) {
                     console.log("Showing agent fields");
                     $(".agent_div").removeClass("d-none");
-                    $(".agent_agency_div").removeClass("d-none");
+                    $(".agent_agency_div").addClass("d-none");
                     $(".agent_agency_select_div").removeClass("d-none");
-                    $(".agent_agency_inp").attr("required", "");
+                    $(".agent_agency_inp").removeAttr("required");
                     $(".agent_agency_select_inp").removeAttr("required");
                     $(".agent_inp").attr("required", "");
                     $(".agency_div").addClass("d-none");
@@ -1115,7 +1077,7 @@ if (!$locale) {
                     $(".company_name_div").addClass("d-none");
                     $("#name").removeAttr("required");
 
-                    $("#license_label").text("{{__('messages.license')}}");
+
                     // Hide social login buttons for Agent type
                     $(".social-login-separator").hide();
                     $(".social-login-buttons").hide();
@@ -1140,7 +1102,7 @@ if (!$locale) {
                     $("#name").attr("required", "");
 
                     document.getElementById('name').placeholder = "{{__('messages.company_name')}}";
-                    $("#license_label").text("{{__('messages.trade_license')}}");
+
                     // Hide social login buttons for Agency type
                     $(".social-login-separator").hide();
                     $(".social-login-buttons").hide();
@@ -1267,6 +1229,8 @@ if (!$locale) {
         $('body').off('submit', '#user-form');
         $('body').on('submit', '#user-form', function (e) {
             e.preventDefault();
+            e.stopPropagation();
+            e.stopPropagation();
             console.log("=== FORM SUBMISSION STARTED ===");
             var $form = $(this);
 
@@ -1327,7 +1291,9 @@ if (!$locale) {
                     console.log("=== AJAX SUCCESS ===");
                     console.log("AJAX response received:", res);
 
-                    if (res['status'] == 0) {
+                    console.log("Status Check Debug:", res.status, typeof res.status);
+
+                    if (res.status == 0 || res.status === '0') {
                         console.log("Server returned error status");
                         if (typeof res['errors'] !== 'undefined' && res['errors']) {
                             var error_def = $.Deferred();
@@ -1345,9 +1311,11 @@ if (!$locale) {
                             });
                             error_def.done(function () {
                                 var error = $form.find('.is-invalid').eq(0);
-                                $('html, body').animate({
-                                    scrollTop: (error.offset().top - 100),
-                                }, 500);
+                                if (error.length > 0 && error.offset()) {
+                                    $('html, body').animate({
+                                        scrollTop: (error.offset().top - 100),
+                                    }, 500);
+                                }
                             });
                         } else {
                             var m = res['message'];
@@ -1357,14 +1325,16 @@ if (!$locale) {
                         }
                     } else {
                         console.log("Server returned success status");
-                        $(".close-reg-form").click();
                         var m = res['message'];
                         console.log("Success message:", m);
-                        // toastr["success"](m);
-                        show_msg(1, m)
+
+                        if (res.message) {
+                            show_msg(1, res.message);
+                        }
+                        // Reload page after login
                         setTimeout(function () {
                             window.location.reload();
-                        }, 1000);
+                        }, 1500);
 
                     }
 
@@ -1942,14 +1912,26 @@ if (!$locale) {
 <script>
     $(document).ready(function () {
         // Handle signup form submission
-        $('form[action*="frontend/signup"]').on('submit', function (e) {
+        $('body').on('submit', '#register-form', function (e) {
             e.preventDefault();
 
             var $form = $(this);
             var formData = new FormData(this);
 
+            // Add timezone
+            var timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            formData.append('timezone', timeZone);
+
+            var $btn = $form.find('button[type="submit"]');
+            var btnText = $btn.text();
+
             // Basic validation check
             if ($form.parsley().isValid()) {
+
+                // Set loading state
+                $btn.text('Submitting...').attr('disabled', true);
+                $(".invalid-feedback").remove();
+
                 $.ajax({
                     url: $form.attr('action'),
                     type: 'POST',
@@ -1963,12 +1945,12 @@ if (!$locale) {
                             // Check if Agent (3) or Agency (4)
                             if (userType == 3 || userType == 4) {
                                 // Hide the registration modal
-                                $('.main-register-container').hide(); // Assuming this is the container class
-                                $('.main-register-wrap').removeClass("vis_mr"); // Reset class
+                                $('.main-register-container').hide();
+                                $('.main-register-wrap').removeClass("vis_mr");
                                 $('.reg-overlay').fadeOut(200);
 
                                 // Show Success Modal
-                                $('#success-modal').addClass('active');
+                                $('#success-modal').css('display', 'flex').hide().fadeIn();
                             } else {
                                 // Normal User flow - reload or redirect
                                 if (response.message) {
@@ -1982,17 +1964,39 @@ if (!$locale) {
                             // Handle errors
                             if (response.errors) {
                                 var errorMsg = "";
+                                var error_index = 0;
                                 $.each(response.errors, function (key, value) {
                                     errorMsg += value + "<br>";
+                                    // Highlight fields
+                                    if (value != '') {
+                                        $('[name="' + key + '"]').eq(0).addClass('is-invalid');
+                                        $('<div class="invalid-feedback">' + value + '</div>')
+                                            .insertAfter($('[name="' + key + '"]').eq(0));
+
+                                        // Scroll to first error
+                                        if (error_index == 0) {
+                                            var error = $form.find('.is-invalid').eq(0);
+                                            if (error.length > 0 && error.offset()) {
+                                                $('html, body').animate({
+                                                    scrollTop: (error.offset().top - 100),
+                                                }, 500);
+                                            }
+                                        }
+                                        error_index++;
+                                    }
                                 });
-                                show_msg(0, errorMsg);
+                                // show_msg(0, errorMsg); // Optional if we show inline errors
                             } else {
                                 show_msg(0, response.message);
                             }
                         }
+                        // Reset button
+                        $btn.text(btnText).attr('disabled', false);
                     },
                     error: function (xhr) {
                         show_msg(0, "An error occurred. Please try again.");
+                        // Reset button
+                        $btn.text(btnText).attr('disabled', false);
                     }
                 });
             }
@@ -2000,7 +2004,7 @@ if (!$locale) {
 
         // Handle Success Modal Close
         $('.success-modal-close, .success-close-btn').on('click', function () {
-            $('#success-modal').removeClass('active');
+            $('#success-modal').fadeOut();
             window.location.reload(); // Reload after closing success modal
         });
     });

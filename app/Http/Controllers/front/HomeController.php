@@ -976,13 +976,6 @@ class HomeController extends Controller
                         }
                     }
 
-                    // NEW: Authorized Signatory for Agent
-                    if ($request->file("agent_authorized_signatory")) {
-                        $response = image_upload($request, 'profile', 'agent_authorized_signatory');
-                        if ($response['status']) {
-                            $ins['authorized_signatory'] = $response['link'];
-                        }
-                    }
                 }
 
 
@@ -1009,10 +1002,10 @@ class HomeController extends Controller
                         }
                     }
 
-                    if ($request->file("license")) {
-                        $response = image_upload($request, 'profile', 'license');
+                    if ($request->file("computer_card")) {
+                        $response = image_upload($request, 'profile', 'computer_card');
                         if ($response['status']) {
-                            $ins['license'] = $response['link'];
+                            $ins['computer_card'] = $response['link'];
                         }
                     }
 
@@ -1057,7 +1050,7 @@ class HomeController extends Controller
                             $message = __('messages.registration_completed_without_verification');
                             $errors = '';
                         } else {
-                            $message = __('messages.registration_completed');
+                            $message = __('messages.account_submitted_for_approval');
                             $errors = '';
                         }
                     } else {
@@ -1160,7 +1153,16 @@ class HomeController extends Controller
                 }
 
 
-                if ($request->user_type == 3 || $request->user_type == 4) {
+                if ($request->user_type == 4) {
+                    if ($request->file("computer_card")) {
+                        $response = image_upload($request, 'profile', 'computer_card');
+                        if ($response['status']) {
+                            $ins['computer_card'] = $response['link'];
+                        }
+                    }
+                }
+
+                if ($request->user_type == 3) {
                     if ($request->file("license")) {
                         $response = image_upload($request, 'profile', 'license');
                         if ($response['status']) {
@@ -3334,5 +3336,12 @@ class HomeController extends Controller
                 'message' => 'An error occurred while creating visit schedule: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+
+    public function terms_conditions()
+    {
+        $page_heading = __('messages.terms_conditions');
+        return view('front_end.terms_conditions', compact('page_heading'));
     }
 }

@@ -46,7 +46,7 @@ class Reservation extends Model
     // Get status badge class
     public function getStatusBadgeClassAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             self::STATUS_WAITING_APPROVAL => 'badge-warning',
             self::STATUS_RESERVED => 'badge-info',
             self::STATUS_PREPARING_DOCUMENT => 'badge-primary',
@@ -94,4 +94,26 @@ class Reservation extends Model
     {
         return $query->where('property_id', $propertyId);
     }
+
+    /**
+     * Get the client associated with the reservation.
+     * Inferred from agent_id, project_id (via property), and unit_number (via property).
+     */
+    public function getClientAttribute()
+    {
+        // We need the property loaded to check project and apartment_no
+        if (!$this->relationLoaded('property')) {
+            $this->load('property');
+        }
+
+        if (!$this->property) {
+            return null;
+        }
+
+        return \App\Models\Client::where('agent_id', $this->agent_id)
+            ->where('project_id', $this->property->project_id)
+            ->where('apartment_no', $this->property->apartment_no)
+            ->first();
+    }
+
 }

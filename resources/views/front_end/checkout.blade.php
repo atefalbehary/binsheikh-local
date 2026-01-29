@@ -184,123 +184,57 @@
 </div>
 
 
-<a href="#" class="d-inline-block text-decoration-underline" data-bs-toggle="modal" data-bs-target="#terms">{{ __('messages.terms_conditions') }}</a>
+<a href="{{ route('frontend.terms_conditions') }}" target="_blank" class="d-inline-block text-decoration-underline">{{ __('messages.terms_conditions') }}</a>
 <br>
 <span id="agree_err"></span>
-<div class="modal fade" id="terms" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title fs-5" id="exampleModalLabel">{{ __('messages.terms_conditions') }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body pb-5">
-      <div class="agent-card-item_text-item text-start">
-                                                            <h4><a href="agent-single.html">Reservation</a></h4>
 
-<ul style="list-style-type: disc;">
-    <li >A non-refundable reservation fee of half a month’s rent must be paid for the unit. This amount is non-refundable in case of cancellation.</li>
-    <li>The reservation is valid for seven (7) days from the date the reservation fee is paid.</li>
-    <li>The client must complete all rental procedures within the seven (7) day period.</li>
-    <li>If the client fails to comply, the reservation will be automatically canceled, and the client will not be entitled to a refund of the reservation fee or any compensation from the company.</li>
-</li>
-</ul>
-  </div>
+{{-- Modal removed as T&C is now a separate page --}}
 
-  <div class="agent-card-item_text-item text-start mt-3">
-                                                            <h4><a href="agent-single.html">Rental</a></h4>
-
-<ul style="list-style-type: disc;">
-    <li >The tenant must pay the security deposit and administrative fees upon confirming the reservation.</li>
-    <li >All paid amounts (including rent, security deposit, and administrative fees) are non-refundable in case of cancellation.</li>
-    <li >The apartment is designated for residential use only and cannot be used for commercial or illegal purposes.</li>
-    <li >The lease term specified in the agreement must be adhered to, and any extension must be coordinated in advance.</li>
-    <li >The company reserves the right to amend the terms and conditions at any time with notification to tenants via the website.</li>
-    <li >The client must ensure the monthly rent is paid on time.</li>
-
-</ul>
-  </div>
-<h4 class="fs-5 fw-bold mt-3">Sales Terms and Conditions
-</h4>
-  <div class="agent-card-item_text-item text-start mt-3">
-                                                            <h4><a href="agent-single.html">Reservation</a></h4>
-
-<ul style="list-style-type: disc;">
-    <li >A non-refundable reservation fee of 10,000 Qatari Riyals must be paid for the unit. This amount is non-refundable in case of cancellation.</li>
-    <li >The reservation is valid for thirty (30) days from the date the reservation fee is paid.</li>
-    <li >The client must complete all procedures for contract signing and payment of the due amount within the thirty (30) day period.</li>
-    <li >If the client fails to comply, the reservation will be automatically canceled, and the client will not be entitled to a refund of the reservation fee or any compensation from the company.</li>
-
-</ul>
-  </div>
-
-  <div class="agent-card-item_text-item text-start mt-3">
-  <h4><a href="agent-single.html">Purchase</a></h4>
-
-<ul style="list-style-type: disc;">
-    <li >A down payment, along with non-refundable administrative fees, must be paid, which can be done electronically or through the company’s office. </li>
-    <li >The client must pay all future installments according to the schedule outlined in the contract.</li>
-    <li >The company reserves the right to take legal action in case of any breach of the contract terms.</li>
-
-</li>
-
-</ul>
-
-  </div>
-
-      </div>
-
-    </div>
-  </div>
 </div>
-
-                                                            <!-- <a href="{{ url('book-now', $property->id) }}" class="whatsapp-btn commentssubmit_fw mt-3">{{ __('messages.pay') }}</a> -->
-                                                            <button name="submit" value="book" class="whatsapp-btn commentssubmit_fw mt-3">{{ __('messages.pay') }}</button>
-
-
-                                                            <a href="#" class="btn-black commentssubmit_fw mt-2" data-bs-toggle="modal" data-bs-target="#Disclaimer">
-                                                            {{ __('messages.reserve_now') }}
-                                                                                                                        </a>
-                                                                                                                    <!-- Modal -->
-                                                            <div class="modal fade" id="Disclaimer" tabindex="-1" role="dialog" aria-labelledby="DisclaimerTitle" aria-hidden="true">
-                                                                <div class="modal-dialog modal-dialog-centered" role="document">
-                                                                    <div class="modal-content">
-                                                                    <div class="modal-header ">
-                                                                        <h5 class="modal-title fs-5 fw-bold">{{ __('messages.disclaimer') }}</h5>
-                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-
-                                                                    </div>
-                                                                    <div class="modal-body">
-                                                                    <p class="text-center " style="font-size: 14px;
-                                                                    font-weight: 300; lighn-height: normal">{{ __('messages.minimum_amount_to_reserve_is_10000_qar_reservation_is_valid_for_7_days_amount_is_non_refundable_in_case_of_cancellation') }}</p>
-                                                                    </div>
-                                                                    <div class="modal-footer text-center justify-content-center">
-
-                                                                        <button type="submit" name="submit" value="reserve" class="btn commentssubmit commentssubmit_fw">{{ __('messages.agree') }}</button>
-                                                                    </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!--boxed-container end-->
-                                    </div>
-                                </div>
+</form>
+</div>
+</div>
+</div>
+<!--boxed-container end-->
+</div>
+</div>
 
 @stop
 
 @section('script')
 <script>
-    $(".pwmf").change(function(){
-        if($(this).val()==1){
-            $(".dp_span").text("{{moneyFormat($down_payment_with_ser_amt)}}");
-        }else{
-            $(".dp_span").text("{{moneyFormat($down_payment_without_ser_amt)}}");
+    $(document).ready(function() {
+        // Initial state
+        var submitBtn = $('button[name="submit"][value="book"]');
+        var checkbox = $('#inlineCheckbox1');
+        
+        // Disable button initially if checkbox is not checked
+        if (!checkbox.is(':checked')) {
+            submitBtn.prop('disabled', true);
+            submitBtn.css('opacity', '0.5');
+            submitBtn.css('cursor', 'not-allowed');
         }
+
+        // Toggle button on checkbox change
+        checkbox.change(function() {
+            if ($(this).is(':checked')) {
+                submitBtn.prop('disabled', false);
+                submitBtn.css('opacity', '1');
+                submitBtn.css('cursor', 'pointer');
+            } else {
+                submitBtn.prop('disabled', true);
+                submitBtn.css('opacity', '0.5');
+                submitBtn.css('cursor', 'not-allowed');
+            }
+        });
+
+        $(".pwmf").change(function(){
+            if($(this).val()==1){
+                $(".dp_span").text("{{moneyFormat($down_payment_with_ser_amt)}}");
+            }else{
+                $(".dp_span").text("{{moneyFormat($down_payment_without_ser_amt)}}");
+            }
+        });
     });
 </script>
 @stop
