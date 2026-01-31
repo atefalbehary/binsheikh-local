@@ -44,7 +44,7 @@
                                                         <li><a href="{{ url('favorite') }}">{{ __('messages.my_favorite') }}
                                                             <!-- <span>6</span> -->
                                                         </a></li>
-                                                        @if(\Auth::user()->role == 4 || \Auth::user()->role == 3)
+                                                        @if( \Auth::user()->role == 3)
                                                             <li><a href="{{ url('visit-schedule') }}">{{ __('messages.my_visit_schedule') }}</a></li>
                                                         @endif
                                                         @if(\Auth::user()->role == 4 || \Auth::user()->role == 3)

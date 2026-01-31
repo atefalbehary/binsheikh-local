@@ -1539,6 +1539,41 @@ class HomeController extends Controller
                 ->get();
         }
 
+        // Attach Next and Last Visit info
+        foreach ($clients as $client) {
+            // Match visits by client phone number
+            // Normalizing phone could be required, but assuming exact match based on registration flow
+            $clientPhone = $client->phone;
+
+            if ($clientPhone) {
+                // Get all visits for this client phone, ordered by time
+                // We use the phone number because there is no direct foreign key relation
+                $today = \Carbon\Carbon::now();
+
+                // Next Visit: Earliest upcoming visit
+                $nextVisit = \App\Models\VisiteSchedule::where('client_phone_number', $clientPhone)
+                    ->where('visit_time', '>=', $today)
+                    ->where(function ($q) {
+                        $q->where('status', '!=', 'Cancelled')
+                            ->orWhereNull('status');
+                    })
+                    ->orderBy('visit_time', 'asc')
+                    ->first();
+
+                // Last Visit: Latest past visit
+                $lastVisit = \App\Models\VisiteSchedule::where('client_phone_number', $clientPhone)
+                    ->where('visit_time', '<', $today)
+                    ->orderBy('visit_time', 'desc')
+                    ->first();
+
+                $client->next_visit = $nextVisit;
+                $client->last_visit = $lastVisit;
+            } else {
+                $client->next_visit = null;
+                $client->last_visit = null;
+            }
+        }
+
         return view('front_end.client_list', compact('page_heading', 'clients'));
     }
 
@@ -3173,6 +3208,22 @@ class HomeController extends Controller
      * Store a new visit schedule
      * Agents (role 3) and Agencies (role 4) can create visit schedules
      */
+
+    public function search_clients(Request $request)
+    {
+        $term = $request->term;
+        $clients = User::where('role', 2)
+            ->where(function ($q) use ($term) {
+                $q->where('name', 'like', "%$term%")
+                    ->orWhere('email', 'like', "%$term%")
+                    ->orWhere('phone', 'like', "%$term%");
+            })
+            ->select('id', 'name', 'phone', 'email', 'id_card', 'qid')
+            ->limit(10)
+            ->get();
+        return response()->json($clients);
+    }
+
     public function store_visit_schedule(Request $request)
     {
         try {
@@ -3207,6 +3258,7 @@ class HomeController extends Controller
                 'notes' => 'nullable|string|max:1000',
                 'visit_purpose' => 'required|array|min:1',
                 'visit_purpose.*' => 'in:buy,rent',
+                'status' => 'nullable|string|in:scheduled,rescheduled,visited,cancelled',
             ];
 
             // Add agent selection validation for agencies
@@ -3233,10 +3285,13 @@ class HomeController extends Controller
                 'visit_purpose.required' => 'Visit purpose is required',
                 'visit_purpose.array' => 'Visit purpose must be an array',
                 'visit_purpose.min' => 'At least one visit purpose must be selected',
+                'visit_purpose.min' => 'At least one visit purpose must be selected',
                 'visit_purpose.*.in' => 'Visit purpose must be either buy or rent',
+                'status.in' => 'Invalid status selected',
             ]);
 
             if ($validator->fails()) {
+                \Log::error('Visit Schedule Validation Failed: ', $validator->errors()->toArray());
                 return response()->json([
                     'success' => false,
                     'message' => 'Validation failed',
@@ -3288,6 +3343,8 @@ class HomeController extends Controller
                 if ($response['status']) {
                     $clientIdFileName = $response['link'];
                 }
+            } elseif ($request->filled('existing_client_id_path')) {
+                $clientIdFileName = $request->existing_client_id_path;
             }
 
             // Combine date and time
@@ -3317,7 +3374,7 @@ class HomeController extends Controller
                 'visit_time' => $visitDateTime,
                 'notes' => $request->notes,
                 'visit_purpose' => is_array($request->visit_purpose) ? implode(',', $request->visit_purpose) : $request->visit_purpose,
-                'status' => 'scheduled', // Default status
+                'status' => $request->status ?? 'rescheduled', // Default to rescheduled as requested
             ]);
 
             return response()->json([
@@ -3343,5 +3400,106 @@ class HomeController extends Controller
     {
         $page_heading = __('messages.terms_conditions');
         return view('front_end.terms_conditions', compact('page_heading'));
+    }
+
+    public function update_visit_status(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+            }
+
+            // Validate request
+            $validator = Validator::make($request->all(), [
+                'visit_id' => 'required|integer|exists:visit_schedules,id',
+                'status' => 'required|string|in:Visited,Cancelled,Rescheduled'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+            }
+
+            // Find the visit
+            $visit = \App\Models\VisiteSchedule::find($request->visit_id);
+
+            // Security check: Ensure agent owns this visit (or is agency admin)
+            if ($user->role == 3 && $visit->agent_id != $user->id) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized access to this visit'], 403);
+            }
+            if ($user->role == 4) {
+                // Check if agent belongs to agency
+                $agent = User::find($visit->agent_id);
+                if (!$agent || $agent->agency_id != $user->id) {
+                    // Allow if it's the agency itself (though usually visits are by agents)
+                    if ($visit->agent_id != $user->id) {
+                        return response()->json(['success' => false, 'message' => 'Unauthorized access to this visit'], 403);
+                    }
+                }
+            }
+
+            // History Lock Check: Prevent editing if visit is in the past
+            if (\Carbon\Carbon::parse($visit->visit_time)->isPast()) {
+                return response()->json(['success' => false, 'message' => __('messages.cannot_update_past_visit_status')], 400);
+            }
+
+            // Update status
+            $visit->status = $request->status;
+            $visit->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Visit status updated successfully',
+                'new_status' => $visit->status
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+    public function delete_visit_schedule(Request $request)
+    {
+        $visit_ids = $request->visit_ids;
+        if (!is_array($visit_ids) || empty($visit_ids)) {
+            return response()->json(['status' => '0', 'message' => __('messages.please_select_visits_to_delete')]);
+        }
+
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['status' => '0', 'message' => 'Unauthorized']);
+        }
+
+        // Fetch visits to verify ownership/permission
+        $visits = \App\Models\VisiteSchedule::whereIn('id', $visit_ids)->get();
+
+        $deletedCount = 0;
+        foreach ($visits as $visit) {
+            // Check permission
+            if ($user->role == 3) { // Agent
+                if ($visit->agent_id != $user->id) {
+                    continue; // Skip if not owner
+                }
+            } elseif ($user->role == 4) { // Agency
+                // Check if agent belongs to this agency
+                $agent = User::find($visit->agent_id);
+                if (!$agent || $agent->agency_id != $user->id) {
+                    // Check if it's the agency's own visit
+                    if ($visit->agent_id != $user->id) {
+                        continue;
+                    }
+                }
+            } else {
+                continue; // Other roles shouldn't trigger this
+            }
+
+            $visit->delete();
+            $deletedCount++;
+        }
+
+        if ($deletedCount > 0) {
+            return response()->json(['status' => '1', 'message' => __('messages.visits_deleted_successfully')]);
+        } else {
+            return response()->json(['status' => '0', 'message' => __('messages.error_occurred')]);
+        }
     }
 }

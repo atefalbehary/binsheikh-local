@@ -352,7 +352,10 @@ Route::middleware('user')->group(function () {
     Route::post('update-employee-status', 'App\Http\Controllers\front\HomeController@updateEmployeeStatus')->name('update_employee_status');
     Route::get('visit-schedule', 'App\Http\Controllers\front\HomeController@visit_schedule')->name('frontend.visit_schedule');
     Route::post('visit-schedule/store', 'App\Http\Controllers\front\HomeController@store_visit_schedule')->name('frontend.store_visit_schedule');
+    Route::post('update-visit-schedule-status', 'App\Http\Controllers\front\HomeController@update_visit_status')->name('frontend.update_visit_status');
+    Route::post('visit-schedule/delete', 'App\Http\Controllers\front\HomeController@delete_visit_schedule')->name('frontend.delete_visit_schedule');
     Route::get('client-list', 'App\Http\Controllers\front\HomeController@client_list')->name('frontend.client_list');
+    Route::get('search-clients', 'App\Http\Controllers\front\HomeController@search_clients')->name('frontend.search_clients');
     Route::post('register-client', 'App\Http\Controllers\front\HomeController@register_client')->name('frontend.register_client');
     Route::get('export-clients', 'App\Http\Controllers\front\HomeController@export_clients')->name('frontend.export_clients');
     Route::get('book-now/{property}', 'App\Http\Controllers\front\HomeController@book_now')->name('frontend.book_now');

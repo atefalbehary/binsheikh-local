@@ -22,6 +22,7 @@ class VisiteSchedule extends Model
         'unit_type',
         'notes',
         'visit_purpose',
+        'status',
     ];
 
     protected $casts = [

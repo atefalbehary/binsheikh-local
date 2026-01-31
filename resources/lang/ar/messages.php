@@ -507,4 +507,9 @@ return [
     'enter_first_name' => 'أدخل اسمك الأول',
     'enter_last_name' => 'أدخل اسم العائلة',
     'success_message' => 'تم إرسال حسابك بنجاح إلى الشركة للحصول على الموافقة',
+    'visit_status' => 'حالة الزيارة',
+    'scheduled' => 'مجدولة',
+    'rescheduled' => 'معاد جدولتها',
+    'visited' => 'تمت الزيارة',
+    'cancelled' => 'ملغاة',
 ];

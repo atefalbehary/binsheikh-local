@@ -524,5 +524,12 @@ return [
     'enter_first_name' => 'Enter your first name',
     'enter_last_name' => 'Enter your last name',
     'account_submitted_for_approval' => 'Your account submitted to the company for approval',
+    'search_client' => 'Search Client',
+    'search_client_placeholder' => 'Search by name, email or phone...',
     'success_message' => 'Your account has been successfully submitted to the Company for approval',
+    'visit_status' => 'Visit Status',
+    'scheduled' => 'Scheduled',
+    'rescheduled' => 'Rescheduled',
+    'visited' => 'Visited',
+    'cancelled' => 'Cancelled',
 ];

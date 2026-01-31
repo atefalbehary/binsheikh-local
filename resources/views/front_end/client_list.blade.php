@@ -122,6 +122,8 @@
                                                             <th>Client Name</th>
                                                             <th>Project</th>
                                                             <th>Registration Date</th>
+                                                            <th>Next Visit Status</th>
+                                                            <th>Last Visit Status</th>
                                                             <th>Contact Info</th>
                                                         </tr>
                                                     </thead>
@@ -143,6 +145,59 @@
                                                             </td>
                                                             <td>{{ $client->project ? $client->project->title : 'N/A' }}</td>
                                                             <td><span data-date="{{ $client->created_at }}">{{ web_date_in_timezone($client->created_at, 'd-M-Y') }}</span></td>
+                                                            
+                                                            <!-- Next Visit Status -->
+                                                            <td>
+                                                                @if($client->next_visit)
+                                                                    <div class="status-cell">
+                                                                        @php
+                                                                            $status = $client->next_visit->status ?? 'Pending';
+                                                                            $badgeClass = match(strtolower($status)) {
+                                                                                'visited' => 'success',
+                                                                                'cancelled' => 'danger',
+                                                                                'rescheduled' => 'warning',
+                                                                                default => 'info'
+                                                                            };
+                                                                            $statusLabel = ucfirst($status);
+                                                                            if(strtolower($status) == 'scheduled') $statusLabel = 'Pending';
+                                                                        @endphp
+                                                                        <span class="badge badge-{{ $badgeClass }}">{{ $statusLabel }}</span>
+                                                                        
+                                                                        <a href="javascript:void(0);" 
+                                                                           class="update-status-link" 
+                                                                           data-visit-id="{{ $client->next_visit->id }}"
+                                                                           data-current-status="{{ $status }}">
+                                                                            <i class="fas fa-edit"></i> Update Status
+                                                                        </a>
+                                                                    </div>
+                                                                @else
+                                                                    <span class="text-muted">—</span>
+                                                                @endif
+                                                            </td>
+
+                                                            <!-- Last Visit Status -->
+                                                            <td>
+                                                                @if($client->last_visit)
+                                                                    <div class="status-cell">
+                                                                        @php
+                                                                            $lastStatus = $client->last_visit->status ?? 'Visited';
+                                                                            $lastBadgeClass = match(strtolower($lastStatus)) {
+                                                                                'visited' => 'success',
+                                                                                'cancelled' => 'danger',
+                                                                                'rescheduled' => 'warning',
+                                                                                default => 'secondary'
+                                                                            };
+                                                                        @endphp
+                                                                        <span class="badge badge-{{ $lastBadgeClass }}">{{ ucfirst($lastStatus) }}</span>
+                                                                        <div class="locked-history">
+                                                                            <i class="fas fa-lock"></i> History Locked
+                                                                        </div>
+                                                                    </div>
+                                                                @else
+                                                                    <span class="text-muted">—</span>
+                                                                @endif
+                                                            </td>
+
                                                             <td>
                                                                 <div class="contact-section">
                                                                     <span class="contact-text">{{ $client->phone }}</span>
@@ -154,7 +209,7 @@
 
                                                         <!-- Detail Row -->
                                                         <tr class="detail-row" data-parent="{{ $client->id }}" style="display: none;">
-                                                            <td colspan="5">
+                                                            <td colspan="7">
                                                                 <div class="detail-content">
                                                                     <div class="client-info-header">
                                                                         <h6>Client Information</h6>
@@ -279,6 +334,37 @@
                         </div>
                     </div>
                                 
+        <!-- Update Schedule Status Modal -->
+        <div class="modal fade" id="updateStatusModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Update Visit Status</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="updateStatusForm">
+                            @csrf
+                            <input type="hidden" name="visit_id" id="update_visit_id">
+                            <div class="form-group">
+                                <label for="visit_status" class="form-label">Select New Status</label>
+                                <select class="form-control" name="status" id="visit_status" required>
+                                    <option value="">Select Status</option>
+                                    <option value="Visited">Visited</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                    <option value="Rescheduled">Rescheduled</option>
+                                </select>
+                            </div>
+                            <div class="mt-3 text-end">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Update Status</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 @stop
 
 
@@ -640,35 +726,39 @@
     }
 
     /* Responsive */
-    @media (max-width: 768px) {
-        .client-info-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .client-info {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 5px;
-        }
-
-        .contact-section {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 5px;
-        }
-
-        .filters-section {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .date-filters {
-            justify-content: center;
-        }
-
-        .action-buttons {
-            justify-content: center;
-        }
+    /* Status Cell Styles */
+    .status-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .update-status-link {
+        font-size: 11px;
+        color: #007bff;
+        text-decoration: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
+    
+    .update-status-link:hover {
+        text-decoration: underline;
+    }
+    
+    .locked-history {
+        font-size: 11px;
+        color: #6c757d;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
+    
+    .badge-secondary {
+        background-color: #6c757d;
+        color: white;
     }
 </style>
 
@@ -686,12 +776,49 @@
 
     $(document).ready(function() {
         
+        // Handle "Update Status" click
+        $(document).on('click', '.update-status-link', function() {
+            const visitId = $(this).data('visit-id');
+            const currentStatus = $(this).data('current-status');
+            
+            $('#update_visit_id').val(visitId);
+            // Optionally set current status if needed, but per requirement show dropdown
+            $('#updateStatusModal').modal('show');
+        });
+
+        // Handle Status Update Submission
+        $('#updateStatusForm').on('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            $.ajax({
+                url: "{{ route('frontend.update_visit_status') }}",
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if(response.success) {
+                        $('#updateStatusModal').modal('hide');
+                        // Reload page to reflect changes (simplest way to update UI logic)
+                        window.location.reload();
+                    } else {
+                        alert(response.message || 'Error updating status');
+                    }
+                },
+                error: function(xhr) {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+
         // Select all clients functionality
         $('#selectAllClients').on('change', function() {
             const isChecked = this.checked;
             $('.client-checkbox').prop('checked', isChecked);
             updateSelectedCount();
         });
+// ... (rest of existing script)
 
         // Individual checkbox change handler
         $('.client-checkbox').on('change', function() {

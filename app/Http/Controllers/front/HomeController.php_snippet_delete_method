@@ -1,0 +1,46 @@
+
+    public function delete_visit_schedule(Request $request)
+    {
+        $visit_ids = $request->visit_ids;
+        if (!is_array($visit_ids) || empty($visit_ids)) {
+            return response()->json(['status' => '0', 'message' => __('messages.please_select_visits_to_delete')]);
+        }
+
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['status' => '0', 'message' => 'Unauthorized']);
+        }
+
+        // Fetch visits to verify ownership/permission
+        $visits = \App\Models\VisiteSchedule::whereIn('id', $visit_ids)->get();
+
+        $deletedCount = 0;
+        foreach ($visits as $visit) {
+            // Check permission
+            if ($user->role == 3) { // Agent
+                if ($visit->agent_id != $user->id) {
+                    continue; // Skip if not owner
+                }
+            } elseif ($user->role == 4) { // Agency
+                // Check if agent belongs to this agency
+                $agent = User::find($visit->agent_id);
+                if (!$agent || $agent->agency_id != $user->id) {
+                    // Check if it's the agency's own visit
+                    if ($visit->agent_id != $user->id) {
+                        continue;
+                    }
+                }
+            } else {
+                continue; // Other roles shouldn't trigger this
+            }
+
+            $visit->delete();
+            $deletedCount++;
+        }
+
+        if ($deletedCount > 0) {
+            return response()->json(['status' => '1', 'message' => __('messages.visits_deleted_successfully')]);
+        } else {
+            return response()->json(['status' => '0', 'message' => __('messages.error_occurred')]);
+        }
+    }
