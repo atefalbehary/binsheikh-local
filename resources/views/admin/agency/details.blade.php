@@ -1346,146 +1346,308 @@
             justify-content: center;
         }
     }
+    }
+    
+    /* New Dashboard Styles */
+    .dashboard-stat-card {
+        border-radius: 4px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        color: white;
+        height: 100px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .stat-icon-wrapper {
+        width: 50px;
+        height: 50px;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        margin-right: 15px;
+    }
+    .stat-icon-wrapper i { font-size: 24px; color: white; }
+    .stat-content h2 { font-size: 28px; font-weight: bold; margin: 0; line-height: 1; }
+    .stat-content p { font-size: 14px; margin: 0; opacity: 0.9; }
+
+    .bg-stat-blue { background-color: #5d78ff; }
+    .bg-stat-red { background-color: #fd397a; }
+    .bg-stat-orange { background-color: #ffb822; }
+    .bg-stat-green { background-color: #0abb87; }
+
+    .agent-profile-card {
+        background: white;
+        border-radius: 4px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .profile-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .profile-img-lg {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 20px;
+    }
+    .profile-joined { font-size: 12px; color: #999; margin-bottom: 5px; }
+    .profile-total-purchase { font-weight: bold; color: #333; }
+
+    .profile-details-list .list-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+    }
+    .list-item:last-child { border-bottom: none; }
+    .list-label { color: #999; }
+    .list-value { color: #333; font-weight: 500; }
+
+    .agent-action-card {
+        background: white;
+        border-radius: 4px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .action-btn-custom {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 10px;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .action-btn-custom:hover { opacity: 0.9; text-decoration: none; color: white; }
+    .btn-green-c { background-color: #0abb87; }
+    .btn-blue-c { background-color: #2b4cdd; }
+    .btn-orange-c { background-color: #ffb822; }
+
+    .edit-profile-card {
+        background: white;
+        border-radius: 4px;
+        padding: 30px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .section-title {
+        color: #5d78ff;
+        font-weight: 600;
+        margin-bottom: 25px;
+        font-size: 18px;
+    }
+    .form-group label {
+        color: #666;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+    .form-control-custom {
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 10px 15px;
+        width: 100%;
+        color: #333;
+        font-size: 14px;
+    }
+    .form-control-custom:focus {
+        border-color: #5d78ff;
+        outline: none;
+    }
+    .btn-save-custom {
+        background-color: #2b4cdd;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .btn-save-custom:hover { background-color: #1a3cb8; }
 </style>
 @stop
 
 @section('content')
     <div class="container-fluid">
         <div class="fade-in">
-            <!-- Header -->
-            <div class="agency-details-header">
-                <h1 class="breadcrumb-title">
-                    <a href="{{ url('admin/agency/list') }}" class="breadcrumb-link">AGENCIES</a> / 
-                    <a href="{{ url('admin/agency/details/' . $customer->id) }}" class="breadcrumb-link">{{ strtoupper($customer->name) }}</a> / 
-                    <span id="currentTabTitle">AGENCY INFO</span>
-                    <span id="employeeBreadcrumb" style="display: none;"> / <span id="employeeName" class="breadcrumb-link"></span></span>
-                </h1>
-                <div class="header-actions">
-                    <!-- <button class="btn-action btn-gray">Edit</button>
-                    <button class="btn-action btn-gold">Approve</button> -->
+            <!-- New Dashboard Header -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="dashboard-stat-card bg-stat-blue">
+                        <div class="stat-icon-wrapper"><i class="fas fa-building"></i></div>
+                        <div class="stat-content">
+                            <h2>{{ $totalProperties ?? 0 }}</h2>
+                            <p>Total Property</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dashboard-stat-card bg-stat-red">
+                        <div class="stat-icon-wrapper"><i class="fas fa-hourglass-half"></i></div>
+                        <div class="stat-content">
+                            <h2>{{ $pendingProperties ?? 0 }}</h2>
+                            <p>Pending Property</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                     <div class="dashboard-stat-card bg-stat-orange">
+                        <div class="stat-icon-wrapper"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-content">
+                            <h2>{{ $activeProperties ?? 0 }}</h2>
+                            <p>Active Property</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dashboard-stat-card bg-stat-green">
+                         <div class="stat-icon-wrapper"><i class="fas fa-money-bill-wave"></i></div>
+                        <div class="stat-content">
+                            <h2>N{{ number_format($totalPurchase ?? 0, 2) }}</h2>
+                            <p>Total Purchase</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Agency Summary -->
-            <div class="agency-summary">
-                <div class="agency-info">
-                    <div class="agency-avatar">
-                        <i class="fas fa-user"></i>
-                        <div class="status-dot"></div>
+
+            <div class="row mb-4">
+                <!-- Left Column -->
+                <div class="col-md-4">
+                    <div class="agent-profile-card">
+                        <div class="profile-header">
+                            <img src="{{ $customer->user_image }}" class="profile-img-lg" alt="Profile">
+                            <div>
+                                <div class="profile-joined">Joined at <br> {{ $customer->created_at->format('d M Y') }}</div>
+                                <div class="profile-total-purchase">Total Purchase<br>N{{ number_format($totalPurchase ?? 0, 2) }}</div>
+                            </div>
+                        </div>
+                        <div class="profile-details-list">
+                            <div class="list-item">
+                                <span class="list-label">Name</span>
+                                <span class="list-value">{{ $customer->name }}</span>
+                            </div>
+                            <div class="list-item">
+                                <span class="list-label">Email</span>
+                                <span class="list-value short-text" title="{{ $customer->email }}">{{ Str::limit($customer->email, 20) }}</span>
+                            </div>
+                            <div class="list-item">
+                                <span class="list-label">Phone</span>
+                                <span class="list-value">{{ $customer->phone }}</span>
+                            </div>
+                            <div class="list-item">
+                                <span class="list-label">Agency Status</span>
+                                <span class="list-value">
+                                     <span class="badge {{ $customer->active ? 'badge-success' : 'badge-danger' }}">{{ $customer->active ? 'Active' : 'Inactive' }}</span>
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="agency-name">{{ $customer->name }}</h3>
+
+                    <div class="agent-action-card">
+                        <h4 style="margin-bottom: 20px;">Agency Action</h4>
+                        <a href="{{ url('/') }}" target="_blank" class="action-btn-custom btn-green-c">Go to Agency Front Page</a>
+                        <a href="#reservations-card" class="action-btn-custom btn-blue-c" onclick="$('[data-tab=\'reservations\']').click()">Property Reviews</a>
+                        <a href="mailto:{{ $customer->email }}" class="action-btn-custom btn-orange-c">Send Email</a>
+                        <a href="#reservations-card" class="action-btn-custom btn-blue-c" onclick="$('[data-tab=\'reservations\']').click()">Purchase History</a>
                     </div>
                 </div>
-                <div class="agency-date">{{ web_date_in_timezone($customer->created_at, 'd-M-Y') }}</div>
-                <div class="agency-status">Status: <span class="status-active">{{ $customer->active ? 'Active' : 'Inactive' }}</span></div>
+
+                <!-- Right Column -->
+                <div class="col-md-8">
+                    <div class="edit-profile-card">
+                        <div class="section-title">Edit Profile</div>
+                        <form action="{{ route('admin.agency.update', $customer->id) }}" method="POST">
+                            @csrf
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>Agency Name *</label>
+                                    <input type="text" name="name" class="form-control-custom" value="{{ $customer->name }}" required>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Designation</label>
+                                    <input type="text" name="designation" class="form-control-custom" value="{{ $customer->designation }}">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>Email *</label>
+                                    <input type="email" name="email" class="form-control-custom" value="{{ $customer->email }}" required>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Phone *</label>
+                                    <input type="text" name="phone" class="form-control-custom" value="{{ $customer->phone }}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Address *</label>
+                                <input type="text" name="address" class="form-control-custom" value="{{ $customer->address }}">
+                            </div>
+                            <div class="form-group">
+                                <label>About *</label>
+                                <textarea name="about" class="form-control-custom" rows="4">{{ $customer->description }}</textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>Facebook</label>
+                                    <input type="text" name="facebook" class="form-control-custom" value="{{ $customer->facebook }}">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Twitter</label>
+                                    <input type="text" name="twitter" class="form-control-custom" value="{{ $customer->twitter }}">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>Linkedin</label>
+                                    <input type="text" name="linkedin" class="form-control-custom" value="{{ $customer->linkedin }}">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Instagram</label>
+                                    <input type="text" name="instagram" class="form-control-custom" value="{{ $customer->instagram }}">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="c-switch c-switch-label c-switch-pill c-switch-success my-2">
+                                     <input class="c-switch-input" type="checkbox" name="active" {{ $customer->active ? 'checked' : '' }}>
+                                     <span class="c-switch-slider" data-checked="On" data-unchecked="Off"></span>
+                                </label>
+                                <span class="ml-2">Active Account</span>
+                            </div>
+
+                            <button type="submit" class="btn-save-custom">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
             </div>
             
             <!-- Tab Navigation -->
-            <div class="tab-navigation">
-                <button class="tab-btn active" data-tab="agency-info">AGENCY INFO</button>
-                <button class="tab-btn inactive" data-tab="employees">EMPLOYEES</button>
+            <div class="tab-navigation" id="reservations-card">
+                <button class="tab-btn active" data-tab="employees">EMPLOYEES</button>
                 <button class="tab-btn inactive" data-tab="reservations">RESERVATIONS</button>
                 <button class="tab-btn inactive" data-tab="visit-schedule">VISIT SCHEDULE</button>
             </div>
             
             <!-- Tab Content -->
             <div class="tab-content">
-                <!-- Agency Info Tab -->
-                <div id="agency-info" class="tab-pane active">
-                    <div class="agency-info-grid">
-                        <!-- Left Column -->
-                        <div class="info-column">
-                            <div class="info-card">
-                                <div class="info-icon">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div class="info-content">
-                                    <label>Agency Name</label>
-                                    <span>{{ $customer->name ?? 'N/A' }}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="info-card">
-                                <div class="info-icon">
-                                    <i class="fas fa-envelope"></i>
-                                </div>
-                                <div class="info-content">
-                                    <label>Agency Email Address</label>
-                                    <span>{{ $customer->email ?? 'N/A' }}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="info-card">
-                                <div class="info-icon">
-                                    <i class="fas fa-file-alt"></i>
-                                </div>
-                                <div class="info-content">
-                                    <label>CR</label>
-                                    @if(!$customer->cr)
-                                      <span>N/A</span>
-                                    @endif
-                                </div>
-                                <button class="view-btn" onclick="window.open('{{ aws_asset_path($customer->cr) }}', '_blank')">View</button>
-                            </div>
-                            
-                            <div class="info-card">
-                                <div class="info-icon">
-                                    <i class="fas fa-file-signature"></i>
-                                </div>
-                                <div class="info-content">
-                                    <label>Authorized signatory</label>
-                                    @if(!$customer->authorized_signatory)
-                                      <span>N/A</span>
-                                    @endif
-                                </div>
-                                <button class="view-btn" onclick="window.open('{{ aws_asset_path($customer->authorized_signatory) }}', '_blank')">View</button>
-                            </div>
-                        </div>
-                        
-                        <!-- Right Column -->
-                        <div class="info-column">
-                            <div class="info-card">
-                                <div class="info-icon">
-                                    <i class="fas fa-phone"></i>
-                                </div>
-                                <div class="info-content">
-                                    <label>Agency Phone Number</label>
-                                    <span>{{ $customer->phone ?? 'N/A' }}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="info-card">
-                                <div class="info-icon">
-                                    <i class="fas fa-certificate"></i>
-                                </div>
-                                <div class="info-content">
-                                    <label>Trade License</label>
-                                    @if(!$customer->license)
-                                      <span>N/A</span>
-                                    @endif
-                                </div>
-                                <button class="view-btn" onclick="window.open('{{ aws_asset_path($customer->license) }}', '_blank')">View</button>
-                            </div>
-                            
-                            <div class="info-card">
-                                <div class="info-icon">
-                                    <i class="fas fa-id-card"></i>
-                                </div>
-                                <div class="info-content">
-                                    <label>Professional License</label>
-                                    @if(!$customer->professional_practice_certificate)
-                                      <span>N/A</span>
-                                    @endif
-                                </div>
-                                <button class="view-btn" onclick="window.open('{{ aws_asset_path($customer->professional_practice_certificate) }}', '_blank')">View</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
                 
                 <!-- Employees Tab -->
-                <div id="employees" class="tab-pane">
+                <div id="employees" class="tab-pane active">
                     <!-- Search and Filters -->
                     <div class="employees-header">
                         <div class="search-section">

@@ -798,6 +798,7 @@ function initRenstate() {
         $(".tabs-menu a[href='#tab-1']").trigger("click");
         showModal();
     });
+    
     $(".modal-open-register").on("click", function (e) {
         e.preventDefault();
         $(".tabs-menu a[href='#tab-2']").trigger("click");

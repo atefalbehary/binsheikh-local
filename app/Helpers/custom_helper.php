@@ -287,11 +287,27 @@ function file_save($file, $model, $mb_file_size = 25000)
         return ['status' => false, 'link' => null, 'message' => $e->getMessage()];
     }
 }
+/*
 function aws_asset_path($path)
 {
     $path = ltrim($path, '/');
+    return $path;//"https://cdn.bsbqa.com/" . $path;
+} */
+
+function aws_asset_path($path)
+{
+    $path = trim($path);
+
+    // If already full URL, return as-is
+    if (preg_match('#^https?://#i', $path)) {
+        return $path;
+    }
+
+    // Otherwise prepend CDN URL
+    $path = ltrim($path, '/');
     return "https://cdn.bsbqa.com/" . $path;
 }
+
 if (!function_exists('deleteFile')) {
     function deleteFile($path)
     {

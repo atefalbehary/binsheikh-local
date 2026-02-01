@@ -12,7 +12,7 @@ return [
     'services' => 'Services',
     'projects' => 'Projects',
     'contact_us' => 'Contact Us',
-    'sign_in' => 'Sign In',
+    'sign_in' => 'Login',
     'register' => 'Register',
     'price_range' => 'Price Range',
     'search' => 'Search',

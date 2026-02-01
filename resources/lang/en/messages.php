@@ -1,5 +1,10 @@
 <?php
 return [
+    'brokerage_license'   => 'Brokerage License',
+    'authorized_signatory'=> 'Authorized Signatory',
+    'computer_card'       => 'Computer Card',
+    'cr'                  => 'CR',
+    'trade_license'       => 'Trade License',
     'home' => 'Home',
     'about_us' => 'About Us',
     'properties' => 'Properties',
@@ -12,7 +17,7 @@ return [
     'services' => 'Services',
     'projects' => 'Projects',
     'contact_us' => 'Contact Us',
-    'sign_in' => 'Sign In',
+    'sign_in' => 'Login',
     'register' => 'Register',
     'price_range' => 'Price Range',
     'search' => 'Search',

@@ -293,7 +293,53 @@ class AgentController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.agent.details', compact('page_heading', 'agent', 'last', 'last_license', 'last_id_card', 'visitSchedules', 'reservations'));
+        // Calculate Stats
+        $totalProperties = $reservations->count();
+        $pendingProperties = $reservations->where('status', \App\Models\Reservation::STATUS_WAITING_APPROVAL)->count();
+        $activeProperties = $reservations->whereIn('status', [\App\Models\Reservation::STATUS_RESERVED, \App\Models\Reservation::STATUS_PREPARING_DOCUMENT])->count();
+        $totalPurchase = $reservations->where('status', \App\Models\Reservation::STATUS_CLOSED_DEAL)->sum(function($r) {
+             return $r->property ? $r->property->price : 0;
+        });
+
+        return view('admin.agent.details', compact('page_heading', 'agent', 'last', 'last_license', 'last_id_card', 'visitSchedules', 'reservations', 'totalProperties', 'pendingProperties', 'activeProperties', 'totalPurchase'));
+    }
+
+    public function update_agent(Request $request, $id)
+    {
+        $agent = User::find($id);
+        if (!$agent) {
+            return redirect()->back()->with('error', 'Agent not found');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email,'.$id,
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $agent->name = $request->name;
+        $agent->email = $request->email;
+        $agent->phone = $request->phone;
+        $agent->designation = $request->designation;
+        $agent->address = $request->address;
+        $agent->description = $request->about;
+        $agent->facebook = $request->facebook;
+        $agent->twitter = $request->twitter;
+        $agent->linkedin = $request->linkedin;
+        $agent->instagram = $request->instagram;
+        
+        if ($request->has('active')) {
+            $agent->active = 1;
+        } else {
+            $agent->active = 0;
+        }
+
+        $agent->save();
+
+        return redirect()->back()->with('success', 'Profile updated successfully');
     }
 
     /**

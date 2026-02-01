@@ -20,6 +20,12 @@ Route::get('/clear', function () {
 
 });
 
+
+Route::get('migrate', function() {
+    Artisan::call('migrate');
+    die('migrate');
+});
+
 Route::get('/', 'App\Http\Controllers\front\HomeController@index')->name('home');
 Route::get('/google41802e3e0f5e94ab.html', function () {
     return File::get(public_path('google41802e3e0f5e94ab.html'));
@@ -284,6 +290,7 @@ Route::
             Route::post('customer/update-apartments', 'CustomerController@updateApartments')->name('admin.customer.update-apartments');
 
             Route::get('agency/details/{id}', 'AgencyController@details')->name('admin.agency.details');
+            Route::post('agency/update/{id}', 'AgencyController@update_agency')->name('admin.agency.update');
             Route::post('agency/update-reservation-commission', 'AgencyController@updateReservationCommission')->name('admin.agency.update-reservation-commission');
             Route::post('agency/update-reservation-status', 'AgencyController@updateReservationStatus')->name('admin.agency.update-reservation-status');
 
@@ -298,6 +305,7 @@ Route::
             Route::post('agency/delete-visit-schedules', 'AgencyController@deleteVisitSchedules')->name('admin.agency.delete-visit-schedules');
 
             Route::get('agent/details/{id}', 'AgentController@details')->name('admin.agent.details');
+            Route::post('agent/update/{id}', 'AgentController@update_agent')->name('admin.agent.update');
             Route::post('agent/update-reservation-commission', 'AgentController@updateReservationCommission')->name('admin.agent.update-reservation-commission');
             Route::post('agent/update-reservation-status', 'AgentController@updateReservationStatus')->name('admin.agent.update-reservation-status');
 

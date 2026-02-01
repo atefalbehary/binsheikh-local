@@ -258,6 +258,45 @@ class AgencyController extends Controller
 
 
 
+
+    public function update_agency(Request $request, $id)
+    {
+        $agency = User::find($id);
+        if (!$agency) {
+            return redirect()->back()->with('error', 'Agency not found');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email,'.$id,
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $agency->name = $request->name;
+        $agency->email = $request->email;
+        $agency->phone = $request->phone;
+        $agency->designation = $request->designation;
+        $agency->address = $request->address;
+        $agency->description = $request->about;
+        $agency->facebook = $request->facebook;
+        $agency->twitter = $request->twitter;
+        $agency->linkedin = $request->linkedin;
+        $agency->instagram = $request->instagram;
+        
+        if ($request->has('active')) {
+            $agency->active = 1;
+        } else {
+            $agency->active = 0;
+        }
+
+        $agency->save();
+
+        return redirect()->back()->with('success', 'Profile updated successfully');
+    }
+
     public function details($id)
     {
         $page_heading = "Customer Details";
@@ -289,7 +328,15 @@ class AgencyController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.agency.details', compact('page_heading', 'customer', 'last', 'last_license', 'last_id_card', 'visitSchedules', 'reservations'));
+        // Calculate Stats
+    $totalProperties = $reservations->count();
+    $pendingProperties = $reservations->where('status', \App\Models\Reservation::STATUS_WAITING_APPROVAL)->count();
+    $activeProperties = $reservations->whereIn('status', [\App\Models\Reservation::STATUS_RESERVED, \App\Models\Reservation::STATUS_PREPARING_DOCUMENT])->count();
+    $totalPurchase = $reservations->where('status', \App\Models\Reservation::STATUS_CLOSED_DEAL)->sum(function($r) {
+            return $r->property ? $r->property->price : 0;
+    });
+
+    return view('admin.agency.details', compact('page_heading', 'customer', 'last', 'last_license', 'last_id_card', 'visitSchedules', 'reservations', 'totalProperties', 'pendingProperties', 'activeProperties', 'totalPurchase'));
     }
 
     /**

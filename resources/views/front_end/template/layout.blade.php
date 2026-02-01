@@ -369,11 +369,12 @@ if (!$locale) {
                         </a>
                     @else
                         <div class="show-reg-form modal-open">
-                            <i class="fa fa-user"></i><span>{{ __('messages.sign_in') }}</span>
+                            <i class="fa fa-user"></i><span>{{ __('messages.sign_in') }}</span> / {{ __('messages.register') }}</span>
                         </div>
+                        <!--
                         <div class="show-reg-form modal-open-register">
                             <i class="fa fa-user-plus"></i><span>{{ __('messages.register') }}</span>
-                        </div>
+                        </div> -->
                     @endif
 
                     <!-- header-search-wrap  -->
@@ -693,7 +694,7 @@ if (!$locale) {
 
                                                 <!-- Phone Number with Country Picker -->
                                                 <div class="cs-intputwrap phone-input-container">
-                                                    <i class="fa-light fa-mobile"></i>
+                                                
 
                                                     <!-- Country Code Picker -->
                                                     <select name="country_code" id="country_code"
@@ -725,10 +726,14 @@ if (!$locale) {
                                                             data-max="10">🇵🇰 Pakistan (+92)</option>
                                                     </select>
 
+                                                    <div class="cs-intputwrap">
                                                     <!-- Phone Number Input -->
+                                                         <i class="fa-light fa-mobile"></i>
+                                                         <!-- phone-number-input -->
                                                     <input type="text"
+                                                        style="height:36px;margin-top:7px;"
                                                         placeholder="{{ __('messages.phone_number') ?? 'Phone Number' }}"
-                                                        name="phone_local" id="phone_local" class="phone-number-input"
+                                                        name="phone_local" id="phone_local" class=""
                                                         required
                                                         data-parsley-required-message="{{ __('messages.enter_your_phone') }}"
                                                         data-parsley-type="digits"
@@ -736,10 +741,11 @@ if (!$locale) {
 
                                                     <!-- Hidden input for full phone with country code -->
                                                     <input type="hidden" name="phone" id="phone_full">
+</div>
 
                                                     <div class="view-view-button-verify-phone">
                                                         <button type="button"
-                                                            class="verify-phone-btn">{{ __('messages.verify') }}</button>
+                                                            class="verify-phone-btn" style="right:0; height:36px">{{ __('messages.verify') }}</button>
                                                     </div>
                                                 </div>
 
@@ -756,7 +762,7 @@ if (!$locale) {
 
                                                 <div class="cs-intsputwrap agency_div d-none">
                                                     <label for="d"
-                                                        style="float:{{ $locale == 'ar' ? 'right' : 'left' }}">{{ __('messages.professional_practice_certificate') }}</label>
+                                                        style="float:{{ $locale == 'ar' ? 'right' : 'left' }}">{{ __('messages.brokerage_license') }}</label>
                                                     <!-- Translated License -->
                                                     <input type="file" class="form-control agency_inp"
                                                         name="professional_practice_certificate"
