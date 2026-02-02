@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddStatusToVisitSchedulesTable extends Migration
+class AddColStatusInVisitSchedulesTableNew extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class AddStatusToVisitSchedulesTable extends Migration
     public function up()
     {
         Schema::table('visit_schedules', function (Blueprint $table) {
-           // $table->string('status')->nullable()->default(null);
+            $table->string('status')->nullable()->default(null);
         });
     }
 

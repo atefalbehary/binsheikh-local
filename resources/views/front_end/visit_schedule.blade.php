@@ -534,7 +534,7 @@
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i class="fas fa-phone"></i></span>
                                                         <input type="tel" class="form-control" id="agent_phone"
-                                                            name="agent_phone" readonly>
+                                                            name="agent_phone" value="{{\Auth::user()->phone ?? ''}}" >
                                                     </div>
                                                 </div>
                                             </div>
@@ -547,7 +547,7 @@
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i class="fas fa-user"></i></span>
                                                         <input type="text" class="form-control" id="agent_name"
-                                                            name="agent_name" value="{{ \Auth::user()->name }}" readonly>
+                                                            name="agent_name" value="{{ \Auth::user()->name ?? '' }}">
                                                     </div>
                                                 </div>
                                             </div>
@@ -559,7 +559,7 @@
                                                         <span class="input-group-text"><i class="fas fa-phone"></i></span>
                                                         <input type="tel" class="form-control" id="agent_phone"
                                                             name="agent_phone" value="{{ \Auth::user()->phone ?? '' }}"
-                                                            readonly>
+                                                            >
                                                     </div>
                                                 </div>
                                             </div>
@@ -604,7 +604,7 @@
                                                     <input type="text" class="form-control" id="client_name"
                                                         name="client_name"
                                                         placeholder="{{ __('messages.enter_client_full_name') }}"
-                                                        readonly required>
+                                                         required>
                                                 </div>
                                             </div>
                                         </div>
@@ -617,7 +617,7 @@
                                                     <input type="tel" class="form-control" id="client_phone_number"
                                                         name="client_phone_number"
                                                         placeholder="{{ __('messages.enter_client_phone_number') }}"
-                                                        readonly required>
+                                                         required>
                                                 </div>
                                             </div>
                                         </div>
@@ -631,7 +631,7 @@
                                                     <input type="email" class="form-control" id="client_email_address"
                                                         name="client_email_address"
                                                         placeholder="{{ __('messages.enter_your_email_address') }}"
-                                                        readonly>
+                                                        >
                                                 </div>
                                             </div>
                                         </div>
