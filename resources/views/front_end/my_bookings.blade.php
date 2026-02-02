@@ -32,23 +32,7 @@
                                                         <div class="db-menu_modile_btn"><strong>{{ __('messages.menu') }}</strong><i class="fa-regular fa-bars"></i></div>
                                                     </div>
                                                 </div>
-                                                <div class="user-dasboard-menu faq-nav">
-                                                    <ul>
-                                                        <li><a href="{{ url('my-profile') }}">{{ __('messages.profile') }}</a></li>
-                                                        
-                                                        @if(\Auth::user()->role == 4)
-                                                            <!-- Agency Role (role 4) - Show Employees -->
-                                                            <li><a href="{{ url('my-employees') }}">{{ __('messages.employees') }}</a></li>
-                                                        @endif
-                                                        
-                                                        <li><a href="{{ url('my-reservations') }}">{{ __('messages.my_reservations') }}</a></li>
-                                                        <li><a href="{{ url('favorite') }}">{{ __('messages.favorite') }}
-                                                            <!-- <span>6</span> -->
-                                                        </a></li>
-                                                        <li><a href="{{ url('visit-schedule') }}">{{ __('messages.visit_schedule') }}</a></li>
-                                                    </ul>
-                                                    <a href="{{ url('user/logout') }}" class="hum_log-out_btn"><i class="fa-light fa-power-off"></i> {{ __('messages.log_out') }}</a>
-                                                </div>
+                                                @include('front_end.userMenu')
                                             </div>
                                         </div>
                                     </div>
