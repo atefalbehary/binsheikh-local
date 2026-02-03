@@ -484,10 +484,10 @@
 
                     <div class="cs-intputwrap">
                         <i class="fa-light fa-building"></i>
-                        <select name="project_id" required>
+                        <select id="changeProjectID" name="project_id" required>
                             <option value="">Select Project</option>
                             @foreach(\App\Models\Projects::where('active','1')->where('deleted', 0)->get() as $project)
-                            <option value="{{$project->id}}">{{$project->name}}</option>
+                            <option value="{{$project->id}}" data-value="{{$project->name}}">{{$project->name}}</option>
                             @endforeach
                         </select>
                     </div>
@@ -514,6 +514,9 @@
                             <button type="button" class="apartment-type-btn active" data-value="1bhk">1 BHK</button>
                             <button type="button" class="apartment-type-btn" data-value="2bhk">2 BHK</button>
                             <button type="button" class="apartment-type-btn" data-value="3bhk">3 BHK</button>
+                            <button type="button" class="apartment-type-btn hidden" id="2bhkDuplex" data-value="2bhkDuplex">2 BHK Duplex</button>
+                            <button type="button" class="apartment-type-btn hidden" id="3bhkDuplex" data-value="3bhkDuplex">3 BHK Duplex</button>
+
                         </div>
                         <input type="hidden" name="apartment_type" id="apartment_type_input" value="1bhk">
                     </div>
@@ -529,6 +532,22 @@
 @section('script')
 <script>
     $(document).ready(function() {
+
+        $('#changeProjectID').change(function() {
+           const value = $(this).find(':selected').data('value');
+
+            console.log("value ",value);
+            
+           
+           if (value && value.toLowerCase().includes('skyline')) {
+                $('#2bhkDuplex').removeClass('hidden');
+                $('#3bhkDuplex').removeClass('hidden');
+            } else {
+                $('#2bhkDuplex').addClass('hidden');
+                $('#3bhkDuplex').addClass('hidden');
+            }
+
+        });
 
         @if (request('registration') == 'true')
             $('#clientRegistrationModal').modal('show');

@@ -1504,7 +1504,7 @@ class HomeController extends Controller
             'project_id' => 'required|exists:projects,id',
             'nationality' => 'required|string|max:10',
             'apartment_no' => 'required|string|max:255',
-            'apartment_type' => 'required|string|in:studio,1bhk,2bhk,3bhk',
+            'apartment_type' => 'required|string|in:studio,1bhk,2bhk,3bhk,2bhkDuplex,3bhkDuplex',
         ]);
 
         try {
