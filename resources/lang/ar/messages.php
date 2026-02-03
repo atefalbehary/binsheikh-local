@@ -1,7 +1,8 @@
 <?php
 return [
+    'select_client' => 'اختر_العميل',
     'brokerage_license'   => 'رخصة الوساطة العقارية',
-    'authorized_signatory'=> 'بطاقة المخول بالتوقيع',
+    'authorized_signatory' => 'بطاقة المخول بالتوقيع',
     'computer_card'       => 'بطاقة المنشأة',
     'cr'                  => 'السجل التجاري',
     'trade_license'       => 'الرخصة التجارية',
@@ -45,7 +46,6 @@ return [
     'view_all_properties' => 'عرض جميع العقارات',
     'why_choose_bin_al_sheikh' => 'لماذا تختار بن الشيخ للوساطة العقارية؟',
     'years_of_experience' => ':experience عامًا من الخبرة',
-    'clients' => ':clients عميل',
     'units' => ':units وحدة',
     'branches' => ':branches فروع',
     'choose_your_unit' => 'اختر وحدتك من أحد مشاريعنا المتميزة المتواجدة في أهم المناطق في قطر.',

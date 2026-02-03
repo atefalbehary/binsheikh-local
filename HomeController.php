@@ -1442,28 +1442,6 @@ class HomeController extends Controller
             ->orderBy('name', 'asc')
             ->get();
 
-        // Get all clients (users with role 2) for the dropdown
-       /*  $clients = User::where('role', 2)
-            ->select('id', 'name', 'phone', 'email', 'id_card', 'qid')
-            ->orderBy('name', 'asc')
-            ->get(); */
-        if ($customer->role == 4) {
-            // For agency, get all clients registered by their agents
-            $agentIds = $customer->agencyUsers()->pluck('id')->toArray();
-            $agentIds[] = $id; // Include agency's own registrations
-
-            $clients = \App\Models\Client::with(['agent', 'project'])
-                ->whereIn('agent_id', $agentIds)
-                ->orderBy('created_at', 'desc')
-                ->get();
-        } else {
-            // For individual agents (role 3), get only their clients
-            $clients = \App\Models\Client::with(['agent', 'project'])
-                ->where('agent_id', $id)
-                ->orderBy('created_at', 'desc')
-                ->get();
-        }
-
         // Initialize agents variable
         $agents = collect();
 
@@ -1481,13 +1459,13 @@ class HomeController extends Controller
                 ->whereIn('agent_id', $agentIds)
                 ->orderBy('created_at', 'desc')
                 ->get();
-            return view('front_end.visit_schedule', compact('page_heading', 'visits', 'properties', 'projects', 'agents', 'clients'));
+            return view('front_end.visit_schedule', compact('page_heading', 'visits', 'properties', 'projects', 'agents'));
         } else {
             $visits = \App\Models\VisiteSchedule::with(['agent', 'project'])
                 ->where('agent_id', $id)
                 ->orderBy('created_at', 'desc')
                 ->get();
-            return view('front_end.visit_schedule', compact('page_heading', 'visits', 'properties', 'projects', 'agents', 'clients'));
+            return view('front_end.visit_schedule', compact('page_heading', 'visits', 'properties', 'projects', 'agents'));
 
         }
 
@@ -3435,7 +3413,7 @@ class HomeController extends Controller
             // Validate request
             $validator = Validator::make($request->all(), [
                 'visit_id' => 'required|integer|exists:visit_schedules,id',
-                'status' => 'required|string|in:Visited,Cancelled,Rescheduled,Scheduled'
+                'status' => 'required|string|in:Visited,Cancelled,Rescheduled'
             ]);
 
             if ($validator->fails()) {

@@ -485,13 +485,13 @@
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="selected_agent_id"
-                                                        class="form-label">{{ __('messages.select_agent') }}</label>
+                                                        class="form-label">{{ __('messages.search_client') }}</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i
                                                                 class="fas fa-user-tie"></i></span>
                                                         <select class="form-control" id="selected_agent_id"
                                                             name="selected_agent_id" required>
-                                                            <option value="">{{ __('messages.select_agent') }}</option>
+                                                            <option value="">{{ __('messages.search_client') }}</option>
                                                             @if(isset($agents) && $agents->count() > 0)
                                                                 @foreach($agents as $agent)
                                                                     <option value="{{ $agent->id }}"
@@ -550,21 +550,29 @@
                                         <h6>{{ __('messages.client_contact_info') }}</h6>
                                     </div>
 
-                                    <!-- Client Search -->
+                                    <!-- Client Dropdown -->
                                     <div class="row mb-3">
                                         <div class="col-12">
-                                            <div class="form-group" style="position: relative;">
-                                                <label for="client_search"
-                                                    class="form-label">{{ __('messages.search_client') ?? 'Search Client' }}</label>
+                                            <div class="form-group">
+                                                <label for="client_dropdown"
+                                                    class="form-label">{{ __('messages.select_client') ?? 'Select Client' }}</label>
                                                 <div class="input-group">
-                                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                                    <input type="text" class="form-control" id="client_search"
-                                                        placeholder="Search by name, email or phone..."
-                                                        autocomplete="off">
-                                                </div>
-                                                <!-- Dropdown Results -->
-                                                <div id="client_search_results" class="list-group"
-                                                    style="position: absolute; top: 100%; left: 0; right: 0; z-index: 1050; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                                    <select class="form-control" id="client_dropdown" name="client_dropdown">
+                                                    <option value="">{{ __('messages.select_client') ?? 'Select a Client' }}</option>
+                                                        @if(isset($clients))
+                                                            @foreach($clients as $client)
+                                                                <option value="{{ $client->id }}"
+                                                                    data-name="{{ $client->client_name }}"
+                                                                    data-phone="{{ $client->phone }}"
+                                                                    data-email="{{ $client->email }}"
+                                                                    data-id-card="{{ $client->id_card ?? '' }}"
+                                                                    data-qid="{{ $client->qid ?? '' }}">
+                                                                    {{ $client->client_name }} - {{ $client->phone }}
+                                                                </option>
+                                                            @endforeach
+                                                        @endif
+                                                    </select>
                                                 </div>
                                             </div>
                                         </div>
@@ -580,7 +588,7 @@
                                                     <input type="text" class="form-control" id="client_name"
                                                         name="client_name"
                                                         placeholder="{{ __('messages.enter_client_full_name') }}"
-                                                         required>
+                                                         required readonly>
                                                 </div>
                                             </div>
                                         </div>
@@ -593,7 +601,7 @@
                                                     <input type="tel" class="form-control" id="client_phone_number"
                                                         name="client_phone_number"
                                                         placeholder="{{ __('messages.enter_client_phone_number') }}"
-                                                         required>
+                                                         required readonly>
                                                 </div>
                                             </div>
                                         </div>
@@ -607,7 +615,7 @@
                                                     <input type="email" class="form-control" id="client_email_address"
                                                         name="client_email_address"
                                                         placeholder="{{ __('messages.enter_your_email_address') }}"
-                                                        >
+                                                        readonly>
                                                 </div>
                                             </div>
                                         </div>
@@ -651,14 +659,14 @@
                                             <div class="form-group">
                                                 <div class="purpose-options">
                                                     <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox"
+                                                        <input class="form-check-input" type="radio"
                                                             name="visit_purpose[]" id="visit_purpose_buy" value="buy">
                                                         <label class="form-check-label" for="visit_purpose_buy">
                                                             {{ __('messages.buy') }}
                                                         </label>
                                                     </div>
                                                     <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox"
+                                                        <input class="form-check-input" type="radio"
                                                             name="visit_purpose[]" id="visit_purpose_rent" value="rent">
                                                         <label class="form-check-label" for="visit_purpose_rent">
                                                             {{ __('messages.rent') }}
@@ -1624,6 +1632,14 @@
                 const today = new Date().toISOString().split('T')[0];
                 $('#visit_date').attr('min', today);
 
+                // Reset form when modal is closed
+                $('#addVisitScheduleModal').on('hidden.bs.modal', function () {
+                    $('#addVisitScheduleForm')[0].reset();
+                    $('#client_dropdown').val('');
+                    $('#existing_client_id_path').val('');
+                    $('#existing_client_id_container').hide();
+                });
+
                 // Agent selection change handler (for agencies)
                 $('#selected_agent_id').on('change', function () {
                     const selectedOption = $(this).find('option:selected');
@@ -1854,61 +1870,27 @@
                         notification.alert('close');
                     }, 5000);
                 }
-                // Client Search Functionality
-                let searchTimeout;
-                $('#client_search').on('input', function () {
-                    const term = $(this).val();
-                    const resultsDiv = $('#client_search_results');
+                // Client Dropdown Selection Handler
+                $('#client_dropdown').on('change', function () {
+                    const selectedOption = $(this).find('option:selected');
 
-                    if (term.length < 2) {
-                        resultsDiv.hide().empty();
+                    if (selectedOption.val() === '') {
+                        // Clear all fields if no client selected
+                        $('#client_name').val('');
+                        $('#client_phone_number').val('');
+                        $('#client_email_address').val('');
+                        $('#existing_client_id_path').val('');
+                        $('#existing_client_id_container').hide();
                         return;
                     }
 
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        $.ajax({
-                            url: '{{ route("frontend.search_clients") }}',
-                            data: { term: term },
-                            success: function (clients) {
-                                resultsDiv.empty();
-                                if (clients.length > 0) {
-                                    clients.forEach(client => {
-                                        const item = $(`
-                                    <a href="#" class="list-group-item list-group-item-action client-item" 
-                                       data-name="${client.name}" 
-                                       data-phone="${client.phone}" 
-                                       data-email="${client.email}"
-                                       data-id-card="${client.id_card || ''}"
-                                       data-qid="${client.qid || ''}">
-                                        <strong>${client.name}</strong><br>
-                                        <small>${client.phone} | ${client.email}</small>
-                                    </a>
-                                `);
-                                        resultsDiv.append(item);
-                                    });
-                                    resultsDiv.show();
-                                } else {
-                                    resultsDiv.append('<div class="list-group-item">No clients found</div>');
-                                    resultsDiv.show();
-                                }
-                            },
-                            error: function (xhr) {
-                                console.error('Search failed:', xhr);
-                            }
-                        });
-                    }, 300);
-                });
+                    const name = selectedOption.data('name');
+                    const phone = selectedOption.data('phone');
+                    const email = selectedOption.data('email');
+                    const idCard = selectedOption.data('id-card');
+                    const qid = selectedOption.data('qid');
 
-                // Handle Client Selection
-                $(document).on('click', '.client-item', function (e) {
-                    e.preventDefault();
-                    const name = $(this).data('name');
-                    const phone = $(this).data('phone');
-                    const email = $(this).data('email');
-                    const idCard = $(this).data('id-card');
-                    const qid = $(this).data('qid');
-
+                    // Populate form fields
                     $('#client_name').val(name);
                     $('#client_phone_number').val(phone);
                     $('#client_email_address').val(email);
@@ -1921,16 +1903,6 @@
                     } else {
                         $('#existing_client_id_path').val('');
                         $('#existing_client_id_container').hide();
-                    }
-
-                    $('#client_search_results').hide();
-                    $('#client_search').val('');
-                });
-
-                // Close search results when clicking outside
-                $(document).on('click', function (e) {
-                    if (!$(e.target).closest('#client_search_results, #client_search').length) {
-                        $('#client_search_results').hide();
                     }
                 });
 

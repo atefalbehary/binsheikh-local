@@ -1,5 +1,6 @@
 <?php
 return [
+    'select_client' => 'Select CLient',
     'brokerage_license'   => 'Brokerage License',
     'authorized_signatory'=> 'Authorized Signatory',
     'computer_card'       => 'Computer Card',

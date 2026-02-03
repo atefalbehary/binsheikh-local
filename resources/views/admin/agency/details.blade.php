@@ -1569,7 +1569,7 @@
                 <div class="col-md-8">
                     <div class="edit-profile-card">
                         <div class="section-title">Edit Profile</div>
-                        <form action="{{ route('admin.agency.update', $customer->id) }}" method="POST">
+                        <form action="{{ url('admin/agency'. $customer->id) }}" method="POST">
                             @csrf
                             <div class="row">
                                 <div class="col-md-6 form-group">
