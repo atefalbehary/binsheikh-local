@@ -238,6 +238,84 @@
 
                         </div>
                     </div>
+                    
+                    {{-- Visit Notes History Section --}}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <i class="fa fa-history"></i> Visit Notes History
+                        </div>
+                        <div class="card-body">
+                            @if(isset($visits) && $visits->count() > 0)
+                                <div class="accordion" id="visitHistoryAccordion">
+                                    @foreach($visits as $index => $visit)
+                                        <div class="card mb-2" style="border: 1px solid #ddd;">
+                                            <div class="card-header p-0" id="heading{{ $visit->id }}">
+                                                <h5 class="mb-0">
+                                                    <button class="btn btn-link btn-block text-left" style="text-decoration: none; color: #333;" type="button" data-toggle="collapse" data-target="#collapse{{ $visit->id }}" aria-expanded="{{ $index == 0 ? 'true' : 'false' }}" aria-controls="collapse{{ $visit->id }}">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <strong>{{ web_date_in_timezone($visit->visit_time, 'd-M-Y h:i A') }}</strong> 
+                                                                <span class="mx-2">|</span>
+                                                                <span class="text-primary">{{ $visit->project->name_en ?? $visit->project->name ?? 'N/A' }}</span>
+                                                                <span class="mx-2">|</span>
+                                                                <small class="text-muted">Agent: {{ $visit->agent->name ?? 'N/A' }}</small>
+                                                            </div>
+                                                            @php
+                                                                $statusClass = match (strtolower($visit->status)) {
+                                                                    'visited' => 'success',
+                                                                    'cancelled' => 'danger',
+                                                                    'rescheduled' => 'warning',
+                                                                    default => 'primary'
+                                                                };
+                                                            @endphp
+                                                            <span class="badge badge-{{ $statusClass }}">{{ ucfirst($visit->status) }}</span>
+                                                        </div>
+                                                    </button>
+                                                </h5>
+                                            </div>
+
+                                            <div id="collapse{{ $visit->id }}" class="collapse {{ $index == 0 ? 'show' : '' }}" aria-labelledby="heading{{ $visit->id }}" data-parent="#visitHistoryAccordion">
+                                                <div class="card-body bg-light">
+                                                    @if($visit->noteHistory->count() > 0)
+                                                        <div class="timeline">
+                                                            @foreach($visit->noteHistory as $note)
+                                                                <div class="card mb-2">
+                                                                    <div class="card-body p-3">
+                                                                        <div class="d-flex justify-content-between mb-2">
+                                                                            <h6 class="font-weight-bold text-primary mb-0">{{ $note->creator->name ?? 'System/User' }}</h6>
+                                                                            <small class="text-muted"><i class="fa fa-clock-o"></i> {{ web_date_in_timezone($note->created_at, 'd-M-Y h:i A') }}</small>
+                                                                        </div>
+                                                                        
+                                                                        <div class="mb-2">
+                                                                            {{ $note->note }}
+                                                                        </div>
+                                                                        
+                                                                        @if($note->visit_status)
+                                                                        <div>
+                                                                            <small class="text-muted">Status set to: 
+                                                                                <span class="badge badge-secondary">{{ ucfirst($note->visit_status) }}</span>
+                                                                            </small>
+                                                                        </div>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @else
+                                                        <p class="text-muted text-center mb-0">No notes recorded for this visit.</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="alert alert-info text-center">
+                                    No visit history found for this customer.
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

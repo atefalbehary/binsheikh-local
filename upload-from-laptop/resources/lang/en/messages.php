@@ -369,9 +369,9 @@ return [
     'professional_practice_certificate' => 'Professional License',
     'select_professional_practice_certificate' => 'Select Professional License',
     'view_professional_practice_certificate' => 'View Professional License*',
-    'authorized_signatory' => 'Authorized Signatory',
-    'select_authorized_signatory' => 'Select Authorized Signatory',
-    'view_authorized_signatory' => 'View Authorized Signatory*',
+    'authorized_signatory' => 'Authorized Signatory ID Copy',
+    'select_authorized_signatory' => 'Select Authorized Signatory ID Copy',
+    'view_authorized_signatory' => 'View Authorized Signatory ID Copy*',
     'XXXXXXXXXXXXXX' => 'XXXXXXXXXXXX',
     'XXXXXXXXXXXXXX' => 'XXXXXXXXXXXX',
     'show' => 'Show',
@@ -464,7 +464,7 @@ return [
     'id_number' => 'ID Number',
     'view_id_card' => 'View ID Card',
     'view_professional_license' => 'View Professional License',
-    'view_authorized_signatory' => 'View Authorized Signatory',
+    'view_authorized_signatory' => 'View Authorized Signatory ID Copy',
     'view_trade_license' => 'View Trade License',
 
     // Employee Management Translations

@@ -254,31 +254,20 @@ function file_save($file, $model, $mb_file_size = 25000)
         // Generate unique file name
         $name = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
 
-        // Upload file to Public Disk (Local) instead of S3
-        $path = 'uploads/' . $model;
-
-        // Ensure directory exists if using local file system directly, but Storage::put handles it usually.
-        // using putFileAs is cleaner
-        $uploadedPath = Storage::disk('public')->putFileAs($path, $file, $name);
-
-        // Check if upload was successful
-        if (!$uploadedPath) {
-            return ['status' => false, 'link' => null, 'message' => 'Failed to upload file to storage'];
+        // Use public_path() to store in public/uploads directly, matching existing structure
+        // and avoiding missing 'storage' symlink issues.
+        $destinationPath = public_path('uploads/' . $model);
+        
+        // Ensure directory exists
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0755, true);
         }
 
-        // Get the public URL of the uploaded file
-        $image_url = Storage::disk('public')->url($uploadedPath);
+        // Move file
+        $file->move($destinationPath, $name);
 
-        // If the URL is full (http...), keep it. If relative, ensure it works.
-        // Usually Storage::url returns /storage/uploads/...
-
-        // For DB compatibility if it expects just the path or full URL:
-        // The original code returned $path (uploads/model/name) as $image_url in one commented line, 
-        // but $path variable in original code was 'uploads/model/name'.
-        // Storage::url() returns full URL usually if configured correctly.
-        // Let's return the relative path that can be wrapped with asset() later if needed, 
-        // OR the full URL if that's what the frontend expects.
-        // The original S3 code was trying to return full URL but fell back to $path.
+        // Return relative path for DB
+        $image_url = 'uploads/' . $model . '/' . $name;
 
         return ['status' => true, 'link' => $image_url, 'message' => 'File uploaded successfully'];
 
@@ -303,9 +292,15 @@ function aws_asset_path($path)
         return $path;
     }
 
+    // Check if it is a storage or uploads path (likely local)
+    $cleanPath = ltrim($path, '/');
+    if (strpos($cleanPath, 'storage/') === 0 || strpos($cleanPath, 'uploads/') === 0) {
+        // Return root-relative path to ensure it uses the current domain (localhost)
+        return '/' . $cleanPath;
+    }
+
     // Otherwise prepend CDN URL
-    $path = ltrim($path, '/');
-    return "https://cdn.bsbqa.com/" . $path;
+    return "https://cdn.bsbqa.com/" . $cleanPath;
 }
 
 if (!function_exists('deleteFile')) {

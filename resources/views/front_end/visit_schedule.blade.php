@@ -114,186 +114,196 @@
                                             </thead>
                                             <tbody>
                                                 @forelse($visits ?? [] as $index => $visit)
-                                                    <!-- Main Row -->
-                                                    <tr class="main-row" data-id="{{ $visit->id }}">
-                                                        <td>
-                                                            <input type="checkbox" class="visit-checkbox"
-                                                                value="{{ $visit->id }}">
-                                                        </td>
-                                                        <td>
-                                                            <div class="client-info">
-                                                                <div class="client-avatar">
-                                                                    <i class="fas fa-user"></i>
-                                                                    <div class="status-dot"></div>
-                                                                </div>
-                                                                <span
-                                                                    class="client-name">{{ $visit->agent->name ?? 'N/A' }}</span>
+                                                <!-- Main Row -->
+                                                <tr class="main-row" data-id="{{ $visit->id }}">
+                                                    <td>
+                                                        <input type="checkbox" class="visit-checkbox"
+                                                            value="{{ $visit->id }}">
+                                                    </td>
+                                                    <td>
+                                                        <div class="client-info">
+                                                            <div class="client-avatar">
+                                                                <i class="fas fa-user"></i>
+                                                                <div class="status-dot"></div>
                                                             </div>
-                                                        </td>
-                                                        <td>{{ $visit->unit_type ?? 'N/A' }}</td>
-                                                        <td>{{ $visit->client_phone_number ?? 'N/A' }}</td>
-                                                        <td>
-                                                            <div class="visit-section">
-                                                                <span class="visit-date"
-                                                                    data-date="{{ $visit->visit_time }}">{{ web_date_in_timezone($visit->visit_time, 'd-M-Y') }}</span>
-                                                                <button class="btn btn-sm btn-info">View</button>
-                                                                <i class="fas fa-chevron-down expand-icon"
-                                                                    style="margin-left: 10px; cursor: pointer;"></i>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            @php
-                                                                $isFuture = \Carbon\Carbon::parse($visit->visit_time)->isFuture();
-                                                                $status = $visit->status ?? 'Scheduled';
-                                                                $badgeClass = match (strtolower($status)) {
-                                                                    'visited' => 'success',
-                                                                    'cancelled' => 'danger',
-                                                                    'rescheduled' => 'warning',
-                                                                    default => 'primary'
-                                                                };
-                                                            @endphp
-                                                            @if($isFuture)
-                                                                <select class="form-select form-select-sm status-updater"
-                                                                    data-id="{{ $visit->id }}"
-                                                                    style="width: auto; display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.875rem;">
-                                                                    <option value="Scheduled" {{ strtolower($status) == 'scheduled' ? 'selected' : '' }}>
-                                                                        {{ __('messages.scheduled') }}
-                                                                    </option>
-                                                                    <option value="Rescheduled" {{ strtolower($status) == 'rescheduled' ? 'selected' : '' }}>
-                                                                        {{ __('messages.rescheduled') }}
-                                                                    </option>
-                                                                    <option value="Visited" {{ strtolower($status) == 'visited' ? 'selected' : '' }}>{{ __('messages.visited') }}</option>
-                                                                    <option value="Cancelled" {{ strtolower($status) == 'cancelled' ? 'selected' : '' }}>
-                                                                        {{ __('messages.cancelled') }}
-                                                                    </option>
-                                                                </select>
-                                                            @else
-                                                                <span
-                                                                    class="badge bg-{{ $badgeClass }}">{{ __('messages.' . strtolower($status)) ?? $status }}</span>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
+                                                            <span
+                                                                class="client-name">{{ $visit->agent->name ?? 'N/A' }}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>{{ $visit->unit_type ?? 'N/A' }}</td>
+                                                    <td>{{ $visit->client_phone_number ?? 'N/A' }}</td>
+                                                    <td>
+                                                        <div class="visit-section">
+                                                            <span class="visit-date"
+                                                                data-date="{{ $visit->visit_time }}">{{ web_date_in_timezone($visit->visit_time, 'd-M-Y') }}</span>
+                                                            <button class="btn btn-sm btn-info">View</button>
+                                                            <i class="fas fa-chevron-down expand-icon"
+                                                                style="margin-left: 10px; cursor: pointer;"></i>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                        $isFuture = \Carbon\Carbon::parse($visit->visit_time)->isFuture();
+                                                        $status = $visit->status ?? 'Scheduled';
+                                                        $badgeClass = match (strtolower($status)) {
+                                                        'visited' => 'success',
+                                                        'cancelled' => 'danger',
+                                                        'rescheduled' => 'warning',
+                                                        default => 'primary'
+                                                        };
+                                                        @endphp
+                                                        @if($isFuture)
+                                                        <select class="form-select form-select-sm status-updater"
+                                                            data-id="{{ $visit->id }}"
+                                                            style="width: auto; display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                                                            <option value="Scheduled" {{ strtolower($status) == 'scheduled' ? 'selected' : '' }}>
+                                                                {{ __('messages.scheduled') }}
+                                                            </option>
+                                                            <option value="Rescheduled" {{ strtolower($status) == 'rescheduled' ? 'selected' : '' }}>
+                                                                {{ __('messages.rescheduled') }}
+                                                            </option>
+                                                            <option value="Visited" {{ strtolower($status) == 'visited' ? 'selected' : '' }}>{{ __('messages.visited') }}</option>
+                                                            <option value="Cancelled" {{ strtolower($status) == 'cancelled' ? 'selected' : '' }}>
+                                                                {{ __('messages.cancelled') }}
+                                                            </option>
+                                                        </select>
+                                                        @else
+                                                        <span
+                                                            class="badge bg-{{ $badgeClass }}">{{ __('messages.' . strtolower($status)) ?? $status }}</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
 
-                                                    <!-- Detail Row -->
-                                                    <tr class="detail-row" data-parent="{{ $visit->id }}"
-                                                        style="display: none;">
-                                                        <td colspan="5">
-                                                            <div class="detail-content">
-                                                                <div class="schedule-info-header">
-                                                                    <h6>{{ __('messages.schedule_info') }}</h6>
-                                                                    <div class="header-actions">
-                                                                        <div class="form-indicator">
-                                                                            <span
-                                                                                class="badge badge-info">{{ __('messages.visit_scheduled') }}</span>
+                                                <!-- Detail Row -->
+                                                <tr class="detail-row" data-parent="{{ $visit->id }}"
+                                                    style="display: none;">
+                                                    <td colspan="5">
+                                                        <div class="detail-content">
+                                                            <div class="schedule-info-header">
+                                                                <h6>{{ __('messages.schedule_info') }}</h6>
+                                                                <div class="header-actions">
+                                                                    <div class="form-indicator">
+                                                                        <span
+                                                                            class="badge badge-info">{{ __('messages.visit_scheduled') }}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="schedule-info-grid">
+                                                                <!-- Left Column -->
+                                                                <div class="info-column">
+                                                                    <div class="info-card">
+                                                                        <div class="info-icon">
+                                                                            <i class="fas fa-user"></i>
+                                                                        </div>
+                                                                        <div class="info-content">
+                                                                            <label>{{ __('messages.client_name') }}</label>
+                                                                            <span>{{ $visit->client_name ?? 'N/A' }}</span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="info-card">
+                                                                        <div class="info-icon">
+                                                                            <i class="fas fa-envelope"></i>
+                                                                        </div>
+                                                                        <div class="info-content">
+                                                                            <label>{{ __('messages.client_email_address') }}</label>
+                                                                            <span>{{ $visit->client_email_address ?? 'N/A' }}</span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="info-card">
+                                                                        <div class="info-icon">
+                                                                            <i class="fas fa-building"></i>
+                                                                        </div>
+                                                                        <div class="info-content">
+                                                                            <label>{{ __('messages.project') }}</label>
+                                                                            <span>{{ $visit->project->name ?? 'N/A' }}</span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="info-card">
+                                                                        <div class="info-icon">
+                                                                            <i class="fas fa-id-card"></i>
+                                                                        </div>
+                                                                        <div class="info-content">
+                                                                            <label>{{ __('messages.client_id') }}</label>
+                                                                            @if($visit->client_id)
+                                                                            <a href="{{ aws_asset_path($visit->client_id) }}"
+                                                                                target="_blank"
+                                                                                class="btn btn-sm btn-info">
+                                                                                <i class="fas fa-eye"></i>
+                                                                                {{ __('messages.view_client_id') }}
+                                                                            </a>
+                                                                            @else
+                                                                            <span>N/A</span>
+                                                                            @endif
                                                                         </div>
                                                                     </div>
                                                                 </div>
 
-                                                                <div class="schedule-info-grid">
-                                                                    <!-- Left Column -->
-                                                                    <div class="info-column">
-                                                                        <div class="info-card">
-                                                                            <div class="info-icon">
-                                                                                <i class="fas fa-user"></i>
-                                                                            </div>
-                                                                            <div class="info-content">
-                                                                                <label>{{ __('messages.client_name') }}</label>
-                                                                                <span>{{ $visit->client_name ?? 'N/A' }}</span>
-                                                                            </div>
+                                                                <!-- Right Column -->
+                                                                <div class="info-column">
+                                                                    <div class="info-card">
+                                                                        <div class="info-icon">
+                                                                            <i class="fas fa-phone"></i>
                                                                         </div>
-
-                                                                        <div class="info-card">
-                                                                            <div class="info-icon">
-                                                                                <i class="fas fa-envelope"></i>
-                                                                            </div>
-                                                                            <div class="info-content">
-                                                                                <label>{{ __('messages.client_email_address') }}</label>
-                                                                                <span>{{ $visit->client_email_address ?? 'N/A' }}</span>
-                                                                            </div>
-                                                                        </div>
-
-                                                                        <div class="info-card">
-                                                                            <div class="info-icon">
-                                                                                <i class="fas fa-building"></i>
-                                                                            </div>
-                                                                            <div class="info-content">
-                                                                                <label>{{ __('messages.project') }}</label>
-                                                                                <span>{{ $visit->project->name ?? 'N/A' }}</span>
-                                                                            </div>
-                                                                        </div>
-
-                                                                        <div class="info-card">
-                                                                            <div class="info-icon">
-                                                                                <i class="fas fa-id-card"></i>
-                                                                            </div>
-                                                                            <div class="info-content">
-                                                                                <label>{{ __('messages.client_id') }}</label>
-                                                                                @if($visit->client_id)
-                                                                                    <a href="{{ aws_asset_path($visit->client_id) }}"
-                                                                                        target="_blank"
-                                                                                        class="btn btn-sm btn-info">
-                                                                                        <i class="fas fa-eye"></i>
-                                                                                        {{ __('messages.view_client_id') }}
-                                                                                    </a>
-                                                                                @else
-                                                                                    <span>N/A</span>
-                                                                                @endif
-                                                                            </div>
+                                                                        <div class="info-content">
+                                                                            <label>{{ __('messages.client_phone_number') }}</label>
+                                                                            <span>{{ $visit->client_phone_number ?? 'N/A' }}</span>
                                                                         </div>
                                                                     </div>
 
-                                                                    <!-- Right Column -->
-                                                                    <div class="info-column">
-                                                                        <div class="info-card">
-                                                                            <div class="info-icon">
-                                                                                <i class="fas fa-phone"></i>
-                                                                            </div>
-                                                                            <div class="info-content">
-                                                                                <label>{{ __('messages.client_phone_number') }}</label>
-                                                                                <span>{{ $visit->client_phone_number ?? 'N/A' }}</span>
-                                                                            </div>
+                                                                    <div class="info-card">
+                                                                        <div class="info-icon">
+                                                                            <i class="fas fa-clock"></i>
                                                                         </div>
-
-                                                                        <div class="info-card">
-                                                                            <div class="info-icon">
-                                                                                <i class="fas fa-clock"></i>
-                                                                            </div>
-                                                                            <div class="info-content">
-                                                                                <label>{{ __('messages.visit_time') }}</label>
-                                                                                <span>{{ web_date_in_timezone($visit->visit_time, 'd-M-Y h:i A') ?? 'N/A' }}</span>
-                                                                            </div>
+                                                                        <div class="info-content">
+                                                                            <label>{{ __('messages.visit_time') }}</label>
+                                                                            <span>{{ web_date_in_timezone($visit->visit_time, 'd-M-Y h:i A') ?? 'N/A' }}</span>
                                                                         </div>
+                                                                    </div>
 
-                                                                        <div class="info-card">
-                                                                            <div class="info-icon">
-                                                                                <i class="fas fa-home"></i>
-                                                                            </div>
-                                                                            <div class="info-content">
-                                                                                <label>{{ __('messages.unit_type') }}</label>
-                                                                                <span>{{ $visit->unit_type ?? 'N/A' }}</span>
-                                                                            </div>
+                                                                    <div class="info-card">
+                                                                        <div class="info-icon">
+                                                                            <i class="fas fa-home"></i>
                                                                         </div>
+                                                                        <div class="info-content">
+                                                                            <label>{{ __('messages.unit_type') }}</label>
+                                                                            <span>{{ $visit->unit_type ?? 'N/A' }}</span>
+                                                                        </div>
+                                                                    </div>
 
-                                                                        <div class="info-card">
-                                                                            <div class="info-icon">
-                                                                                <i class="fas fa-user-tie"></i>
-                                                                            </div>
-                                                                            <div class="info-content">
-                                                                                <label>{{ __('messages.agent_name') }}</label>
-                                                                                <span>{{ $visit->agent->name ?? 'N/A' }}</span>
-                                                                            </div>
+                                                                    <div class="info-card">
+                                                                        <div class="info-icon">
+                                                                            <i class="fas fa-user-tie"></i>
+                                                                        </div>
+                                                                        <div class="info-content">
+                                                                            <label>{{ __('messages.agent_name') }}</label>
+                                                                            <span>{{ $visit->agent->name ?? 'N/A' }}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="info-card">
+                                                                        <div class="info-icon">
+                                                                            <i class="fas fa-user-tie"></i>
+                                                                        </div>
+                                                                        <div class="info-content">
+                                                                            <label>{{ __('messages.notes') }}</label>
+                                                                            <span>{{ $visit->notes ?? 'N/A' }}</span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </td>
-                                                    </tr>
+                                                            @include('front_end.partials._note_history', ['visit' => $visit])
+                                                        </div>
+                                                    </td>
+                                                </tr>
                                                 @empty
-                                                    <tr>
-                                                        <td colspan="5" class="text-center">
-                                                            {{ __('messages.no_visits_scheduled') }}
-                                                        </td>
-                                                    </tr>
+                                                <tr>
+                                                    <td colspan="5" class="text-center">
+                                                        {{ __('messages.no_visits_scheduled') }}
+                                                    </td>
+                                                </tr>
                                                 @endforelse
                                             </tbody>
                                         </table>
@@ -481,64 +491,63 @@
                                     </div>
                                     <div class="row">
                                         @if(\Auth::user()->role == 4)
-                                            <!-- Agency: Show agent selection dropdown -->
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="selected_agent_id"
-                                                        class="form-label">{{ __('messages.search_client') }}</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text"><i
-                                                                class="fas fa-user-tie"></i></span>
-                                                        <select class="form-control" id="selected_agent_id"
-                                                            name="selected_agent_id" required>
-                                                            <option value="">{{ __('messages.search_client') }}</option>
-                                                            @if(isset($agents) && $agents->count() > 0)
-                                                                @foreach($agents as $agent)
-                                                                    <option value="{{ $agent->id }}"
-                                                                        data-phone="{{ $agent->phone ?? '' }}">{{ $agent->name }}
-                                                                    </option>
-                                                                @endforeach
-                                                            @endif
-                                                        </select>
-                                                    </div>
+                                        <!-- Agency: Show agent selection dropdown -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="selected_agent_id"
+                                                    class="form-label">{{ __('messages.search_client') }}</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i
+                                                            class="fas fa-user-tie"></i></span>
+                                                    <select class="form-control" id="selected_agent_id"
+                                                        name="selected_agent_id" required>
+                                                        <option value="">{{ __('messages.search_client') }}</option>
+                                                        @if(isset($agents) && $agents->count() > 0)
+                                                        @foreach($agents as $agent)
+                                                        <option value="{{ $agent->id }}"
+                                                            data-phone="{{ $agent->phone ?? '' }}">{{ $agent->name }}
+                                                        </option>
+                                                        @endforeach
+                                                        @endif
+                                                    </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="agent_phone"
-                                                        class="form-label">{{ __('messages.phone_number') }}</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                                        <input type="tel" class="form-control" id="agent_phone"
-                                                            name="agent_phone" value="{{\Auth::user()->phone ?? ''}}" >
-                                                    </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="agent_phone"
+                                                    class="form-label">{{ __('messages.phone_number') }}</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                                    <input type="tel" class="form-control" id="agent_phone"
+                                                        name="agent_phone" value="{{\Auth::user()->phone ?? ''}}">
                                                 </div>
                                             </div>
+                                        </div>
                                         @else
-                                            <!-- Agent: Show readonly fields -->
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="agent_name"
-                                                        class="form-label">{{ __('messages.name') }}</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                                        <input type="text" class="form-control" id="agent_name"
-                                                            name="agent_name" value="{{ \Auth::user()->name ?? '' }}">
-                                                    </div>
+                                        <!-- Agent: Show readonly fields -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="agent_name"
+                                                    class="form-label">{{ __('messages.name') }}</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                                    <input type="text" class="form-control" id="agent_name"
+                                                        name="agent_name" value="{{ \Auth::user()->name ?? '' }}">
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="agent_phone"
-                                                        class="form-label">{{ __('messages.phone_number') }}</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                                        <input type="tel" class="form-control" id="agent_phone"
-                                                            name="agent_phone" value="{{ \Auth::user()->phone ?? '' }}"
-                                                            >
-                                                    </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="agent_phone"
+                                                    class="form-label">{{ __('messages.phone_number') }}</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                                    <input type="tel" class="form-control" id="agent_phone"
+                                                        name="agent_phone" value="{{ \Auth::user()->phone ?? '' }}">
                                                 </div>
                                             </div>
+                                        </div>
                                         @endif
                                     </div>
                                 </div>
@@ -559,18 +568,18 @@
                                                 <div class="input-group">
                                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
                                                     <select class="form-control" id="client_dropdown" name="client_dropdown">
-                                                    <option value="">{{ __('messages.select_client') ?? 'Select a Client' }}</option>
+                                                        <option value="">{{ __('messages.select_client') ?? 'Select a Client' }}</option>
                                                         @if(isset($clients))
-                                                            @foreach($clients as $client)
-                                                                <option value="{{ $client->id }}"
-                                                                    data-name="{{ $client->client_name }}"
-                                                                    data-phone="{{ $client->phone }}"
-                                                                    data-email="{{ $client->email }}"
-                                                                    data-id-card="{{ $client->id_card ?? '' }}"
-                                                                    data-qid="{{ $client->qid ?? '' }}">
-                                                                    {{ $client->client_name }} - {{ $client->phone }}
-                                                                </option>
-                                                            @endforeach
+                                                        @foreach($clients as $client)
+                                                        <option value="{{ $client->id }}"
+                                                            data-name="{{ $client->client_name }}"
+                                                            data-phone="{{ $client->phone }}"
+                                                            data-email="{{ $client->email }}"
+                                                            data-id-card="{{ $client->id_card ?? '' }}"
+                                                            data-qid="{{ $client->qid ?? '' }}">
+                                                            {{ $client->client_name }} - {{ $client->phone }}
+                                                        </option>
+                                                        @endforeach
                                                         @endif
                                                     </select>
                                                 </div>
@@ -588,7 +597,7 @@
                                                     <input type="text" class="form-control" id="client_name"
                                                         name="client_name"
                                                         placeholder="{{ __('messages.enter_client_full_name') }}"
-                                                         required readonly>
+                                                        required readonly>
                                                 </div>
                                             </div>
                                         </div>
@@ -601,7 +610,7 @@
                                                     <input type="tel" class="form-control" id="client_phone_number"
                                                         name="client_phone_number"
                                                         placeholder="{{ __('messages.enter_client_phone_number') }}"
-                                                         required readonly>
+                                                        required readonly>
                                                 </div>
                                             </div>
                                         </div>
@@ -689,9 +698,9 @@
                                                         required>
                                                         <option value="">{{ __('messages.select_project') }}</option>
                                                         @if(isset($projects))
-                                                            @foreach($projects as $project)
-                                                                <option value="{{ $project->id }}">{{ $project->name }}</option>
-                                                            @endforeach
+                                                        @foreach($projects as $project)
+                                                        <option value="{{ $project->id }}">{{ $project->name }}</option>
+                                                        @endforeach
                                                         @endif
                                                     </select>
                                                 </div>
@@ -1477,19 +1486,19 @@
         </style>
 
         <script>
-            $(document).ready(function () {
+            $(document).ready(function() {
                 // Initialize selected count
                 updateSelectedCountVisit();
 
                 // Toggle all visits functionality
-                $('#selectAllVisits').on('change', function () {
+                $('#selectAllVisits').on('change', function() {
                     const isChecked = this.checked;
                     $('.visit-checkbox').prop('checked', isChecked);
                     updateSelectedCountVisit();
                 });
 
                 // Individual checkbox change handler
-                $('.visit-checkbox').on('change', function () {
+                $('.visit-checkbox').on('change', function() {
                     const totalCheckboxes = $('.visit-checkbox').length;
                     const checkedCheckboxes = $('.visit-checkbox:checked').length;
                     $('#selectAllVisits').prop('checked', totalCheckboxes === checkedCheckboxes);
@@ -1505,7 +1514,7 @@
 
                 // Expand/collapse functionality
                 document.querySelectorAll('.expand-icon').forEach(icon => {
-                    icon.addEventListener('click', function (e) {
+                    icon.addEventListener('click', function(e) {
                         e.stopPropagation();
                         const row = this.closest('.main-row');
                         const rowId = row.getAttribute('data-id');
@@ -1536,7 +1545,7 @@
 
                 // View button functionality
                 document.querySelectorAll('.btn-info').forEach(button => {
-                    button.addEventListener('click', function (e) {
+                    button.addEventListener('click', function(e) {
                         e.stopPropagation();
                         const row = this.closest('.main-row');
                         const rowId = row.getAttribute('data-id');
@@ -1567,7 +1576,7 @@
                 });
 
                 // Modal form handling
-                $('#addVisitScheduleForm').on('submit', function (e) {
+                $('#addVisitScheduleForm').on('submit', function(e) {
                     e.preventDefault();
 
                     // Get form data
@@ -1585,7 +1594,7 @@
                         data: formData,
                         processData: false,
                         contentType: false,
-                        success: function (response) {
+                        success: function(response) {
                             if (response.success) {
                                 // Show success message
                                 showNotification(response.message || '{{ __("messages.visit_schedule_added_successfully") }}', 'success');
@@ -1597,7 +1606,7 @@
                                 $('#addVisitScheduleForm')[0].reset();
 
                                 // Reload page to show new visit schedule
-                                setTimeout(function () {
+                                setTimeout(function() {
                                     location.reload();
                                 }, 1500);
                             } else {
@@ -1605,7 +1614,7 @@
                                 showNotification(response.message || '{{ __("messages.error_occurred") }}', 'error');
                             }
                         },
-                        error: function (xhr) {
+                        error: function(xhr) {
                             // Show error message
                             let errorMessage = '{{ __("messages.error_occurred") }}';
                             if (xhr.responseJSON && xhr.responseJSON.message) {
@@ -1621,7 +1630,7 @@
                             }
                             showNotification(errorMessage, 'error');
                         },
-                        complete: function () {
+                        complete: function() {
                             // Reset button state
                             submitBtn.html(originalText).prop('disabled', false);
                         }
@@ -1633,7 +1642,7 @@
                 $('#visit_date').attr('min', today);
 
                 // Reset form when modal is closed
-                $('#addVisitScheduleModal').on('hidden.bs.modal', function () {
+                $('#addVisitScheduleModal').on('hidden.bs.modal', function() {
                     $('#addVisitScheduleForm')[0].reset();
                     $('#client_dropdown').val('');
                     $('#existing_client_id_path').val('');
@@ -1641,23 +1650,23 @@
                 });
 
                 // Agent selection change handler (for agencies)
-                $('#selected_agent_id').on('change', function () {
+                $('#selected_agent_id').on('change', function() {
                     const selectedOption = $(this).find('option:selected');
                     const phoneNumber = selectedOption.data('phone') || '';
                     $('#agent_phone').val(phoneNumber);
                 });
 
                 // Visit schedule search functionality
-                $('#visitScheduleSearch').on('input', function () {
+                $('#visitScheduleSearch').on('input', function() {
                     filterVisitSchedules();
                 });
 
                 // Visit schedule date filtering functionality
-                $('#fromDateVisit').on('change', function () {
+                $('#fromDateVisit').on('change', function() {
                     filterVisitSchedules();
                 });
 
-                $('#toDateVisit').on('change', function () {
+                $('#toDateVisit').on('change', function() {
                     filterVisitSchedules();
                 });
 
@@ -1667,7 +1676,7 @@
                     const toDate = $('#toDateVisit').val();
                     const rows = $('#visitScheduleTable tbody tr.main-row');
 
-                    rows.each(function () {
+                    rows.each(function() {
                         const row = $(this);
                         const agentName = row.find('.client-name').text().toLowerCase();
                         const unitType = row.find('td:eq(2)').text().toLowerCase();
@@ -1733,14 +1742,14 @@
                 }
 
                 // Export functionality
-                $('#exportVisitSchedulesBtn').on('click', function () {
+                $('#exportVisitSchedulesBtn').on('click', function() {
                     const selectedVisits = $('.visit-checkbox:checked');
                     if (selectedVisits.length === 0) {
                         showNotification('{{ __("messages.please_select_visits_to_export") }}', 'warning');
                         return;
                     }
 
-                    const visitIds = selectedVisits.map(function () {
+                    const visitIds = selectedVisits.map(function() {
                         return this.value;
                     }).get();
 
@@ -1785,7 +1794,9 @@
 
                     // Create and download CSV
                     const csvContent = rows.join('\n');
-                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const blob = new Blob([csvContent], {
+                        type: 'text/csv;charset=utf-8;'
+                    });
                     const link = document.createElement('a');
                     const url = URL.createObjectURL(blob);
                     link.setAttribute('href', url);
@@ -1797,7 +1808,7 @@
                 }
 
                 // Delete functionality
-                $('#deleteVisitSchedulesBtn').on('click', function () {
+                $('#deleteVisitSchedulesBtn').on('click', function() {
                     const selectedVisits = $('.visit-checkbox:checked');
                     if (selectedVisits.length === 0) {
                         showNotification('{{ __("messages.please_select_visits_to_delete") }}', 'warning');
@@ -1805,7 +1816,7 @@
                     }
 
                     if (confirm(`{{ __("messages.are_you_sure_delete_visits") }} ${selectedVisits.length} {{ __("messages.selected_visits") }}?`)) {
-                        const visitIds = selectedVisits.map(function () {
+                        const visitIds = selectedVisits.map(function() {
                             return this.value;
                         }).get();
 
@@ -1822,10 +1833,10 @@
                             data: {
                                 visit_ids: visitIds
                             },
-                            success: function (response) {
+                            success: function(response) {
                                 if (response.status === '1') {
                                     // Remove deleted rows from the table
-                                    selectedVisits.each(function () {
+                                    selectedVisits.each(function() {
                                         const row = $(this).closest('.main-row');
                                         const rowId = row.attr('data-id');
                                         const detailRow = $(`.detail-row[data-parent="${rowId}"]`);
@@ -1844,7 +1855,7 @@
                                     showNotification(response.message || '{{ __("messages.error_occurred") }}', 'error');
                                 }
                             },
-                            error: function () {
+                            error: function() {
                                 showNotification('{{ __("messages.something_went_wrong") }}', 'error');
                             }
                         });
@@ -1866,12 +1877,12 @@
                     $('body').append(notification);
 
                     // Auto remove after 5 seconds
-                    setTimeout(function () {
+                    setTimeout(function() {
                         notification.alert('close');
                     }, 5000);
                 }
                 // Client Dropdown Selection Handler
-                $('#client_dropdown').on('change', function () {
+                $('#client_dropdown').on('change', function() {
                     const selectedOption = $(this).find('option:selected');
 
                     if (selectedOption.val() === '') {
@@ -1907,51 +1918,187 @@
                 });
 
 
-                // Handle Visit Status Update
-                $(document).on('change', '.status-updater', function () {
+                // Handle Visit Status Update - Modified to require note
+                $(document).on('change', '.status-updater', function() {
                     const select = $(this);
                     const visitId = select.data('id');
                     const newStatus = select.val();
-                    const originalStatus = select.data('original-status') || select.find('option[selected]').val(); // Fallback
+                    const originalStatus = select.data('original-status') || select.find('option[selected]').val();
 
-                    // Disable select while processing
-                    select.prop('disabled', true);
+                    // Check if status is being changed to Visited, Cancelled, or Rescheduled
+                    const requiresNote = ['Visited', 'Cancelled', 'Rescheduled'].includes(newStatus);
 
-                    // Get CSRF token
+                    if (requiresNote) {
+                        // Show note dialog before saving
+                        const notePrompt = prompt('{{ __("messages.status_change_note_required") ?? "Please enter a note for this status change:" }}');
+                        
+                        if (!notePrompt || notePrompt.trim() === '') {
+                            // User cancelled or entered empty note
+                            select.val(originalStatus);
+                            return;
+                        }
+
+                        // Disable select while processing
+                        select.prop('disabled', true);
+
+                        // Get CSRF token
+                        const csrfToken = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
+
+                        $.ajax({
+                            url: '{{ route("frontend.update_visit_status") }}',
+                            type: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            data: {
+                                visit_id: visitId,
+                                status: newStatus,
+                                note: notePrompt.trim()
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    showNotification(response.message || '{{ __("messages.status_updated_successfully") }}', 'success');
+                                    select.data('original-status', newStatus);
+                                    
+                                    // Reload notes list if available
+                                    if (response.note_html) {
+                                        const notesList = $('.notes-list-' + visitId);
+                                        if (notesList.length) {
+                                            notesList.html(response.note_html);
+                                        }
+                                    } else {
+                                        // Optionally reload the page or section
+                                        location.reload();
+                                    }
+                                } else {
+                                    showNotification(response.message || '{{ __("messages.error_occurred") }}', 'error');
+                                    select.val(originalStatus);
+                                }
+                            },
+                            error: function(xhr) {
+                                let errorMessage = '{{ __("messages.error_occurred") }}';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                }
+                                showNotification(errorMessage, 'error');
+                                select.val(originalStatus);
+                            },
+                            complete: function() {
+                                select.prop('disabled', false);
+                            }
+                        });
+                    } else {
+                        // Original logic for status changes that don't require notes
+                        select.prop('disabled', true);
+                        const csrfToken = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
+
+                        $.ajax({
+                            url: '{{ route("frontend.update_visit_status") }}',
+                            type: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken
+                            },
+                            data: {
+                                visit_id: visitId,
+                                status: newStatus
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    showNotification(response.message || '{{ __("messages.status_updated_successfully") }}', 'success');
+                                    select.data('original-status', newStatus);
+                                } else {
+                                    showNotification(response.message || '{{ __("messages.error_occurred") }}', 'error');
+                                    select.val(originalStatus);
+                                }
+                            },
+                            error: function(xhr) {
+                                let errorMessage = '{{ __("messages.error_occurred") }}';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                }
+                                showNotification(errorMessage, 'error');
+                                select.val(originalStatus);
+                            },
+                            complete: function() {
+                                select.prop('disabled', false);
+                            }
+                        });
+                    }
+                });
+
+                // Handle Add Note Button Click
+                $(document).on('click', '.add-note-btn', function() {
+                    const visitId = $(this).data('visit-id');
+                    const form = $('#add-note-form-' + visitId);
+                    form.slideToggle(200);
+                    form.find('.note-textarea').focus();
+                });
+
+                // Handle Cancel Note Button
+                $(document).on('click', '.cancel-note-btn', function() {
+                    const form = $(this).closest('.add-note-form');
+                    form.find('.note-textarea').val('');
+                    form.slideUp(200);
+                });
+
+                // Handle Note Form Submission
+                $(document).on('submit', '.submit-note-form', function(e) {
+                    e.preventDefault();
+                    
+                    const form = $(this);
+                    const visitId = form.data('visit-id');
+                    const noteText = form.find('.note-textarea').val().trim();
+                    const submitBtn = form.find('button[type="submit"]');
+                    
+                    if (!noteText) {
+                        showNotification('{{ __("messages.note_required") ?? "Please enter a note" }}', 'error');
+                        return;
+                    }
+
+                    // Disable submit button
+                    submitBtn.prop('disabled', true).text('{{ __("messages.saving") ?? "Saving..." }}');
+
                     const csrfToken = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
 
                     $.ajax({
-                        url: '{{ route("frontend.update_visit_status") }}',
+                        url: '{{ route("frontend.add_visit_note") }}',
                         type: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': csrfToken
                         },
                         data: {
                             visit_id: visitId,
-                            status: newStatus
+                            note: noteText
                         },
-                        success: function (response) {
+                        success: function(response) {
                             if (response.success) {
-                                showNotification(response.message || '{{ __("messages.status_updated_successfully") }}', 'success');
-                                // Update 'original' data to new status so if we change again it knows the current state
-                                select.data('original-status', newStatus);
+                                showNotification(response.message || '{{ __("messages.note_added_successfully") }}', 'success');
+                                
+                                // Reset form
+                                form.find('.note-textarea').val('');
+                                form.closest('.add-note-form').slideUp(200);
+                                
+                                // Update notes list
+                                if (response.note_html) {
+                                    const notesList = $('.notes-list-' + visitId);
+                                    notesList.html(response.note_html);
+                                } else {
+                                    // Fallback: reload page
+                                    location.reload();
+                                }
                             } else {
                                 showNotification(response.message || '{{ __("messages.error_occurred") }}', 'error');
-                                // Revert change
-                                select.val(originalStatus);
                             }
                         },
-                        error: function (xhr) {
+                        error: function(xhr) {
                             let errorMessage = '{{ __("messages.error_occurred") }}';
                             if (xhr.responseJSON && xhr.responseJSON.message) {
                                 errorMessage = xhr.responseJSON.message;
                             }
                             showNotification(errorMessage, 'error');
-                            // Revert change
-                            select.val(originalStatus); // This might be tricky if we didn't save it well, but roughly works
                         },
-                        complete: function () {
-                            select.prop('disabled', false);
+                        complete: function() {
+                            submitBtn.prop('disabled', false).html('{{ __("messages.save") ?? "Save" }}');
                         }
                     });
                 });

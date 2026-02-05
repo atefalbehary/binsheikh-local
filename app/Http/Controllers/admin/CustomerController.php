@@ -282,6 +282,16 @@ class CustomerController extends Controller
         if (!$customer) {
             abort(404);
         }
+
+        // Fetch visits associated with this customer (matching by phone)
+        $visits = collect();
+        if ($customer->phone) {
+            $visits = \App\Models\VisiteSchedule::with(['noteHistory.creator', 'agent', 'project'])
+                ->where('client_phone_number', $customer->phone)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
         $parts = explode('/', $customer->professional_practice_certificate);
         $last = end($parts);
         $parts = explode('/', $customer->license);
@@ -289,7 +299,7 @@ class CustomerController extends Controller
         $parts = explode('/', $customer->id_card);
         $last_id_card = end($parts);
 
-        return view('admin.customer.details', compact('page_heading', 'customer', 'last', 'last_license', 'last_id_card'));
+        return view('admin.customer.details', compact('page_heading', 'customer', 'last', 'last_license', 'last_id_card', 'visits'));
     }
 
     /**

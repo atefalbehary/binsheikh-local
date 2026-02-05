@@ -1477,6 +1477,125 @@
         cursor: pointer;
     }
     .btn-save-custom:hover { background-color: #1a3cb8; }
+
+    /* Document Modal Styles */
+    .document-modal {
+        display: none;
+        position: fixed;
+        z-index: 1050;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        align-items: center;
+        justify-content: center;
+    }
+    .document-modal.show {
+        display: flex;
+    }
+    .document-modal-content {
+        background-color: white;
+        border-radius: 12px;
+        width: 500px;
+        max-width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        animation: modalFadeIn 0.3s ease-out;
+    }
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .document-modal-header {
+        padding: 20px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .document-modal-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+    }
+    .document-modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #999;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    .document-modal-close:hover {
+        color: #333;
+    }
+    .document-modal-body {
+        padding: 20px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    .document-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .document-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s;
+    }
+    .document-item:hover {
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border-color: #dee2e6;
+    }
+    .document-name {
+        font-weight: 500;
+        color: #333;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .document-name i {
+        color: #5d78ff;
+    }
+    .document-btn {
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #5d78ff, #2b4cdd);
+        color: white;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+    .document-btn:hover {
+        background: linear-gradient(135deg, #2b4cdd, #1a3cb8);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(43, 76, 221, 0.3);
+    }
+    .no-documents {
+        text-align: center;
+        padding: 30px;
+        color: #666;
+    }
+    .no-documents i {
+        font-size: 40px;
+        color: #e9ecef;
+        margin-bottom: 15px;
+    }
 </style>
 @stop
 
@@ -1556,13 +1675,15 @@
                         </div>
                     </div>
 
-                    <div class="agent-action-card">
-                        <h4 style="margin-bottom: 20px;">Agency Action</h4>
-                        <a href="{{ url('/') }}" target="_blank" class="action-btn-custom btn-green-c">Go to Agency Front Page</a>
-                        <a href="#reservations-card" class="action-btn-custom btn-blue-c" onclick="$('[data-tab=\'reservations\']').click()">Property Reviews</a>
-                        <a href="mailto:{{ $customer->email }}" class="action-btn-custom btn-orange-c">Send Email</a>
-                        <a href="#reservations-card" class="action-btn-custom btn-blue-c" onclick="$('[data-tab=\'reservations\']').click()">Purchase History</a>
-                    </div>
+                <div class="agent-action-card">
+                    <h4 style="margin-bottom: 20px;">Agency Action</h4>
+                    <a href="{{ url('/') }}" target="_blank" class="action-btn-custom btn-green-c">Go to Agency Front Page</a>
+                    <a href="#reservations-card" class="action-btn-custom btn-blue-c" onclick="$('[data-tab=\'reservations\']').click()">Property Reviews</a>
+                    <a href="mailto:{{ $customer->email }}" class="action-btn-custom btn-orange-c">Send Email</a>
+                    <a href="#reservations-card" class="action-btn-custom btn-blue-c" onclick="$('[data-tab=\'reservations\']').click()">Purchase History</a>
+                    
+                    <button class="action-btn-custom btn-blue-c" onclick="openDocumentsModal()">View Uploaded Documents</button>
+                </div>
                 </div>
 
                 <!-- Right Column -->
@@ -3413,4 +3534,125 @@
         }
     });
 </script>
+    <!-- Document Modal -->
+    <div id="documentsModal" class="document-modal">
+        <div class="document-modal-content">
+            <div class="document-modal-header">
+                <h5 class="document-modal-title">Uploaded Documents</h5>
+                <button class="document-modal-close" onclick="closeDocumentsModal()">&times;</button>
+            </div>
+            <div class="document-modal-body">
+                @php
+                    $hasDocuments = $customer->trade_license || $customer->professional_practice_certificate || $customer->cr || $customer->computer_card || $customer->authorized_signatory;
+                @endphp
+                
+                @if($hasDocuments)
+                    <div class="document-list">
+                        @if($customer->trade_license)
+                        <div class="document-item">
+                            <span class="document-name"><i class="fas fa-file-contract"></i> Trade License</span>
+                            <div style="display: flex; gap: 5px;">
+                                <button onclick="openPreviewModal('{{ aws_asset_path($customer->trade_license) }}', 'Trade License')" class="document-btn">View</button>
+                                <a href="{{ aws_asset_path($customer->trade_license) }}" download class="document-btn" style="background: #6c757d;"><i class="fas fa-download"></i></a>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        @if($customer->professional_practice_certificate)
+                        <div class="document-item">
+                            <span class="document-name"><i class="fas fa-certificate"></i> Brokerage License</span>
+                            <div style="display: flex; gap: 5px;">
+                                <button onclick="openPreviewModal('{{ aws_asset_path($customer->professional_practice_certificate) }}', 'Brokerage License')" class="document-btn">View</button>
+                                <a href="{{ aws_asset_path($customer->professional_practice_certificate) }}" download class="document-btn" style="background: #6c757d;"><i class="fas fa-download"></i></a>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        @if($customer->cr)
+                        <div class="document-item">
+                            <span class="document-name"><i class="fas fa-building"></i> Commercial Registration (CR)</span>
+                            <div style="display: flex; gap: 5px;">
+                                <button onclick="openPreviewModal('{{ aws_asset_path($customer->cr) }}', 'Commercial Registration (CR)')" class="document-btn">View</button>
+                                <a href="{{ aws_asset_path($customer->cr) }}" download class="document-btn" style="background: #6c757d;"><i class="fas fa-download"></i></a>
+                            </div>
+                        </div>
+                        @endif
+
+                         @if($customer->computer_card)
+                        <div class="document-item">
+                            <span class="document-name"><i class="fas fa-id-card-alt"></i> Establishment Card</span>
+                            <div style="display: flex; gap: 5px;">
+                                <button onclick="openPreviewModal('{{ aws_asset_path($customer->computer_card) }}', 'Establishment Card')" class="document-btn">View</button>
+                                <a href="{{ aws_asset_path($customer->computer_card) }}" download class="document-btn" style="background: #6c757d;"><i class="fas fa-download"></i></a>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        @if($customer->authorized_signatory)
+                        <div class="document-item">
+                            <span class="document-name"><i class="fas fa-file-signature"></i> Authorized Signatory ID Copy</span>
+                            <div style="display: flex; gap: 5px;">
+                                <button onclick="openPreviewModal('{{ aws_asset_path($customer->authorized_signatory) }}', 'Authorized Signatory ID Copy')" class="document-btn">View</button>
+                                <a href="{{ aws_asset_path($customer->authorized_signatory) }}" download class="document-btn" style="background: #6c757d;"><i class="fas fa-download"></i></a>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                @else
+                    <div class="no-documents">
+                        <i class="fas fa-folder-open"></i>
+                        <p>No documents uploaded yet.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <div id="documentPreviewModal" class="document-modal" style="z-index: 1060; background-color: rgba(0,0,0,0.8);">
+        <div class="document-modal-content" style="width: 800px; max-width: 95%; height: 80vh; display: flex; flex-direction: column;">
+            <div class="document-modal-header">
+                <h5 class="document-modal-title" id="previewTitle">Document Preview</h5>
+                <button class="document-modal-close" onclick="closePreviewModal()">&times;</button>
+            </div>
+            <div class="document-modal-body" style="flex: 1; padding: 0; overflow: hidden; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                <iframe id="previewFrame" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openDocumentsModal() {
+            document.getElementById('documentsModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDocumentsModal() {
+            document.getElementById('documentsModal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function openPreviewModal(url, title) {
+            document.getElementById('previewTitle').textContent = title;
+            document.getElementById('previewFrame').src = url;
+            document.getElementById('documentPreviewModal').classList.add('show');
+        }
+
+        function closePreviewModal() {
+            document.getElementById('documentPreviewModal').classList.remove('show');
+            document.getElementById('previewFrame').src = ''; // Clear source to stop media
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            var docModal = document.getElementById('documentsModal');
+            var prevModal = document.getElementById('documentPreviewModal');
+            
+            if (event.target == docModal) {
+                closeDocumentsModal();
+            }
+            if (event.target == prevModal) {
+                closePreviewModal();
+            }
+        });
+    </script>
 @stop

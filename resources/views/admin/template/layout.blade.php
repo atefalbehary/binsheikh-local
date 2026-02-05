@@ -271,7 +271,17 @@ $CurrentUrl = url()->current();
             </button>
 
             <ul class="c-header-nav ml-auto mr-4">
-
+                <?php
+                    $pending_approvals_count = \App\Models\User::whereIn('role', [3, 4])->where('verified', 0)->where('deleted', 0)->count();
+                ?>
+                <li class="c-header-nav-item mx-2">
+                    <a class="c-header-nav-link" href="{{ route('admin.pending_approvals.index') }}" title="Pending Approvals">
+                        <i class="far fa-bell" style="font-size: 1.2rem;"></i>
+                        @if($pending_approvals_count > 0)
+                            <span class="badge badge-pill badge-danger" style="vertical-align: top; margin-left: -10px;">{{ $pending_approvals_count }}</span>
+                        @endif
+                    </a>
+                </li>
 
                 <li class="c-header-nav-item dropdown"><a class="c-header-nav-link" data-toggle="dropdown"
                         href="#" role="button" aria-haspopup="true" aria-expanded="false">

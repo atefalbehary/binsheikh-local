@@ -1434,7 +1434,7 @@
                                     <i class="fas fa-file-signature"></i>
                                 </div>
                                 <div class="info-content">
-                                    <label>Authorized signatory</label>
+                                    <label>Authorized signatory ID Copy</label>
                                     @if(!$customer->authorized_signatory)
                                       <span>N/A</span>
                                     @endif

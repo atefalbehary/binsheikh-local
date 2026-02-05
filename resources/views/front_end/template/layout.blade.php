@@ -826,10 +826,10 @@ if (!$locale) {
                                                 <div class="cs-intsputwrap agent_agency_div d-none">
                                                     <label for="d"
                                                         style="float:{{ $locale == 'ar' ? 'right' : 'left' }}"
-                                                        id="computer_card_label">{{ __('messages.computer_card') ?? 'Computer Card' }}</label>
+                                                        id="computer_card_label">{{ __('messages.computer_card') ?? 'Establishment Card' }}</label>
                                                     <input type="file" class="form-control agent_agency_inp"
                                                         name="computer_card" required
-                                                        data-parsley-required-message="{{ __('messages.select_computer_card') ?? 'Please select a computer card' }}"
+                                                        data-parsley-required-message="{{ __('messages.select_computer_card') ?? 'Please select a Establishment card' }}"
                                                         data-parsley-trigger="change"
                                                         data-parsley-fileextension="jpg,png,jpeg,pdf"
                                                         data-parsley-fileextension-message="{{ __('messages.file_extension_message') }}"

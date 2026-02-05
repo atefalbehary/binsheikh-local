@@ -44,4 +44,13 @@ class VisiteSchedule extends Model
     {
         return $this->belongsTo(Projects::class, 'project_id');
     }
+
+    /**
+     * Get all note history for this visit schedule.
+     */
+    public function noteHistory()
+    {
+        return $this->hasMany(\App\Models\Models\VisitScheduleNote::class, 'visit_schedule_id')
+            ->orderBy('created_at', 'desc');
+    }
 }

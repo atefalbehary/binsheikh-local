@@ -406,6 +406,32 @@ class AgencyController extends Controller
         return redirect()->back()->with('success', $message);
     }
 
+    public function reject(Request $request)
+    {
+        $status = "0";
+        $message = "";
+
+        if($request->agency_id) {
+            $customer = User::find($request->agency_id);
+            if ($customer) {
+                // Soft delete the agency
+                $customer->deleted = 1;
+                $customer->active = 0;
+                $customer->updated_at = gmdate('Y-m-d H:i:s');
+                $customer->save();
+
+                $status = "1";
+                $message = "Agency rejected successfully";
+            } else {
+                $message = "Agency not found";
+            }
+        } else {
+             $message = "Invalid Request";
+        }
+        
+        return redirect()->back()->with($status == "1" ? 'success' : 'error', $message);
+    }
+
     public function updateCommission(Request $request)
     {
         $status = "0";

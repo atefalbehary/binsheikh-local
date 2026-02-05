@@ -1477,13 +1477,13 @@ class HomeController extends Controller
 
             $agentIds = $customer->agencyUsers->pluck('id')->toArray();
 
-            $visits = \App\Models\VisiteSchedule::with(['agent', 'project'])
+            $visits = \App\Models\VisiteSchedule::with(['agent', 'project', 'noteHistory.creator'])
                 ->whereIn('agent_id', $agentIds)
                 ->orderBy('created_at', 'desc')
                 ->get();
             return view('front_end.visit_schedule', compact('page_heading', 'visits', 'properties', 'projects', 'agents', 'clients'));
         } else {
-            $visits = \App\Models\VisiteSchedule::with(['agent', 'project'])
+            $visits = \App\Models\VisiteSchedule::with(['agent', 'project', 'noteHistory.creator'])
                 ->where('agent_id', $id)
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -3399,6 +3399,16 @@ class HomeController extends Controller
                 'status' => $request->status ?? 'rescheduled', // Default to rescheduled as requested
             ]);
 
+            // Add existing NOTES field as the initial note for the visit schedule
+            if ($request->filled('notes')) {
+                \App\Models\Models\VisitScheduleNote::create([
+                    'visit_schedule_id' => $visitSchedule->id,
+                    'created_by' => $user->id,
+                    'note' => $request->notes,
+                    'visit_status' => $request->status ?? 'rescheduled'
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Visit schedule created successfully',
@@ -3432,10 +3442,11 @@ class HomeController extends Controller
                 return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
             }
 
-            // Validate request
+            // Validate request - now with optional note field
             $validator = Validator::make($request->all(), [
                 'visit_id' => 'required|integer|exists:visit_schedules,id',
-                'status' => 'required|string|in:Visited,Cancelled,Rescheduled,Scheduled'
+                'status' => 'required|string|in:Visited,Cancelled,Rescheduled,Scheduled',
+                'note' => 'nullable|string'
             ]);
 
             if ($validator->fails()) {
@@ -3465,15 +3476,41 @@ class HomeController extends Controller
                 return response()->json(['success' => false, 'message' => __('messages.cannot_update_past_visit_status')], 400);
             }
 
-            // Update status
-            $visit->status = $request->status;
-            $visit->save();
+            \DB::beginTransaction();
+            
+            try {
+                // Update status
+                $visit->status = $request->status;
+                $visit->save();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Visit status updated successfully',
-                'new_status' => $visit->status
-            ]);
+                // Create note history entry if note is provided
+                if ($request->filled('note')) {
+                    \App\Models\Models\VisitScheduleNote::create([
+                        'visit_schedule_id' => $visit->id,
+                        'created_by' => $user->id,
+                        'note' => $request->note,
+                        'visit_status' => $request->status
+                    ]);
+                }
+
+                \DB::commit();
+
+                // Get updated notes HTML
+                $noteHistory = $visit->fresh()->noteHistory;
+                $noteHtml = $this->renderNotesHtml($noteHistory);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Visit status updated successfully',
+                    'new_status' => $visit->status,
+                    'note_html' => $noteHtml
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollback();
+                \Log::error('Error updating visit status: ' . $e->getMessage());
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            }
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
@@ -3523,5 +3560,111 @@ class HomeController extends Controller
         } else {
             return response()->json(['status' => '0', 'message' => __('messages.error_occurred')]);
         }
+    }
+
+    /**
+     * Add a note to visit schedule
+     */
+    public function add_visit_note(Request $request)
+    {
+        try {
+            $request->validate([
+                'visit_id' => 'required|exists:visit_schedules,id',
+                'note' => 'required|string'
+            ]);
+
+            $user = Auth::user();
+            $visit = \App\Models\VisiteSchedule::find($request->visit_id);
+
+            if (!$visit) {
+                return response()->json(['success' => false, 'message' => __('messages.visit_not_found')]);
+            }
+
+            // Authorization check
+            if ($user->role == 3) { // Agent
+                if ($visit->agent_id != $user->id) {
+                    return response()->json(['success' => false, 'message' => __('messages.unauthorized')]);
+                }
+            } elseif ($user->role == 4) { // Agency
+                $agent = User::find($visit->agent_id);
+                if (!$agent || ($agent->agency_id != $user->id && $visit->agent_id != $user->id)) {
+                    return response()->json(['success' => false, 'message' => __('messages.unauthorized')]);
+                }
+            }
+
+            // Create note history entry
+            \App\Models\Models\VisitScheduleNote::create([
+                'visit_schedule_id' => $visit->id,
+                'created_by' => $user->id,
+                'note' => $request->note,
+                'visit_status' => $visit->status // Current status
+            ]);
+
+            // Get updated notes HTML
+            $noteHistory = $visit->fresh()->noteHistory;
+            $noteHtml = $this->renderNotesHtml($noteHistory);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.note_added_successfully'),
+                'note_html' => $noteHtml
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error adding visit note: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => __('messages.error_occurred')]);
+        }
+    }
+
+    /**
+     * Render notes HTML for AJAX response
+     */
+    private function renderNotesHtml($noteHistory)
+    {
+        if ($noteHistory->count() == 0) {
+            return '<span style="color: #999; font-size: 13px;">' . __('messages.no_note_history') . '</span>';
+        }
+
+        $html = '';
+        foreach ($noteHistory as $noteItem) {
+            $statusBadge = '';
+            if ($noteItem->visit_status) {
+                $statusClass = match (strtolower($noteItem->visit_status)) {
+                    'visited' => 'success',
+                    'cancelled' => 'danger',
+                    'rescheduled' => 'warning',
+                    default => 'primary'
+                };
+                $statusBadge = '<span class="badge bg-' . $statusClass . '" style="font-size: 11px;">' . ucfirst($noteItem->visit_status) . '</span>';
+            }
+
+            $creatorName = $noteItem->creator->name ?? 'N/A';
+            $createdAt = web_date_in_timezone($noteItem->created_at, 'd-M-Y h:i A');
+            
+            $html .= '
+            <div class="note-item" style="border-bottom: 1px solid #eee; padding: 12px 0; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                            <span style="font-size: 12px; color: #666;">
+                                <i class="fas fa-calendar-alt"></i>
+                                ' . $createdAt . '
+                            </span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                            <span style="font-size: 12px; color: #666;">
+                                <i class="fas fa-user"></i>
+                                <strong>' . __('messages.created_by') . ':</strong> ' . $creatorName . '
+                            </span>
+                        </div>
+                    </div>
+                    ' . $statusBadge . '
+                </div>
+                <div style="color: #333; font-size: 13px; line-height: 1.6;">
+                    ' . e($noteItem->note) . '
+                </div>
+            </div>';
+        }
+
+        return $html;
     }
 }
