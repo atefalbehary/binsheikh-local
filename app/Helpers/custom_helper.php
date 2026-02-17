@@ -2,6 +2,20 @@
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+
+/**
+ * Check if we are running in a local environment (HTTP, not HTTPS).
+ */
+function is_local_env()
+{
+    // Check the request scheme: HTTP = local, HTTPS = production
+    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+             || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+             || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+
+    return !$isSecure;
+}
 function check_permission($module, $permission)
 {
     $userid = Auth::user()->id;
@@ -17,8 +31,13 @@ if (!function_exists('get_storage_path')) {
             if (!empty($dir)) {
                 $dir = config("global.{$dir}");
             }
-            if (\Storage::disk(config('global.upload_bucket'))->exists($dir . $filename)) {
-                return \Storage::url("{$dir}{$filename}");
+
+            // Use public disk locally, S3 on production
+            // $disk = is_local_env() ? 'public' : config('global.upload_bucket');
+            $disk = config('global.upload_bucket');
+
+            if (\Storage::disk($disk)->exists($dir . $filename)) {
+                return \Storage::disk($disk)->url("{$dir}{$filename}");
             }
         }
 
@@ -26,36 +45,26 @@ if (!function_exists('get_storage_path')) {
     }
 }
 if (!function_exists('get_uploaded_image_url')) {
-    function get_uploaded_image_url($filename = '', $dir = '', $default_file = 'placeholder.png')
+    function get_uploaded_image_url($filename = '', $dir = '', $default_file = 'user.png')
     {
+        $disk = config('global.upload_bucket');
+        $fallback_image = asset('admin-assets/icons/user.png');
 
         if (!empty($filename)) {
-
-            $upload_dir = config('global.upload_path');
-            if (!empty($dir)) {
-                $dir = config("global.{$dir}");
-
-            }
-
-            if (\Storage::disk(config('global.upload_bucket'))->exists($dir . $filename)) {
-                return \Storage::disk(config('global.upload_bucket'))->url($dir . $filename);
-                //return asset(\Storage::url("{$dir}{$filename}"));
-            } else {
-
-                return asset(\Storage::url("{$dir}{$filename}"));
-            }
-        }
-        if (!empty($default_file)) {
+            $upload_dir = config('global.upload_path'); // Is this used? kept for safety if config needed context
             if (!empty($dir)) {
                 $dir = config("global.{$dir}");
             }
-            $default_file = asset(\Storage::url("{$dir}{$default_file}"));
-        }
-        if (!empty($default_file)) {
-            return $default_file;
+
+            // Check if file exists on disk
+            if (\Storage::disk($disk)->exists($dir . $filename)) {
+                return \Storage::disk($disk)->url($dir . $filename);
+            }
+            
+             \Illuminate\Support\Facades\Log::warning("get_uploaded_image_url: Not found [{$dir}{$filename}] on disk [{$disk}]. Returning fallback.");
         }
 
-        return \Storage::url("logo.png");
+        return $fallback_image;
     }
 }
 if (!function_exists('time_ago')) {
@@ -235,47 +244,188 @@ if (!function_exists('array_combination')) {
 //     }
 // }
 
-function file_save($file, $model, $mb_file_size = 25000)
+
+
+/**
+ * Resolve a stored image path to a full displayable URL.
+ * Handles: full URLs (returned as-is), relative paths (prefixed with asset()),
+ * and bare filenames (looked up in uploads/users/ locally or via CDN).
+ */
+function resolve_image_url($value, $subdir = 'users', $placeholder = null)
+{
+    if (empty($value)) {
+        return $placeholder ?? asset('front-assets/images/avatar/1.jpg');
+    }
+
+    // Already a full URL — return as-is
+    if (preg_match('#^https?://#i', $value)) {
+        return $value;
+    }
+
+    // Relative path starting with "uploads/" — resolve based on environment
+    if (strpos($value, 'uploads/') === 0) {
+        if (is_local_env()) {
+            // Convert uploads/users/file.jpg -> storage/users/file.jpg for local
+            $storagePath = str_replace('uploads/', 'storage/', $value);
+            return asset($storagePath);
+        }
+        return asset($value);
+    }
+
+    // Bare filename — build the path
+    if (is_local_env()) {
+        // Assuming $placeholder can be used to indicate a specific default file like 'user.png'
+        if ($placeholder === 'user.png') {
+            return asset('admin-assets/icons/user.png');
+        }
+        return asset('storage/' . $subdir . '/' . $value);
+    }
+
+    // Production: use CDN / S3
+    return 'https://bsbqa.com/uploads/' . $subdir . '/' . $value;
+}
+
+function file_save($file, $model, $mb_file_size = 25)
 {
     try {
         // Validate file size
-        $precision = 2;
-        $size = $file->getSize();
-        $size = (int) $size;
-        $base = log($size) / log(1024);
-        $suffixes = array(' bytes', ' KB', ' MB', ' GB', ' TB');
-        $dSize = round(pow(1024, $base - floor($base)), $precision) . $suffixes[floor($base)];
+        $sizeInMB = $file->getSize() / 1024 / 1024;
 
-        $aSizeArray = explode(' ', $dSize);
-        if ($aSizeArray[0] > $mb_file_size && ($aSizeArray[1] == 'MB' || $aSizeArray[1] == 'GB' || $aSizeArray[1] == 'TB')) {
-            return ['status' => false, 'link' => null, 'message' => 'Image size should be less than or equal to ' . $mb_file_size . ' MB'];
+        if ($sizeInMB > $mb_file_size) {
+            return [
+                'status' => false,
+                'link' => null,
+                'message' => 'File size should be less than or equal to ' . $mb_file_size . ' MB'
+            ];
         }
 
         // Generate unique file name
         $name = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $path = 'uploads/' . $model . '/' . $name;
 
-        // Use public_path() to store in public/uploads directly, matching existing structure
-        // and avoiding missing 'storage' symlink issues.
-        $destinationPath = public_path('uploads/' . $model);
-        
-        // Ensure directory exists
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
+        // Upload to S3 as PUBLIC
+        $uploaded = Storage::disk('s3')->put(
+            $path,
+            file_get_contents($file),
+            'public'
+        );
+
+        // Check if upload succeeded
+        if (!$uploaded) {
+            return [
+                'status' => false,
+                'link' => null,
+                'message' => 'Failed to upload file to S3'
+            ];
         }
 
-        // Move file
-        $file->move($destinationPath, $name);
+        // Get full public URL
+        $image_url = Storage::disk('s3')->url($path);
+        \Log::info('File uploaded to S3: ' . $image_url);
 
-        // Return relative path for DB
-        $image_url = 'uploads/' . $model . '/' . $name;
-
-        return ['status' => true, 'link' => $image_url, 'message' => 'File uploaded successfully'];
+        return [
+            'status' => true,
+            'link' => $image_url,
+            'message' => 'File uploaded successfully'
+        ];
 
     } catch (\Exception $e) {
-        // dd($e->getMessage()); 
-        return ['status' => false, 'link' => null, 'message' => $e->getMessage()];
+        \Log::error('S3 Upload Error: ' . $e->getMessage());
+        return [
+            'status' => false,
+            'link' => null,
+            'message' => $e->getMessage()
+        ];
     }
 }
+
+// function file_save($file, $model, $mb_file_size = 25)
+// {
+//     try {
+
+//         // Validate file size
+//         $sizeInMB = $file->getSize() / 1024 / 1024;
+
+//         if ($sizeInMB > $mb_file_size) {
+//             return [
+//                 'status' => false,
+//                 'link' => null,
+//                 'message' => 'Image size should be less than or equal to ' . $mb_file_size . ' MB'
+//             ];
+//         }
+
+//         // Generate unique file name
+//         $name = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+//         $path = 'uploads/' . $model . '/' . $name;
+
+//         // Upload as PUBLIC
+//         Storage::disk('s3')->put(
+//             $path,
+//             file_get_contents($file),
+//             'public'
+//         );
+
+//         // Get full public URL
+//         $image_url = Storage::disk('s3')->url($path);
+//         Log::info('Uploaded Image URL: ' . $image_url);
+
+//         return [
+//             'status' => true,
+//             'link' => $image_url,
+//             'message' => 'File uploaded successfully'
+//         ];
+
+//     } catch (\Exception $e) {
+//         return [
+//             'status' => false,
+//             'link' => null,
+//             'message' => $e->getMessage()
+//         ];
+//     }
+// }
+
+// function file_save($file, $model, $mb_file_size = 25000)
+// {
+//     try {
+//         // Validate file size
+//         $precision = 2;
+//         $size = $file->getSize();
+//         $size = (int) $size;
+//         $base = log($size) / log(1024);
+//         $suffixes = array(' bytes', ' KB', ' MB', ' GB', ' TB');
+//         $dSize = round(pow(1024, $base - floor($base)), $precision) . $suffixes[floor($base)];
+
+//         $aSizeArray = explode(' ', $dSize);
+//         if ($aSizeArray[0] > $mb_file_size && ($aSizeArray[1] == 'MB' || $aSizeArray[1] == 'GB' || $aSizeArray[1] == 'TB')) {
+//             return ['status' => false, 'link' => null, 'message' => 'Image size should be less than or equal to ' . $mb_file_size . ' MB'];
+//         }
+
+//         // Generate unique file name
+//         $name = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+//         // Use public_path() to store in public/uploads directly, matching existing structure
+//         // and avoiding missing 'storage' symlink issues.
+//         $destinationPath = public_path('uploads/' . $model);
+        
+//         // Ensure directory exists
+//         if (!file_exists($destinationPath)) {
+//             mkdir($destinationPath, 0755, true);
+//         }
+
+//         // Move file
+//         $file->move($destinationPath, $name);
+
+//         // Return relative path for DB
+//         $image_url = 'uploads/' . $model . '/' . $name;
+
+//         return ['status' => true, 'link' => $image_url, 'message' => 'File uploaded successfully'];
+
+//     } catch (\Exception $e) {
+//         // dd($e->getMessage()); 
+//         return ['status' => false, 'link' => null, 'message' => $e->getMessage()];
+//     }
+// }
 /*
 function aws_asset_path($path)
 {
@@ -296,11 +446,11 @@ function aws_asset_path($path)
     $cleanPath = ltrim($path, '/');
     if (strpos($cleanPath, 'storage/') === 0 || strpos($cleanPath, 'uploads/') === 0) {
         // Return root-relative path to ensure it uses the current domain (localhost)
-        return '/' . $cleanPath;
+        return asset('/' . $cleanPath);
     }
 
     // Otherwise prepend CDN URL
-    return "https://cdn.bsbqa.com/" . $cleanPath;
+    return "https://bsbqa.com/" . $cleanPath;
 }
 
 if (!function_exists('deleteFile')) {

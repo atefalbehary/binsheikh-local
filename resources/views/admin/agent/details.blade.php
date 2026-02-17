@@ -1638,7 +1638,12 @@
                 <div class="col-md-4">
                     <div class="agent-profile-card">
                         <div class="profile-header">
-                            <img src="{{ $agent->user_image }}" class="profile-img-lg" alt="Profile">
+                            <div style="position: relative; display: inline-block;">
+                                <img src="{{ $agent->user_image }}" class="profile-img-lg" alt="Profile" id="agentProfileImage">
+                                <div class="edit-icon" onclick="document.getElementById('profileImageInput').click()" style="position: absolute; bottom: 5px; right: 20px; background: white; border-radius: 50%; padding: 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); width: 25px; height: 25px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-pen" style="font-size: 12px; color: #333;"></i>
+                                </div>
+                            </div>
                             <div>
                                 <div class="profile-joined">Joined at <br> {{ $agent->created_at->format('d M Y') }}</div>
                                 <div class="profile-total-purchase">Total Purchase<br>N{{ number_format($totalPurchase ?? 0, 2) }}</div>
@@ -1647,7 +1652,11 @@
                         <div class="profile-details-list">
                             <div class="list-item">
                                 <span class="list-label">Name</span>
-                                <span class="list-value">{{ $agent->name }}</span>
+                                <span class="list-value">{{ $agent->name }}
+                                    @if($agent->super_agent)
+                                        <i class="fas fa-check-circle text-primary ml-1" title="Super Agent"></i>
+                                    @endif
+                                </span>
                             </div>
                             <div class="list-item">
                                 <span class="list-label">Email</span>
@@ -1683,8 +1692,9 @@
                 <div class="col-md-8">
                     <div class="edit-profile-card">
                         <div class="section-title">Edit Profile</div>
-                        <form action="{{ url('admin/agent/update/'.$agent->id) }}" method="POST">
+                        <form action="{{ url('admin/agent/update/'.$agent->id) }}" method="POST" enctype="multipart/form-data">
                             @csrf
+                        <input type="file" id="profileImageInput" name="image" style="display: none;" accept="image/*">
                             <div class="row">
                                 <div class="col-md-6 form-group">
                                     <label>Name *</label>
@@ -1735,12 +1745,24 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label class="c-switch c-switch-label c-switch-pill c-switch-success my-2">
-                                     <input class="c-switch-input" type="checkbox" name="active" {{ $agent->active ? 'checked' : '' }}>
-                                     <span class="c-switch-slider" data-checked="On" data-unchecked="Off"></span>
-                                </label>
-                                <span class="ml-2">Active Account</span>
+                            <div class="form-group d-flex align-items-center">
+                                <div>
+                                    <label class="c-switch c-switch-label c-switch-pill c-switch-success my-2">
+                                         <input class="c-switch-input" type="checkbox" name="active" {{ $agent->active ? 'checked' : '' }}>
+                                         <span class="c-switch-slider" data-checked="On" data-unchecked="Off"></span>
+                                    </label>
+                                    <span class="ml-2">Active Account</span>
+                                </div>
+
+                                @if(auth()->user()->hasRole('Super Admin'))
+                                <div class="ml-4">
+                                    <label class="c-switch c-switch-label c-switch-pill c-switch-primary my-2">
+                                         <input class="c-switch-input" type="checkbox" name="super_agent" {{ $agent->super_agent ? 'checked' : '' }}>
+                                         <span class="c-switch-slider" data-checked="On" data-unchecked="Off"></span>
+                                    </label>
+                                    <span class="ml-2">Super Agent <i class="fas fa-check-circle text-primary" title="Display as verified/featured agent"></i></span>
+                                </div>
+                                @endif
                             </div>
 
                             <button type="submit" class="btn-save-custom">Save Changes</button>
@@ -2115,8 +2137,18 @@
 
 @section('script')
 <script>
-    // Tab functionality
-    document.addEventListener('DOMContentLoaded', function() {
+    $(document).ready(function() {
+        document.getElementById('profileImageInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('agentProfileImage').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        // Tab functionality
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabPanes = document.querySelectorAll('.tab-pane');
         

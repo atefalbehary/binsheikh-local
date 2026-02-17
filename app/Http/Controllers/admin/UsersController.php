@@ -110,4 +110,47 @@ class UsersController extends Controller
 
     }
 
+    public function update_profile_image(Request $request)
+    {
+        $status = "0";
+        $message = "";
+        $data = [];
+
+        $validator = Validator::make($request->all(), [
+            'id' => 'required',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            $message = $validator->errors()->first();
+        } else {
+            try {
+                $user = User::find($request->id);
+                if ($user) {
+                    if ($request->hasFile('image')) {
+                        $file = $request->file('image');
+                        $filename = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+                        $path = config('global.user_image_upload_dir') . $filename; // users/filename.jpg
+
+                        // Upload to S3
+                        \Illuminate\Support\Facades\Storage::disk('s3')->put($path, fopen($file->getRealPath(), 'r+'));
+
+                        // Update user record with just the filename as per accessor logic
+                        $user->user_image = $filename;
+                        $user->save();
+
+                        $status = "1";
+                        $message = "Profile image updated successfully";
+                        $data['image_url'] = $user->user_image; // This uses the accessor
+                    }
+                } else {
+                    $message = "User not found";
+                }
+            } catch (\Exception $e) {
+                $message = "Error: " . $e->getMessage();
+            }
+        }
+
+        return response()->json(['status' => $status, 'message' => $message, 'data' => $data]);
+    }
 }

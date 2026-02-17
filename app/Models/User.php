@@ -173,4 +173,47 @@ class User extends Authenticatable
         return $this->hasMany(Reservation::class, 'agent_id');
     }
 
+    /**
+     * Get the role that belongs to the user.
+     */
+    public function role_details()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    /**
+     * Check if user has a specific permission.
+     * 
+     * @param string $permission
+     * @return bool
+     */
+    public function hasPermission($permission)
+    {
+        if (!$this->role_details) {
+            return false;
+        }
+
+        // Check if the user is Super Admin (bypass checks)
+        if ($this->role_details->name === 'Super Admin') {
+            return true;
+        }
+
+        // Cache the permissions for this role to avoid N+1 queries
+        $permissions = \Cache::remember('role_permissions_' . $this->role_id, 3600, function () {
+            return $this->role_details->permissions->pluck('name')->toArray();
+        });
+
+        return in_array($permission, $permissions);
+    }
+
+    /**
+     * Check if user has a specific role.
+     * 
+     * @param string $roleName
+     * @return bool
+     */
+    public function hasRole($roleName)
+    {
+        return $this->role_details && $this->role_details->name === $roleName;
+    }
 }

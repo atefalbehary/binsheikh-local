@@ -91,8 +91,21 @@ class AgentController extends Controller
                 'active'         => $request->active,
                 'description'    => $request->description,
                 'description_ar' => $request->description_ar,
-
             ];
+
+            // Handle Super Agent Toggle - Only Super Admin
+            if (auth()->user()->hasRole('Super Admin')) {
+                if ($request->has('super_agent')) {
+                    $ins['super_agent'] = 1;
+                } else {
+                    // Only reset if it's an update or explicit set, but for checkbox it's usually presence check.
+                    // However, considering this is a shared store method, we should be careful.
+                    // If it's an update, we should probably check if the field exists in request to decide?
+                    // But typical checkbox behavior is: unchecked = not in request.
+                    // So if Super Admin is saving, and it's not there, it means OFF.
+                   $ins['super_agent'] = 0;
+                }
+            }
 
             if ($request->id != "") {
                 $dest_id           = $request->id;
@@ -267,41 +280,49 @@ class AgentController extends Controller
 
     public function details($id)
     {
-        $page_heading = "Agent Details";
-        $agent = User::find($id);
+        try {
+            // dd('Debug: Start of method'); 
+            $page_heading = "Agent Details";
+            $agent = User::find($id);
 
-        if (!$agent) {
-            abort(404);
+            if (!$agent) {
+                abort(404);
+            }
+            
+            // Debugging potential null values
+            // dd($agent->professional_practice_certificate, $agent->license, $agent->id_card);
+
+            $parts = explode('/', $agent->professional_practice_certificate ?? '');
+            $last = end($parts);
+            $parts = explode('/', $agent->license ?? '');
+            $last_license = end($parts);
+            $parts = explode('/', $agent->id_card ?? '');
+            $last_id_card = end($parts);
+
+            // Load visit schedules for this specific agent
+            $visitSchedules = \App\Models\VisiteSchedule::with(['agent', 'project'])
+                ->where('agent_id', $id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // Load reservations for this specific agent
+            $reservations = \App\Models\Reservation::with(['agent', 'property'])
+                ->where('agent_id', $id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Calculate Stats
+            $totalProperties = $reservations->count();
+            $pendingProperties = $reservations->where('status', \App\Models\Reservation::STATUS_WAITING_APPROVAL)->count();
+            $activeProperties = $reservations->whereIn('status', [\App\Models\Reservation::STATUS_RESERVED, \App\Models\Reservation::STATUS_PREPARING_DOCUMENT])->count();
+            $totalPurchase = $reservations->where('status', \App\Models\Reservation::STATUS_CLOSED_DEAL)->sum(function($r) {
+                return $r->property ? $r->property->price : 0;
+            });
+
+            return view('admin.agent.details', compact('page_heading', 'agent', 'last', 'last_license', 'last_id_card', 'visitSchedules', 'reservations', 'totalProperties', 'pendingProperties', 'activeProperties', 'totalPurchase'));
+        } catch (\Throwable $e) {
+            dd($e->getMessage(), $e->getTraceAsString());
         }
-        
-        $parts = explode('/', $agent->professional_practice_certificate);
-        $last = end($parts);
-        $parts = explode('/', $agent->license);
-        $last_license = end($parts);
-        $parts = explode('/', $agent->id_card);
-        $last_id_card = end($parts);
-
-        // Load visit schedules for this specific agent
-        $visitSchedules = \App\Models\VisiteSchedule::with(['agent', 'project'])
-            ->where('agent_id', $id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-        
-        // Load reservations for this specific agent
-        $reservations = \App\Models\Reservation::with(['agent', 'property'])
-            ->where('agent_id', $id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // Calculate Stats
-        $totalProperties = $reservations->count();
-        $pendingProperties = $reservations->where('status', \App\Models\Reservation::STATUS_WAITING_APPROVAL)->count();
-        $activeProperties = $reservations->whereIn('status', [\App\Models\Reservation::STATUS_RESERVED, \App\Models\Reservation::STATUS_PREPARING_DOCUMENT])->count();
-        $totalPurchase = $reservations->where('status', \App\Models\Reservation::STATUS_CLOSED_DEAL)->sum(function($r) {
-             return $r->property ? $r->property->price : 0;
-        });
-
-        return view('admin.agent.details', compact('page_heading', 'agent', 'last', 'last_license', 'last_id_card', 'visitSchedules', 'reservations', 'totalProperties', 'pendingProperties', 'activeProperties', 'totalPurchase'));
     }
 
     public function update_agent(Request $request, $id)
@@ -314,6 +335,7 @@ class AgentController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'email' => 'required|email|unique:users,email,'.$id,
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -331,10 +353,35 @@ class AgentController extends Controller
         $agent->linkedin = $request->linkedin;
         $agent->instagram = $request->instagram;
         
+        if ($request->hasFile('image')) {
+            Log::info('Agent Update: Using image_upload helper');
+            $upload_result = image_upload($request, 'users', 'image');
+            
+            if ($upload_result['status']) {
+                $filename = $upload_result['filename'] ?? basename($upload_result['link']);
+                $agent->user_image = $filename;
+                Log::info('Agent Update: Helper success', ['filename' => $filename, 'link' => $upload_result['link']]);
+            } else {
+                 Log::error('Agent Update: Helper failed', ['message' => $upload_result['message']]);
+                 return redirect()->back()->with('error', 'Error uploading image: ' . $upload_result['message'])->withInput();
+            }
+        } else {
+            Log::info('Agent Update: No image file in request');
+        }
+        
         if ($request->has('active')) {
             $agent->active = 1;
         } else {
             $agent->active = 0;
+        }
+
+        // Handle Super Agent Toggle - Only Super Admin
+        if (auth()->user()->hasRole('Super Admin')) {
+            if ($request->has('super_agent')) {
+                $agent->super_agent = 1;
+            } else {
+                $agent->super_agent = 0;
+            }
         }
 
         $agent->save();

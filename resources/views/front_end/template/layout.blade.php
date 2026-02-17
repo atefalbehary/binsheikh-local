@@ -202,6 +202,10 @@ if (!$locale) {
                                     @endif>{{ __("messages.about_us") }}</a>
                                 </li>
                                 <li>
+                                    <a href="{{url('find-agent-agency')}}" @if($currentRouteUri == "find-agent-agency") class="act-link"
+                                    @endif>{{ __("messages.find_agent_agency") }}</a>
+                                </li>
+                                <li>
                                     <a href="{{url('property-listing')}}" @if($currentRouteUri == "property-listing" || $currentRouteUri == "property-details/{slug}") class="act-link"
                                     @endif>{{ __("messages.properties") }} <i
                                             class="fa-solid fa-caret-down"></i></a>
@@ -273,6 +277,8 @@ if (!$locale) {
                                 @endif>{{ __("messages.home") }}</a>
                                 <a class="d-block py-2" href="{{url('about-us')}}" @if($currentRouteUri == "about-us")
                                 class="act-link" @endif>{{ __("messages.about_us") }}</a>
+                                <a class="d-block py-2" href="{{url('find-agent-agency')}}" @if($currentRouteUri == "find-agent-agency")
+                                class="act-link" @endif>{{ __("messages.find_agent_agency") }}</a>
 
                                 <div class="dropdown mt-2">
                                     <a href="#" class="dropdown-toggle" type="button" id="dropdownMenuButton"

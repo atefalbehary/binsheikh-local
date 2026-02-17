@@ -16,8 +16,12 @@ class IsAdmin
      */
     public function handle($request, Closure $next)
     {
-        if (Auth::check() && (Auth::user()->role == '1')) {
-            return $next($request);
+        if (Auth::check()) {
+            $user = Auth::user();
+            // Allow if legacy admin OR has RBAC role
+            if ($user->role == '1' || $user->role_details) {
+                return $next($request);
+            }
         }
         return redirect()->route('admin.login');
     }

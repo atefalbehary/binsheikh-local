@@ -48,7 +48,8 @@ $CurrentUrl = url()->current();
                 </a>
             </li>
 
-           <li class="c-sidebar-nav-item"><a
+            @if(Auth::user()->hasPermission('manage_content'))
+            <li class="c-sidebar-nav-item"><a
                     class="c-sidebar-nav-link {{ preg_match('/admin\/categories/', $CurrentUrl) ? 'c-active' : null }}"
                     href="{{ url('admin/categories') }}">
                     <div class="c-sidebar-nav-icon">
@@ -145,7 +146,31 @@ $CurrentUrl = url()->current();
                     </div> PopUp
                 </a>
             </li>
+            @endif
 
+            @if(Auth::user()->hasPermission('manage_users'))
+            <li class="c-sidebar-nav-item"><a
+                    class="c-sidebar-nav-link {{ preg_match('/admin\/superu\/users/', $CurrentUrl) ? 'c-active' : null }}"
+                    href="{{ route('admin.superadmin.users.index') }}">
+                    <div class="c-sidebar-nav-icon">
+                        <i class="fa fa-users"></i>
+                    </div> User Management
+                </a>
+            </li>
+            @endif
+
+            @if(Auth::user()->hasPermission('manage_roles'))
+            <li class="c-sidebar-nav-item"><a
+                    class="c-sidebar-nav-link {{ preg_match('/admin\/roles/', $CurrentUrl) ? 'c-active' : null }}"
+                    href="{{ route('admin.roles.index') }}">
+                    <div class="c-sidebar-nav-icon">
+                        <i class="fa fa-shield-alt"></i>
+                    </div> Role Management
+                </a>
+            </li>
+            @endif
+
+            @if(Auth::user()->hasPermission('manage_users'))
             <li class="c-sidebar-nav-item"><a
                     class="c-sidebar-nav-link {{ preg_match('/admin\/settings/', $CurrentUrl)  ? 'c-active' : null }}"
                     href="{{ url('admin/settings') }}">
@@ -154,7 +179,9 @@ $CurrentUrl = url()->current();
                     </div> Settings
                 </a>
             </li>
+            @endif
 
+            @if(Auth::user()->hasPermission('manage_content'))
             <li class="c-sidebar-nav-item"><a
                     class="c-sidebar-nav-link {{ preg_match('/admin\/reviews/', $CurrentUrl)  ? 'c-active' : null }}"
                     href="{{ url('admin/reviews') }}">
@@ -181,7 +208,9 @@ $CurrentUrl = url()->current();
                     </div> Career Applications
                 </a>
             </li>
+            @endif
 
+            @if(Auth::user()->hasPermission('view_all_clients'))
             <li class="c-sidebar-nav-item"><a
                     class="c-sidebar-nav-link {{ (request()->get('role') == 2 || (!request()->has('role') && strpos($CurrentUrl, 'admin/customer') !== false)) ? 'c-active' : null }}"
                     href="{{ url('admin/customer?role=2') }}">
@@ -217,22 +246,7 @@ $CurrentUrl = url()->current();
                     </div> Bookings
                 </a>
             </li>
-
-
-
-
-            <!-- <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/pages/', $CurrentUrl)  || preg_match('/admin\/page/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/pages') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-list"></i>
-                    </div> Pages
-                </a>
-            </li>
-
-             -->
-
-
+            
             <li class="c-sidebar-nav-item"><a
                     class="c-sidebar-nav-link {{ preg_match('/admin\/subscribers/', $CurrentUrl)  ? 'c-active' : null }}"
                     href="{{ url('admin/subscribers') }}">
@@ -241,6 +255,7 @@ $CurrentUrl = url()->current();
                     </div> Subscribers
                 </a>
             </li>
+            @endif
 
 
 

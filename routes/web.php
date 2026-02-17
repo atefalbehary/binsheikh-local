@@ -65,6 +65,7 @@ Route::get('/service-details/{slug}', 'App\Http\Controllers\front\HomeController
 Route::get('/services', 'App\Http\Controllers\front\HomeController@services');
 Route::get('contact-us', 'App\Http\Controllers\front\ContactUsController@index')->name('frontend.contact_us');
 Route::get('about-us', 'App\Http\Controllers\front\AboutUsController@index')->name('frontend.about_us');
+Route::get('find-agent-agency', 'App\Http\Controllers\front\AgentAgencyController@index')->name('frontend.find_agent_agency');
 Route::get('privacy-policy', 'App\Http\Controllers\front\HomeController@privacy_policy')->name('frontend.privacy_policy');
 Route::get('data-deletion', 'App\Http\Controllers\front\HomeController@data_deletion')->name('frontend.data_deletion');
 Route::get('terms-conditions', 'App\Http\Controllers\front\HomeController@terms_conditions')->name('frontend.terms_conditions');
@@ -89,9 +90,8 @@ Route::post('save_subscribe', 'App\Http\Controllers\front\HomeController@save_su
 Route::
         namespace('App\Http\Controllers\admin')->prefix('admin')->middleware('admin')->name('admin.')->group(function () {
 
-            Route::get('change-password', 'AdminController@changePassword')->name('change.password');
-
-            Route::post('change-password', 'AdminController@changePasswordSave')->name('change.password.save');
+            // Route::get('change-password', 'AdminController@changePassword')->name('change.password');
+            // Route::post('change-password', 'AdminController@changePasswordSave')->name('change.password.save');
 
             Route::match(array('GET', 'POST'), 'change_password', 'UsersController@change_password');
 
@@ -340,6 +340,17 @@ Route::
             // Popups routes
             Route::resource('popups', 'PopupController');
             Route::post('popups/change_status', 'PopupController@changeStatus');
+
+            // RBAC Routes
+            Route::post('update_profile_image', 'UsersController@update_profile_image')->name('update_profile_image');
+
+            Route::middleware(['check_permission:manage_users'])->group(function () {
+                Route::resource('superu/users', 'SuperAdminController', ['as' => 'superadmin']);
+            });
+
+            Route::middleware(['check_permission:manage_roles'])->group(function () {
+                Route::resource('roles', 'RoleController');
+            });
 
         });
 

@@ -11,8 +11,11 @@ class LoginController extends Controller
     //
     public function login()
     {
-        if (Auth::check() && (Auth::user()->role == '1')) {
-            return redirect()->route('admin.dashboard');
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user->role == '1' || $user->role_details) {
+                return redirect()->route('admin.dashboard');
+            }
         }
         // echo Hash::make('Hello@1985');
         return view('admin.login');
@@ -26,16 +29,19 @@ class LoginController extends Controller
 
         // Validate request
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            if (Auth::check() && (Auth::user()->role == '1')) {
-                $request->session()->put('user_id', Auth::user()->id);
+            $user = Auth::user();
+            // Allow login if user has legacy role 1 OR has an assigned RBAC role (assuming roles > 0 are admin-like)
+            // Enhanced check: users with role_details are admin staff
+            if ($user->role == '1' || $user->role_details) {
+                $request->session()->put('user_id', $user->id);
                 if ($request->timezone) {
                     $request->session()->put('user_timezone', $request->timezone);
                 }
                 return response()->json(['success' => true, 'message' => "Logged in successfully."]);
             } else {
-                return response()->json(['success' => false, 'message' => "Invalid Credentials!"]);
+                Auth::logout(); // Ensure logout if they don't meet criteria
+                return response()->json(['success' => false, 'message' => "Unauthorized access!"]);
             }
-
         }
 
         return response()->json(['success' => false, 'message' => "Invalid Credentials!"]);

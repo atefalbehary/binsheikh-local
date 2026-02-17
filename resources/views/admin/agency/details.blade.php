@@ -1597,6 +1597,19 @@
         margin-bottom: 15px;
     }
 </style>
+
+    <script>
+        document.getElementById('profileImageInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('agencyProfileImage').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 @stop
 
 @section('content')
@@ -1647,7 +1660,12 @@
                 <div class="col-md-4">
                     <div class="agent-profile-card">
                         <div class="profile-header">
-                            <img src="{{ $customer->user_image }}" class="profile-img-lg" alt="Profile">
+                            <div style="position: relative; display: inline-block;">
+    <img src="{{ $customer->user_image }}" class="profile-img-lg" alt="Profile" id="agencyProfileImage">
+    <div class="edit-icon" onclick="document.getElementById('profileImageInput').click()" style="position: absolute; bottom: 5px; right: 20px; background: white; border-radius: 50%; padding: 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); width: 25px; height: 25px; display: flex; align-items: center; justify-content: center;">
+        <i class="fas fa-pen" style="font-size: 12px; color: #333;"></i>
+    </div>
+</div>
                             <div>
                                 <div class="profile-joined">Joined at <br> {{ $customer->created_at->format('d M Y') }}</div>
                                 <div class="profile-total-purchase">Total Purchase<br>N{{ number_format($totalPurchase ?? 0, 2) }}</div>
@@ -1690,8 +1708,9 @@
                 <div class="col-md-8">
                     <div class="edit-profile-card">
                         <div class="section-title">Edit Profile</div>
-                        <form action="{{ url('admin/agency'. $customer->id) }}" method="POST">
+                        <form action="{{ url('admin/agency/update/'.$customer->id) }}" method="POST" enctype="multipart/form-data">
                             @csrf
+                            <input type="file" id="profileImageInput" name="image" style="display: none;" accept="image/*">
                             <div class="row">
                                 <div class="col-md-6 form-group">
                                     <label>Agency Name *</label>
@@ -1742,12 +1761,24 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label class="c-switch c-switch-label c-switch-pill c-switch-success my-2">
-                                     <input class="c-switch-input" type="checkbox" name="active" {{ $customer->active ? 'checked' : '' }}>
-                                     <span class="c-switch-slider" data-checked="On" data-unchecked="Off"></span>
-                                </label>
-                                <span class="ml-2">Active Account</span>
+                            <div class="form-group d-flex align-items-center">
+                                <div>
+                                    <label class="c-switch c-switch-label c-switch-pill c-switch-success my-2">
+                                         <input class="c-switch-input" type="checkbox" name="active" {{ $customer->active ? 'checked' : '' }}>
+                                         <span class="c-switch-slider" data-checked="On" data-unchecked="Off"></span>
+                                    </label>
+                                    <span class="ml-2">Active Account</span>
+                                </div>
+
+                                @if(auth()->user()->hasRole('Super Admin'))
+                                <div class="ml-4">
+                                    <label class="c-switch c-switch-label c-switch-pill c-switch-primary my-2">
+                                         <input class="c-switch-input" type="checkbox" name="super_agent" {{ $customer->super_agent ? 'checked' : '' }}>
+                                         <span class="c-switch-slider" data-checked="On" data-unchecked="Off"></span>
+                                    </label>
+                                    <span class="ml-2">Super Agent <i class="fas fa-check-circle text-primary" title="Display as verified/featured agent"></i></span>
+                                </div>
+                                @endif
                             </div>
 
                             <button type="submit" class="btn-save-custom">Save Changes</button>
@@ -3654,5 +3685,67 @@
                 closePreviewModal();
             }
         });
+        document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded and parsed - Agency Details');
+        
+        // Use event delegation on body for robustness
+        document.body.addEventListener('change', function(e) {
+            // Check if the target is our file input
+            if (e.target && e.target.id === 'profileImageInput') {
+                console.log('File input change event detected via delegation');
+                var input = e.target;
+                
+                if (input.files && input.files[0]) {
+                    console.log('File selected:', input.files[0].name);
+                    var reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        console.log('FileReader load complete');
+                        
+                        // Try to find the image by ID first
+                        var img = document.getElementById('agencyProfileImage');
+                        
+                        // Fallback: try to find it via wrapper if ID fails (unlikely but possible if duplicates exist)
+                        if (!img) {
+                             console.warn('Image not found by ID, trying wrapper strategy');
+                             var wrapper = document.querySelector('.profile-header .profile-img-lg');
+                             if(wrapper) img = wrapper;
+                        }
+
+                        if (img) {
+                            console.log('Updating src of agencyProfileImage');
+                            // Verify the data URL start
+                            var result = e.target.result;
+                            console.log('Data URL starts with:', result.substring(0, 50));
+                            
+                            img.src = result;
+                            
+                            // Visual feedback
+                            img.style.opacity = '0.5';
+                            setTimeout(function() { img.style.opacity = '1'; }, 200);
+                        } else {
+                            console.error('ERROR: agencyProfileImage element not found in DOM');
+                        }
+                    }
+                    
+                    reader.onerror = function(e) {
+                        console.error('FileReader error:', e);
+                    }
+                    
+                    reader.readAsDataURL(input.files[0]);
+                } else {
+                    console.log('No file selected in input');
+                }
+            }
+        });
+
+        // Debug check for elements immediately
+        var inputCheck = document.getElementById('profileImageInput');
+        var imgCheck = document.getElementById('agencyProfileImage');
+        console.log('Initial check - Input found:', !!inputCheck, 'Image found:', !!imgCheck);
+    });
     </script>
 @stop
+
+
+

@@ -9,9 +9,9 @@ $config['date_format']									= 'M d, Y';
 $config['date_format_excel']							= 'd/m/Y';
 $config['default_currency_code']						= 'AED';
 
-$config['upload_bucket']						= 'public';//s3
+$config['upload_bucket']						= 's3';//s3
 $config['upload_path']              					= 'storage/';
-$config['user_image_upload_dir']    					= 'users/';
+$config['user_image_upload_dir']    					= 'uploads/users/';
 $config['category_image_upload_dir']    				= 'category/';
 $config['product_image_upload_dir']    				    = 'products/';
 $config['banner_image_upload_dir']                      = 'banner_images/';

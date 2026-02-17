@@ -269,6 +269,7 @@ class AgencyController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'email' => 'required|email|unique:users,email,'.$id,
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -286,10 +287,37 @@ class AgencyController extends Controller
         $agency->linkedin = $request->linkedin;
         $agency->instagram = $request->instagram;
         
+        if ($request->hasFile('image')) {
+            Log::info('Agency Update: Using image_upload helper');
+            $upload_result = image_upload($request, 'users', 'image');
+            
+            if ($upload_result['status']) {
+                // Use the returned filename, which matches what get_uploaded_image_url expects for S3
+                // (it prepends the dir 'users/')
+                $filename = $upload_result['filename'] ?? basename($upload_result['link']);
+                $agency->user_image = $filename;
+                Log::info('Agency Update: Helper success', ['filename' => $filename, 'link' => $upload_result['link']]);
+            } else {
+                 Log::error('Agency Update: Helper failed', ['message' => $upload_result['message']]);
+                 return redirect()->back()->with('error', 'Error uploading image: ' . $upload_result['message'])->withInput();
+            }
+        } else {
+            Log::info('Agency Update: No image file in request');
+        }
+        
         if ($request->has('active')) {
             $agency->active = 1;
         } else {
             $agency->active = 0;
+        }
+
+        // Handle Super Agent Toggle - Only Super Admin
+        if (auth()->user()->hasRole('Super Admin')) {
+            if ($request->has('super_agent')) {
+                $agency->super_agent = 1;
+            } else {
+                $agency->super_agent = 0;
+            }
         }
 
         $agency->save();

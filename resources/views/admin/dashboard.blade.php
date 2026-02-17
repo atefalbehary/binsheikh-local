@@ -6,6 +6,41 @@
 @section('content')
 <div class="container-fluid">
     <div class="fade-in">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <a href="{{ url('admin/change_password') }}" class="text-decoration-none">
+                    <div class="card text-white border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: transform 0.3s ease;">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-white rounded-circle p-3 mr-4 text-primary d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                        <i class="far fa-user fa-3x"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="mb-1 font-weight-bold">Welcome back, {{ Auth::user()->name }}!</h3>
+                                        <p class="mb-2 opacity-80" style="font-size: 1.1rem;">{{ Auth::user()->email }}</p>
+                                        <div>
+                                            @if(Auth::user()->role_details)
+                                                <span class="badge badge-light text-primary px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.9rem; font-weight: 600;">{{ Auth::user()->role_details->name }}</span>
+                                            @elseif(Auth::user()->role == '1')
+                                                <span class="badge badge-light text-primary px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.9rem; font-weight: 600;">Super Admin (Legacy)</span>
+                                            @else
+                                                <span class="badge badge-secondary px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.9rem; font-weight: 600;">User</span>
+                                            @endif
+                                            <span class="ml-2 badge badge-warning text-white px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.8rem;"><i class="fas fa-edit mr-1"></i> Edit Profile</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-none d-md-block opacity-50">
+                                    <i class="fas fa-chevron-right fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
      <div class="row g-4 mb-4">
          <div class="col-sm-6 col-lg-3">
 

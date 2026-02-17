@@ -238,6 +238,9 @@
                                             <td class="trVOE">{{ $i }}</td>
                                             <td class="trVOE">
                                                 <span class="agency-name">{{ $cust->name }}</span>
+                                                @if($cust->super_agent)
+                                                    <i class="fas fa-check-circle text-primary ml-1" title="Super Agent"></i>
+                                                @endif
                                                 <i class="fas fa-chevron-down expand-icon" style="margin-left: 10px; cursor: pointer;"></i>
                                             </td>
                                             <td class="trVOE">{{ web_date_in_timezone($cust->created_at, 'd-M-Y h:i A') }}</td>

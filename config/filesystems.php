@@ -55,6 +55,9 @@ return [
             'options' => [
                 'ACL' => '',
             ],
+            'http' => [
+                'verify' => false,
+            ],
         ],
 
     ],

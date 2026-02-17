@@ -20,7 +20,7 @@
         "laravel/socialite": "^5.18",
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.4",
-        "league/flysystem-aws-s3-v3": "~1.0",
+        "league/flysystem-aws-s3-v3": "^1.0",
         "maatwebsite/excel": "^3.1",
         "pbmedia/laravel-ffmpeg": "^7.8",
         "phpmailer/phpmailer": "^6.6",

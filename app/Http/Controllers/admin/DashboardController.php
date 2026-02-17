@@ -14,14 +14,27 @@ class DashboardController extends Controller
     {
         $page_heading = "Dashboard";
         $users = 0;
-        $bookings = Booking::where(['type' => 'Down Payment'])->count();
-        $properties = Properties::where(['deleted' => 0])->count();
-        $rent = Properties::where(['deleted' => 0])->whereIn('sale_type', [2, 3])->count();
-        $sale = Properties::where(['deleted' => 0])->whereIn('sale_type', [1, 3])->count();
-        $available = Properties::where(['active' => 1])->count() - $bookings;
-        $available_rent = Properties::where(['active' => 1])->whereIn('sale_type', [2, 3])->count() - $bookings;
-        $available_sale = Properties::where(['active' => 1])->whereIn('sale_type', [1, 3])->count() - $bookings;
-        $sold = Properties::where(['deleted' => 0, 'is_sold' => 1])->count();
+        $bookings = 0;
+        $properties = 0;
+        $rent = 0;
+        $sale = 0;
+        $available = 0;
+        $available_rent = 0;
+        $available_sale = 0;
+        $sold = 0;
+
+        $user = \Auth::user();
+
+        if ($user->hasPermission('view_all_clients') || $user->hasPermission('manage_content')) {
+             $bookings = Booking::where(['type' => 'Down Payment'])->count();
+             $properties = Properties::where(['deleted' => 0])->count();
+             $rent = Properties::where(['deleted' => 0])->whereIn('sale_type', [2, 3])->count();
+             $sale = Properties::where(['deleted' => 0])->whereIn('sale_type', [1, 3])->count();
+             $available = Properties::where(['active' => 1])->count() - $bookings;
+             $available_rent = Properties::where(['active' => 1])->whereIn('sale_type', [2, 3])->count() - $bookings;
+             $available_sale = Properties::where(['active' => 1])->whereIn('sale_type', [1, 3])->count() - $bookings;
+             $sold = Properties::where(['deleted' => 0, 'is_sold' => 1])->count();
+        }
 
         $salesData = Booking::selectRaw('
                 MONTH(created_at) as month,

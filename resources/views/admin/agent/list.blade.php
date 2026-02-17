@@ -921,6 +921,9 @@
                                                             @endif
                                                         </div>
                                                 <span class="agent-name">{{ $cust->name }}</span>
+                                                @if($cust->super_agent)
+                                                    <i class="fas fa-check-circle text-primary ml-1" title="Super Agent"></i>
+                                                @endif
                                                         <i class="fas fa-chevron-down expand-icon" style="cursor: pointer;"></i>
                                                     </div>
                                                 </div>
