@@ -47,11 +47,22 @@ class BlogController extends Controller
         $short_description = "";
         $short_description_ar = "";
 
+        $meta_title = "";
+        $meta_description = "";
+        $canonical_url = "";
+        $og_title = "";
+        $og_description = "";
+        $og_image = "";
+        $keywords = "";
+        $tags = "";
+        $no_index = 0;
+        $slug = "";
+
 
         $image = "";
         $active = "1";
         $folders = Folder::all();
-        return view("admin.blog.create", compact('page_heading', 'mode', 'id', 'name', 'active', 'name_ar','description','description_ar','image','short_description','short_description_ar','folders'));
+        return view("admin.blog.create", compact('page_heading', 'mode', 'id', 'name', 'active', 'name_ar','description','description_ar','image','short_description','short_description_ar','folders', 'meta_title', 'meta_description', 'canonical_url', 'og_title', 'og_description', 'og_image', 'keywords', 'tags', 'no_index', 'slug'));
     }
 
     public function store(Request $request)
@@ -85,8 +96,17 @@ class BlogController extends Controller
                 'description_ar' => $request->description_ar,
                 'short_description' => $request->short_description,
                 'short_description_ar' => $request->short_description_ar,
-                'folder_id' => $request->folder_id != "" ? $request->folder_id : NULL
+                'folder_id' => $request->folder_id != "" ? $request->folder_id : NULL,
+                'meta_title' => $request->meta_title,
+                'meta_description' => $request->meta_description,
+                'canonical_url' => $request->canonical_url,
+                'og_title' => $request->og_title,
+                'og_description' => $request->og_description,
+                'keywords' => $request->keywords,
+                'tags' => $request->tags,
+                'no_index' => $request->no_index ?? 0,
             ];
+
             if ($request->file("image")) {
                 $response = image_upload($request, 'blog', 'image');
                 if ($response['status']) {
@@ -94,17 +114,33 @@ class BlogController extends Controller
                 }
             }
 
+            if ($request->file("og_image")) {
+                $response = image_upload($request, 'blog', 'og_image');
+                if ($response['status']) {
+                    $ins['og_image'] = $response['link'];
+                }
+            }
+
             if ($request->id != "") {
                 $dest_id = $request->id;
                 $blog = Blog::find($request->id);
                 $ins['updated_at'] = gmdate('Y-m-d H:i:s');
-                $ins['slug'] = Blog::getSlug($request->name, $request->id);
+                if ($request->slug) {
+                     $ins['slug'] = Blog::getSlug($request->slug, $request->id);
+                } else {
+                     $ins['slug'] = Blog::getSlug($request->name, $request->id);
+                }
+                
                 $blog->update($ins);
                 $status = "1";
                 $message = "Blog updated succesfully";
             } else {
                 $ins['created_at'] = gmdate('Y-m-d H:i:s');
-                $ins['slug'] = Blog::getSlug($request->name);
+                if ($request->slug) {
+                    $ins['slug'] = Blog::getSlug($request->slug);
+                } else {
+                    $ins['slug'] = Blog::getSlug($request->name);
+                }
                 $prd = Blog::create($ins);
                 $dest_id = $prd->id;
                 $status = "1";
@@ -150,10 +186,21 @@ class BlogController extends Controller
             $short_description = $blog->short_description;
             $short_description_ar = $blog->short_description_ar;
 
+            $meta_title = $blog->meta_title;
+            $meta_description = $blog->meta_description;
+            $canonical_url = $blog->canonical_url;
+            $og_title = $blog->og_title;
+            $og_description = $blog->og_description;
+            $og_image = $blog->og_image;
+            $keywords = $blog->keywords;
+            $tags = $blog->tags;
+            $no_index = $blog->no_index;
+            $slug = $blog->slug;
+
             $image = $blog->image;
             $folders = Folder::all();
 
-            return view("admin.blog.create", compact('page_heading', 'mode', 'id', 'name', 'name_ar', 'active','description','description_ar','image','short_description','short_description_ar','folders'));
+            return view("admin.blog.create", compact('page_heading', 'mode', 'id', 'name', 'name_ar', 'active','description','description_ar','image','short_description','short_description_ar','folders', 'meta_title', 'meta_description', 'canonical_url', 'og_title', 'og_description', 'og_image', 'keywords', 'tags', 'no_index', 'slug'));
         } else {
             abort(404);
         }
