@@ -940,7 +940,7 @@ if (!$locale) {
                         </div>
                         <div class="main-register_bg-dec"></div>
                     </div>
-                    <div class="main-register tabs-act fl-wrap">
+                    <div class="main-register tabs-act fl-wrap" style="min-height: 500px;">
                         <ul class="tabs-menu">
                             <li class="current"><a href="#fp-tab-1"><i class="fa-regular fa-key"></i> {{ __('messages.forget_password') ?? 'Forgot Password' }}</a></li>
                         </ul>
@@ -949,10 +949,10 @@ if (!$locale) {
                         <div id="tabs-container">
                             <div class="tab">
                                 <div id="fp-tab-1" class="tab-content first-tab">
-                                    <div class="custom-form">
+                                    <div class="custom-form" style="display: flex; flex-direction: column; justify-content: center; min-height: 380px;">
 
                                         <!-- Step 1: Send OTP -->
-                                        <div id="fp-step-1">
+                                        <div id="fp-step-1" style="width: 100%;">
                                             <form id="fp-send-otp-form" data-parsley-validate="true">
                                                 @csrf
                                                 <div class="filter-tags d-flex mb-3 mt-0" style="float: none;">
@@ -974,7 +974,7 @@ if (!$locale) {
                                         </div>
 
                                         <!-- Step 2: Verify OTP -->
-                                        <div id="fp-step-2" style="display:none;">
+                                        <div id="fp-step-2" style="display:none; width: 100%;">
                                             <p style="font-size:13px; margin-bottom:15px; color:#666;">{{ __('messages.otp_sent_to') ?? 'An OTP has been sent to your email.' }}</p>
                                             <form id="fp-verify-otp-form" data-parsley-validate="true">
                                                 @csrf
@@ -988,7 +988,7 @@ if (!$locale) {
                                         </div>
 
                                         <!-- Step 3: New Password -->
-                                        <div id="fp-step-3" style="display:none;">
+                                        <div id="fp-step-3" style="display:none; width: 100%;">
                                             <form id="fp-reset-password-form" data-parsley-validate="true">
                                                 @csrf
                                                 <div class="cs-intputwrap pass-input-wrap">
