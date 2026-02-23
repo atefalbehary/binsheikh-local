@@ -626,7 +626,7 @@ if (!$locale) {
                                                 <!-- Translated Remember me -->
                                             </div>
                                             <div class="lost_password">
-                                                <a href="#">{{ __('messages.lost_your_password') }}</a>
+                                                <a href="#" class="show-forgot-password-modal">{{ __('messages.lost_your_password') }}</a>
                                                 <!-- Translated Lost your password -->
                                             </div>
                                             <div class="clearfix"></div>
@@ -921,6 +921,97 @@ if (!$locale) {
     </div>
     <!--map-modal end -->
     </div>
+
+    <!--forgot password form -->
+    <div class="main-register-container main-forgot-password-container" style="display:none;">
+        <div class="main-register_box">
+            <div class="main-register-holder">
+                <div class="main-register-wrap">
+                    <div class="main-register_bg">
+                        <div class="mr_title">
+                            <img src="{{ asset('') }}front-assets/images/logo.png" class="mb-3" alt="">
+                            <h5>{{ __('messages.bin_al_sheikh_description') }}</h5>
+                        </div>
+                        <div class="main-register_contacts-wrap">
+                            <h4 class="text-white">{{ __('messages.have_a_question') }}</h4>
+                            <a href="{{url('contact-us')}}">{{ __('messages.get_in_touch') }}</a>
+                            <div class="svg-corner svg-corner_white" style="bottom:0;left:  -39px;"></div>
+                            <div class="svg-corner svg-corner_white" style="bottom:0;right:  -39px;transform: rotate(90deg)"></div>
+                        </div>
+                        <div class="main-register_bg-dec"></div>
+                    </div>
+                    <div class="main-register tabs-act fl-wrap">
+                        <ul class="tabs-menu">
+                            <li class="current"><a href="#fp-tab-1"><i class="fa-regular fa-key"></i> {{ __('messages.forget_password') ?? 'Forgot Password' }}</a></li>
+                        </ul>
+                        <div class="close-modal close-forgot-password"><i class="fa-regular fa-xmark"></i></div>
+                        
+                        <div id="tabs-container">
+                            <div class="tab">
+                                <div id="fp-tab-1" class="tab-content first-tab">
+                                    <div class="custom-form">
+
+                                        <!-- Step 1: Send OTP -->
+                                        <div id="fp-step-1">
+                                            <form id="fp-send-otp-form" data-parsley-validate="true">
+                                                @csrf
+                                                <div class="filter-tags d-flex mb-3 mt-0" style="float: none;">
+                                                    <input class="form-check-input fp_user_type_inp" type="radio" name="fp_user_type" id="fp_user_type_user" checked value="2">
+                                                    <label class="form-check-label" for="fp_user_type_user">{{ __('messages.user') }}</label>
+                                                    <input class="form-check-input fp_user_type_inp" type="radio" name="fp_user_type" id="fp_user_type_agent" value="3">
+                                                    <label class="form-check-label" for="fp_user_type_agent">{{ __('messages.agent') }}</label>
+                                                    <input class="form-check-input fp_user_type_inp" type="radio" name="fp_user_type" id="fp_user_type_agency" value="4">
+                                                    <label class="form-check-label" for="fp_user_type_agency">{{ __('messages.agency') }}</label>
+                                                </div>
+
+                                                <div class="cs-intputwrap">
+                                                    <i class="fa-light fa-envelope"></i>
+                                                    <input type="email" name="email" id="fp-email" placeholder="{{ __('messages.email_address') }}" required data-parsley-required-message="{{ __('messages.email_required') }}">
+                                                </div>
+                                                <button type="submit" class="commentssubmit fp-btn-send-otp">{{ __('messages.send_otp') ?? 'Send OTP' }}</button>
+                                                <div class="fp-error text-danger mt-3 fw-bold" style="font-size:13px;"></div>
+                                            </form>
+                                        </div>
+
+                                        <!-- Step 2: Verify OTP -->
+                                        <div id="fp-step-2" style="display:none;">
+                                            <p style="font-size:13px; margin-bottom:15px; color:#666;">{{ __('messages.otp_sent_to') ?? 'An OTP has been sent to your email.' }}</p>
+                                            <form id="fp-verify-otp-form" data-parsley-validate="true">
+                                                @csrf
+                                                <div class="cs-intputwrap">
+                                                    <i class="fa-light fa-key"></i>
+                                                    <input type="text" name="otp" id="fp-otp" placeholder="Enter 6-digit OTP" required maxlength="6" data-parsley-required-message="OTP is required">
+                                                </div>
+                                                <button type="submit" class="commentssubmit fp-btn-verify-otp">{{ __('messages.verify') ?? 'Verify' }}</button>
+                                                <div class="fp-error text-danger mt-3 fw-bold" style="font-size:13px;"></div>
+                                            </form>
+                                        </div>
+
+                                        <!-- Step 3: New Password -->
+                                        <div id="fp-step-3" style="display:none;">
+                                            <form id="fp-reset-password-form" data-parsley-validate="true">
+                                                @csrf
+                                                <div class="cs-intputwrap pass-input-wrap">
+                                                    <i class="fa-light fa-lock"></i>
+                                                    <input type="password" class="pass-input" name="new_password" id="fp-new-password" placeholder="{{ __('messages.new_password') ?? 'New Password' }}" required minlength="6" data-parsley-required-message="{{ __('messages.password_required') }}">
+                                                    <div class="view-pass"></div>
+                                                </div>
+                                                <button type="submit" class="commentssubmit fp-btn-reset">{{ __('messages.update_password') ?? 'Update Password' }}</button>
+                                                <div class="fp-error text-danger mt-3 fw-bold" style="font-size:13px;"></div>
+                                            </form>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="body-overlay fs-wrapper reg-overlay close-forgot-password"></div>
+    </div>
+    <!--forgot password form end -->
 
     <!-- Success Modal -->
     <div class="success-modal-overlay" id="success-modal"
@@ -2019,5 +2110,158 @@ if (!$locale) {
             $('#success-modal').fadeOut();
             window.location.reload(); // Reload after closing success modal
         });
+
+        /* --- FORGOT PASSWORD FLOW --- */
+        $('.show-forgot-password-modal').on('click', function(e) {
+            e.preventDefault();
+            // Hide the standard login modal properly first
+            $('.main-register-container:not(.main-forgot-password-container)').hide();
+            $('.main-register-container:not(.main-forgot-password-container) .main-register-wrap').removeClass("vis_mr");
+            $('.reg-overlay:not(.close-forgot-password)').hide();
+
+            // Show Forgot Password Modal with Animation
+            $('.main-forgot-password-container').css('display', 'flex').hide().fadeIn();
+            setTimeout(function () {
+                $('.main-forgot-password-container .main-register-wrap').addClass("vis_mr");
+            }, 200);
+            $('.main-forgot-password-container .reg-overlay').fadeIn(200);
+
+            $('#fp-step-1').show();
+            $('#fp-step-2').hide();
+            $('#fp-step-3').hide();
+            $('.fp-error').text('');
+            $('#fp-send-otp-form')[0].reset();
+            $('#fp-verify-otp-form')[0].reset();
+            $('#fp-reset-password-form')[0].reset();
+        });
+
+        $('.close-forgot-password').on('click', function() {
+            $('.main-forgot-password-container .reg-overlay').fadeOut(200);
+            $('.main-forgot-password-container .main-register-wrap').removeClass("vis_mr");
+            setTimeout(function () {
+                $('.main-forgot-password-container').css('display', 'none');
+            }, 400);
+        });
+
+        // Step 1: Send OTP
+        $('#fp-send-otp-form').on('submit', function(e) {
+            e.preventDefault();
+            var $form = $(this);
+            $form.parsley().validate();
+            if ($form.parsley().isValid()) {
+                var $btn = $('.fp-btn-send-otp');
+                var originalText = $btn.text();
+                $btn.text('Please wait...').attr('disabled', true);
+                
+                var email = $('#fp-email').val();
+                var user_type = $('input[name="fp_user_type"]:checked').val();
+                
+                $.ajax({
+                    url: '{{ url("forget_password") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        email: email,
+                        user_type: user_type
+                    },
+                    success: function(res) {
+                        $btn.text(originalText).attr('disabled', false);
+                        if(res.success) {
+                            $form.find('.fp-error').text('');
+                            $('#fp-step-1').hide();
+                            $('#fp-step-2').fadeIn();
+                        } else {
+                            $form.find('.fp-error').text(res.message);
+                        }
+                    },
+                    error: function(err) {
+                        $btn.text(originalText).attr('disabled', false);
+                        $form.find('.fp-error').text('Something went wrong. Please try again.');
+                    }
+                });
+            }
+        });
+
+        // Step 2: Verify OTP
+        $('#fp-verify-otp-form').on('submit', function(e) {
+            e.preventDefault();
+            var $form = $(this);
+            $form.parsley().validate();
+            if ($form.parsley().isValid()) {
+                var $btn = $('.fp-btn-verify-otp');
+                var originalText = $btn.text();
+                $btn.text('Please wait...').attr('disabled', true);
+                
+                var email = $('#fp-email').val();
+                var otp = $('#fp-otp').val();
+                
+                $.ajax({
+                    url: '{{ url("verify_forget_password_otp") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        email: email,
+                        otp: otp
+                    },
+                    success: function(res) {
+                        $btn.text(originalText).attr('disabled', false);
+                        if(res.success) {
+                            $form.find('.fp-error').text('');
+                            $('#fp-step-2').hide();
+                            $('#fp-step-3').fadeIn();
+                        } else {
+                            $form.find('.fp-error').text(res.message);
+                        }
+                    },
+                    error: function(err) {
+                        $btn.text(originalText).attr('disabled', false);
+                        $form.find('.fp-error').text('Something went wrong. Please try again.');
+                    }
+                });
+            }
+        });
+
+        // Step 3: Reset Password
+        $('#fp-reset-password-form').on('submit', function(e) {
+            e.preventDefault();
+            var $form = $(this);
+            $form.parsley().validate();
+            if ($form.parsley().isValid()) {
+                var $btn = $('.fp-btn-reset');
+                var originalText = $btn.text();
+                $btn.text('Please wait...').attr('disabled', true);
+                
+                var email = $('#fp-email').val();
+                var new_password = $('#fp-new-password').val();
+                
+                $.ajax({
+                    url: '{{ url("update_forget_password") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        email: email,
+                        new_password: new_password
+                    },
+                    success: function(res) {
+                        $btn.text(originalText).attr('disabled', false);
+                        if(res.success) {
+                            $form.find('.fp-error').text('');
+                            $('.main-forgot-password-container').fadeOut();
+                            show_msg(1, res.message);
+                            setTimeout(function() {
+                                window.location.reload();
+                            }, 1500);
+                        } else {
+                            $form.find('.fp-error').text(res.message);
+                        }
+                    },
+                    error: function(err) {
+                        $btn.text(originalText).attr('disabled', false);
+                        $form.find('.fp-error').text('Something went wrong. Please try again.');
+                    }
+                });
+            }
+        });
+
     });
 </script>

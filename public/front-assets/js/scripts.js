@@ -805,18 +805,18 @@ function initRenstate() {
         showModal();
     });
     function showModal() {
-        $(".main-register-container").css('display', 'flex');
+        $(".main-register-container:not(.main-forgot-password-container)").css('display', 'flex');
         setTimeout(function () {
-            $(".main-register-wrap").addClass("vis_mr");
+            $(".main-register-container:not(.main-forgot-password-container) .main-register-wrap").addClass("vis_mr");
         }, 200);
-        $(".reg-overlay").fadeIn(200);
+        $(".reg-overlay:not(.close-forgot-password)").fadeIn(200);
         hideSearch();
     }
     function hideModal() {
-        $(".reg-overlay").delay(200).fadeOut(200);
-        $(".main-register-wrap").removeClass("vis_mr");
+        $(".reg-overlay:not(.close-forgot-password)").delay(200).fadeOut(200);
+        $(".main-register-container:not(.main-forgot-password-container) .main-register-wrap").removeClass("vis_mr");
         setTimeout(function () {
-            $(".main-register-container").css('display', 'none');
+            $(".main-register-container:not(.main-forgot-password-container)").css('display', 'none');
         }, 400);
     }
     $(".close-reg-form").on("click", function () {

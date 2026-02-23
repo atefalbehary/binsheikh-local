@@ -563,4 +563,16 @@ return [
     'super_agent' => 'Super Agent',
     'for_sale' => 'For Sale',
     'for_rent' => 'For Rent',
+
+    // Forgot Password Modal
+    'reset_password' => 'Reset Password',
+    'send_otp' => 'Send OTP',
+    'verify_otp' => 'Verify OTP',
+    'otp_sent_to' => 'An OTP has been sent to your email.',
+    'set_new_password' => 'Set New Password',
+    // 'new_password' already exists
+    'update_password' => 'Update Password',
+    'agency_cannot_reset_password' => 'Agency users cannot reset password through this method.',
+    'user_not_found' => 'User not found with this email address.',
+    'user_not_found_for_role' => 'We could not find an account with this email for the selected user type.',
 ];

@@ -361,14 +361,15 @@ Route::get('change-language/{lang}', 'App\Http\Controllers\front\HomeController@
 Route::post('frontend/check_login', 'App\Http\Controllers\front\HomeController@check_login')->name('frontend.check_login');
 Route::post('frontend/signup', 'App\Http\Controllers\front\HomeController@signup')->name('frontend.signup');
 Route::post('frontend/apply_career', 'App\Http\Controllers\front\ContactUsController@apply_career')->name('frontend.apply_career');
+Route::post('forget_password', 'App\Http\Controllers\front\HomeController@forget_password')->name('frontend.forget_password');
+Route::post('verify_forget_password_otp', 'App\Http\Controllers\front\HomeController@verify_forget_password_otp')->name('frontend.verify_forget_password_otp');
+Route::post('update_forget_password', 'App\Http\Controllers\front\HomeController@update_forget_password')->name('frontend.update_forget_password');
+
 Route::middleware('user')->group(function () {
     Route::get('my-profile', 'App\Http\Controllers\front\HomeController@my_profile')->name('frontend.my_profile');
     Route::post('fav_property', 'App\Http\Controllers\front\HomeController@fav_property')->name('frontend.fav_property');
     Route::post('update_profile', 'App\Http\Controllers\front\HomeController@update_profile')->name('frontend.update_profile');
     Route::post('change_password', 'App\Http\Controllers\front\HomeController@change_password')->name('frontend.update_profile');
-    Route::post('forget_password', 'App\Http\Controllers\front\HomeController@forget_password')->name('frontend.forget_password');
-    Route::post('verify_forget_password_otp', 'App\Http\Controllers\front\HomeController@verify_forget_password_otp')->name('frontend.verify_forget_password_otp');
-    Route::post('update_forget_password', 'App\Http\Controllers\front\HomeController@update_forget_password')->name('frontend.update_forget_password');
     Route::get('favorite', 'App\Http\Controllers\front\HomeController@favorite')->name('frontend.favorite');
     Route::get('my-bookings', 'App\Http\Controllers\front\HomeController@my_bookings')->name('frontend.my_bookings');
     Route::get('my-reservations', 'App\Http\Controllers\front\HomeController@my_reservations')->name('frontend.my_reservations');

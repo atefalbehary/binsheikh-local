@@ -2987,7 +2987,8 @@ class HomeController extends Controller
 
 
             $validator = Validator::make($request->all(), [
-                'email' => 'required|email|exists:users,email'
+                'email' => 'required|email',
+                'user_type' => 'required|in:2,3,4'
             ]);
 
             if ($validator->fails()) {
@@ -2998,14 +2999,17 @@ class HomeController extends Controller
             }
 
             $email = $request->email;
-            $user = \App\Models\User::where('email', $email)->first();
+            $user = \App\Models\User::where('email', $email)
+                ->where('role', $request->user_type)
+                ->first();
 
             if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User not found with this email address.'
+                    'message' => __('messages.user_not_found_for_role') ?? 'We could not find an account with this email for the selected user type.'
                 ]);
             }
+
 
             // Generate 6-digit OTP
             $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -3014,6 +3018,7 @@ class HomeController extends Controller
             session([
                 'forget_password_otp' => $otp,
                 'forget_password_email' => $email,
+                'forget_password_role' => $request->user_type,
                 'otp_expires_at' => now()->addMinutes(5)
             ]);
 
@@ -3130,12 +3135,14 @@ class HomeController extends Controller
             }
 
             // OTP is valid - clear session and allow password reset
-            session()->forget(['forget_password_otp', 'forget_password_email', 'otp_expires_at']);
+            $role = session('forget_password_role');
+            session()->forget(['forget_password_otp', 'forget_password_email', 'forget_password_role', 'otp_expires_at']);
 
             // Store verification in session for password reset
             session([
                 'password_reset_verified' => true,
                 'password_reset_email' => $email,
+                'password_reset_role' => $role,
                 'password_reset_expires_at' => now()->addMinutes(10)
             ]);
 
@@ -3157,7 +3164,7 @@ class HomeController extends Controller
         //$user_id = Auth::user()->id;
         try {
             $validator = Validator::make($request->all(), [
-                'email' => 'required|email|exists:users,email',
+                'email' => 'required|email',
                 'new_password' => 'required|min:6'
             ]);
 
@@ -3189,7 +3196,7 @@ class HomeController extends Controller
 
             // Check if password reset is expired
             if (session()->has('password_reset_expires_at') && now()->isAfter(session('password_reset_expires_at'))) {
-                session()->forget(['password_reset_verified', 'password_reset_email', 'password_reset_expires_at']);
+            session()->forget(['password_reset_verified', 'password_reset_email', 'password_reset_role', 'password_reset_expires_at']);
                 return response()->json([
                     'success' => false,
                     'message' => 'Password reset session has expired. Please start the process again.'
@@ -3197,7 +3204,10 @@ class HomeController extends Controller
             }
 
             // Find user and update password
-            $user = \App\Models\User::where('email', $email)->first();
+            $role = session('password_reset_role');
+            $user = \App\Models\User::where('email', $email)
+                ->where('role', $role)
+                ->first();
 
             if (!$user) {
                 return response()->json([
@@ -3208,10 +3218,14 @@ class HomeController extends Controller
 
             // Update password
             $user->password = Hash::make($newPassword);
+            // Optional: $user->active = 1; if they need activation
             $user->save();
 
+            // Log the user in
+            \Auth::login($user);
+
             // Clear password reset session
-            session()->forget(['password_reset_verified', 'password_reset_email', 'password_reset_expires_at']);
+            session()->forget(['password_reset_verified', 'password_reset_email', 'password_reset_role', 'password_reset_expires_at']);
 
             return response()->json([
                 'success' => true,
