@@ -36,6 +36,16 @@
 @stop
 
 @section('content')
+@php
+    $live_asset_path = function($path) {
+        if (empty($path)) return '';
+        $path = ltrim(trim($path), '/');
+        if (preg_match('#^https?://#i', $path)) {
+            return preg_replace('#^https?://[^/]+#', 'https://bsbqa.com', $path);
+        }
+        return 'https://bsbqa.com/' . $path;
+    };
+@endphp
 
 <div class="body-overlay fs-wrapper search-form-overlay close-search-form"></div>
             <!--header-end-->
@@ -58,8 +68,8 @@
                                         <!-- swiper-slide-->
                                          @foreach($property->images as $image)
                                         <div class="swiper-slide hov_zoom">
-                                            <img src="{{aws_asset_path($image->image)}}" alt="">
-                                            <a href="{{aws_asset_path($image->image)}}" class="box-media-zoom   popup-image"><i class="fal fa-search"></i></a>
+                                            <img src="{{$live_asset_path($image->image)}}" alt="">
+                                            <a href="{{$live_asset_path($image->image)}}" class="box-media-zoom   popup-image"><i class="fal fa-search"></i></a>
 
                                         </div>
                                         @endforeach
@@ -250,7 +260,7 @@
                                                         </div>
                                                         <div class="modal-body p-0 overflow-auto" style="height: calc(100vh - 60px);">
                                                             <div class="d-flex justify-content-center align-items-center w-100">
-                                                                <img src="{{ aws_asset_path($property->floor_plan) }}" class="floor-plan-img" alt="Unit Layout">
+                                                                <img src="{{ $live_asset_path($property->floor_plan) }}" class="floor-plan-img" alt="Unit Layout">
                                                             </div>
                                                         </div>
                                                     </div>
@@ -315,7 +325,7 @@
                                                         <!--boxed-content-title end-->
                                                         <!--boxed-content-item-->
                                                         <div class="boxed-content-item pt-0">
-                                                            @if($property->sale_type==1)
+                                                            @if(in_array($property->sale_type, [1, 3]))
                                                              <a href="#" class="btn-black commentssubmit_fw mt-2" data-bs-toggle="modal" data-bs-target="#paymentPlan">
                                                                 {{ __('messages.request_payment_plan') }}
                                                             </a>
@@ -584,7 +594,7 @@
                                                         <div class="geodir-category-listing">
                                                             <div class="geodir-category-img">
                                                                 <a href="{{url('property-details/'.$sim_property->slug)}}" class="geodir-category-img_item">
-                                                                    <div class="bg" data-bg=" @if(isset($sim_property->images[0])) {{aws_asset_path($sim_property->images[0]->image)}} @endif "></div>
+                                                                    <div class="bg" data-bg=" @if(isset($sim_property->images[0])) {{$live_asset_path($sim_property->images[0]->image)}} @endif "></div>
                                                                     <div class="overlay"></div>
                                                                 </a>
                                                                 <div class="geodir-category-location">

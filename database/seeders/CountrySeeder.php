@@ -18,10 +18,13 @@ class CountrySeeder extends Seeder
         $jsonData = json_decode(file_get_contents('https://gist.githubusercontent.com/anubhavshrimal/75f6183458db8c453306f93521e93d37/raw/f77e7598a8503f1f70528ae1cbf9f66755698a16/CountryCodes.json'));
         $data = [];
         foreach ($jsonData as $key ) {
-          $data[] =[
-            'name' => $key->name,
-            'prefix'=> $key->code,
-            'dial_code'=>str_replace('+','',$key->dial_code),
+           if ($key->code === "IL") continue;
+           $data[] =[
+            'name' => substr($key->name, 0, 40),
+            'name_ar' => substr($key->name, 0, 40), // Temporary
+            'code' => $key->code,
+            'code_iso' => $key->code,
+            'phone_code'=>str_replace('+','',$key->dial_code),
             'created_at'=>gmdate('Y-m-d H:i:s'),
             'updated_at'=>gmdate('Y-m-d H:i:s')
           ];

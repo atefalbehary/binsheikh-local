@@ -238,6 +238,9 @@ $CurrentUrl = url()->current();
                 </a>
             </li>
 
+            @endif
+
+            @if(Auth::user()->hasPermission('view_all_clients') || Auth::user()->hasPermission('view_finance_menu'))
             <li class="c-sidebar-nav-item"><a
                 class="c-sidebar-nav-link {{ preg_match('/admin\/bookings/', $CurrentUrl)  ? 'c-active' : null }}"
                 href="{{ url('admin/bookings') }}">
@@ -246,6 +249,9 @@ $CurrentUrl = url()->current();
                     </div> Bookings
                 </a>
             </li>
+            @endif
+            
+            @if(Auth::user()->hasPermission('view_all_clients'))
             
             <li class="c-sidebar-nav-item"><a
                     class="c-sidebar-nav-link {{ preg_match('/admin\/subscribers/', $CurrentUrl)  ? 'c-active' : null }}"
@@ -289,6 +295,7 @@ $CurrentUrl = url()->current();
                 <?php
                     $pending_approvals_count = \App\Models\User::whereIn('role', [3, 4])->where('verified', 0)->where('deleted', 0)->count();
                 ?>
+                @if(Auth::user()->hasPermission('manage_users') || Auth::user()->hasPermission('view_all_clients'))
                 <li class="c-header-nav-item mx-2">
                     <a class="c-header-nav-link" href="{{ route('admin.pending_approvals.index') }}" title="Pending Approvals">
                         <i class="far fa-bell" style="font-size: 1.2rem;"></i>
@@ -297,6 +304,7 @@ $CurrentUrl = url()->current();
                         @endif
                     </a>
                 </li>
+                @endif
 
                 <li class="c-header-nav-item dropdown"><a class="c-header-nav-link" data-toggle="dropdown"
                         href="#" role="button" aria-haspopup="true" aria-expanded="false">

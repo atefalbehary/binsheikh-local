@@ -1775,6 +1775,9 @@
             <div class="tab-navigation" id="reservations-card">
                 <button class="tab-btn active" data-tab="reservations">RESERVATIONS</button>
                 <button class="tab-btn inactive" data-tab="visit-schedule">VISIT SCHEDULE</button>
+                @if(in_array(auth()->user()->role_id, [1, 4]))
+                <button class="tab-btn inactive" data-tab="registered-clients">REGISTERED CLIENTS</button>
+                @endif
             </div>
             
             <!-- Tab Content -->
@@ -2130,6 +2133,70 @@
                         </table>
                     </div>
                 </div>
+
+                @if(in_array(auth()->user()->role_id, [1, 4]))
+                <!-- Registered Clients Tab -->
+                <div id="registered-clients" class="tab-pane">
+                    <!-- Search and Filters (Optional padding/margin match) -->
+                    <div class="visit-schedule-header">
+                        <div class="search-section">
+                            <div class="search-bar">
+                                <input type="text" class="form-control" placeholder="Search By Name | Email | Phone Number" id="registeredClientsSearch">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Master-Details Table for Clients -->
+                    <div class="table-container">
+                        <table class="table table-hover" id="registeredClientsTable">
+                            <thead>
+                                <tr>
+                                    <th>Client Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Project</th>
+                                    <th>Nationality</th>
+                                    <th>Apt. Details</th>
+                                    <th>Registered At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($clients ?? [] as $client)
+                                <tr>
+                                    <td>
+                                        <div class="client-info">
+                                            <div class="client-avatar">
+                                                <i class="fas fa-user"></i>
+                                                <div class="status-dot"></div>
+                                            </div>
+                                            <span class="client-name">{{ $client->client_name ?? 'N/A' }}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ $client->email ?? 'N/A' }}</td>
+                                    <td>
+                                        @if($client->country_code)
+                                            +{{ $client->country_code }}
+                                        @endif
+                                        {{ $client->phone ?? 'N/A' }}
+                                    </td>
+                                    <td>{{ $client->project->name ?? 'N/A' }}</td>
+                                    <td>{{ $client->nationality ?? 'N/A' }}</td>
+                                    <td>
+                                        <div><strong>No:</strong> {{ $client->apartment_no ?? 'N/A' }}</div>
+                                        <div><strong>Type:</strong> {{ $client->apartment_type ?? 'N/A' }}</div>
+                                    </td>
+                                    <td>{{ $client->created_at ? $client->created_at->format('d M Y') : 'N/A' }}</td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="7" class="text-center">No clients registered by this agent.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -2185,7 +2252,8 @@
             const tabTitles = {
                 'agent-info': 'AGENT INFO',
                 'reservations': 'RESERVATIONS',
-                'visit-schedule': 'VISIT SCHEDULE'
+                'visit-schedule': 'VISIT SCHEDULE',
+                'registered-clients': 'REGISTERED CLIENTS'
             };
             
             const currentTabTitle = document.getElementById('currentTabTitle');

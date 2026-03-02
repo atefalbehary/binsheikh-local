@@ -32,10 +32,25 @@
         background-color: #f9f9f9;
         border-radius: 5px;
     }
+
+    .main-footer {
+        z-index: 1 !important;
+    }
 </style>
 @stop
 
 @section('content')
+
+@php
+    $live_asset_path = function($path) {
+        if (empty($path)) return '';
+        $path = ltrim(trim($path), '/');
+        if (preg_match('#^https?://#i', $path)) {
+            return preg_replace('#^https?://[^/]+#', 'https://bsbqa.com', $path);
+        }
+        return 'https://bsbqa.com/' . $path;
+    };
+@endphp
 
 <div class="body-overlay fs-wrapper search-form-overlay close-search-form"></div>
             <!--header-end-->
@@ -58,8 +73,8 @@
                                         <!-- swiper-slide-->
                                          @foreach($property->images as $image)
                                         <div class="swiper-slide hov_zoom">
-                                            <img src="{{aws_asset_path($image->image)}}" alt="">
-                                            <a href="{{aws_asset_path($image->image)}}" class="box-media-zoom   popup-image"><i class="fal fa-search"></i></a>
+                                            <img src="{{$live_asset_path($image->image)}}" alt="">
+                                            <a href="{{$live_asset_path($image->image)}}" class="box-media-zoom   popup-image"><i class="fal fa-search"></i></a>
 
                                         </div>
                                         @endforeach
@@ -76,6 +91,14 @@
                         <div class="fw-carousel-button-next slider-button"><i class="fa-solid fa-caret-right"></i></div>
                         <div class="fwc-controls_wrap">
                             <div class="solid-pagination_btns fwc-pagination"></div>
+                        </div>
+                        <div class="hs-scroll-down-wrap">
+                            <div class="scroll-down-item">
+                                <div class="mousey">
+                                    <div class="scroller"></div>
+                                </div>
+                                <span>{{ __('messages.scroll_down_to_discover') }}</span>
+                            </div>
                         </div>
                     </div>
                     <!--single-carousle-container-->
@@ -250,7 +273,7 @@
                                                         </div>
                                                         <div class="modal-body p-0 overflow-auto" style="height: calc(100vh - 60px);">
                                                             <div class="d-flex justify-content-center align-items-center w-100">
-                                                                <img src="{{ aws_asset_path($property->floor_plan) }}" class="floor-plan-img" alt="Unit Layout">
+                                                                <img src="{{ $live_asset_path($property->floor_plan) }}" class="floor-plan-img" alt="Unit Layout">
                                                             </div>
                                                         </div>
                                                     </div>
@@ -315,14 +338,14 @@
                                                         <!--boxed-content-title end-->
                                                         <!--boxed-content-item-->
                                                         <div class="boxed-content-item pt-0">
-                                                            @if($property->sale_type==1)
-                                                             <a href="#" class="btn-black commentssubmit_fw mt-2" data-bs-toggle="modal" data-bs-target="#paymentPlan">
+                                                            {{-- @if($property->sale_type == 1 ) --}}
+                                                             <a href="#" class="commentssubmit commentssubmit_fw mt-2 text-white" style="background-color: #000;" data-bs-toggle="modal" data-bs-target="#paymentPlan">
                                                                 {{ __('messages.request_payment_plan') }}
                                                             </a>
-                                                                <a href="#" class="btn-black commentssubmit_fw mt-2" data-bs-toggle="modal" data-bs-target="#paymentCalculator">
+                                                                <a href="{{ url('payment-calculator/'.$property->slug) }}" class="commentssubmit commentssubmit_fw mt-2 text-white" style="background-color: #000;">
                                                                 {{ __('messages.payment_calculator') }}
                                                             </a>
-                                                            @endif
+                                                            {{-- @endif --}}
 
                                                             <div class="row g-2 mt-1">
                                                                 <div class="col-12 col-md-6">
@@ -438,125 +461,6 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                          <div class="modal fade" id="paymentCalculator" tabindex="-1" aria-labelledby="paymentCalculatorLabel" aria-hidden="true">
-                                                            <div class="modal-dialog modal-dialog-scrollable modal-xl">
-                                                                <div class="modal-content">
-                                                                    <div class="modal-header">
-                                                                        <h5 class="modal-title fs-5 fw-bold" id="exampleModalLabel">{{ __('messages.payment_calculator') }}</h5>
-                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                    </div>
-                                                                    <div class="modal-body">
-                                                                        <?php
-                                                                            $ser_amt = ($settings->service_charge_perc / 100) * $property->price;
-                                                                            $total = $property->price + $ser_amt;
-                                                                            $full_price_calc = $property->price;
-                                                                            $down_payment = ($settings->advance_perc / 100) * $full_price_calc;
-                                                                            $pending_amt = $full_price_calc - $down_payment;
-                                                                        ?>
-
-                                                                        <div class="card">
-                                                                            <div class="card-body">
-                                                                                <div class="table-responsive">
-                                                                                    <table class="table">
-                                                                                        <thead>
-                                                                                            <tr>
-                                                                                                <th>{{ __('messages.unit_number') }}</th>
-                                                                                                <th>{{ __('messages.gross_area') }}</th>
-                                                                                                <!-- <th>{{ __('messages.size_net') }}</th> -->
-                                                                                                <th>{{ __('messages.full_price') }}</th>
-                                                                                                <th>{{ __('messages.management_fees') }}</th>
-                                                                                                <th>{{ __('messages.total') }}</th>
-                                                                                                <th>{{ __('messages.available_rental_duration') }}</th>
-                                                                                            </tr>
-                                                                                        </thead>
-                                                                                        <tbody>
-                                                                                            <tr>
-                                                                                                <td>{{$property->apartment_no}}</td>
-                                                                                                <td>{{$property->gross_area}} m2</td>
-                                                                                                <!-- <td>{{$property->area}} m2</td> -->
-                                                                                                <td>{{moneyFormat($property->price)}}</td>
-                                                                                                <td>{{moneyFormat($ser_amt)}}</td>
-                                                                                                <td>{{moneyFormat($total)}}</td>
-                                                                                                <td>{{$monthCount}} {{ __('messages.months') }}</td>
-                                                                                            </tr>
-                                                                                        </tbody>
-                                                                                    </table>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                          <div class="card text-start">
-                                                                            <div class="card-body">
-                                                                                <form id="emiCalculatorForm" data-parsley-validate="true" action="{{ url('calculate_emi') }}" >
-                                                                                    @csrf()
-                                                                                    <input type="hidden" name="property_id" value="{{$property->id}}">
-                                                                                    <div class="row">
-                                                                                        <div class="col-md-3">
-                                                                                            <label for="loanAmount" class="form-label">{{ __('messages.advance_amount') }}</label>
-                                                                                            <input type="text" data-parsley-type="integer" class="form-control" id="AdvanceAmount" required max="{{$total}}" data-parsley-type-message="{{ __('messages.this_value_should_be_a_valid_integer') }}" data-parsley-required-message="" name="advance_amount" data-parsley-greater-than-zero="true">
-                                                                                        </div>
-                                                                                        <div class="col-md-3">
-                                                                                            <label for="handoveramount" class="form-label">{{ __('messages.handover_amount') }}</label>
-                                                                                            <input type="text" data-parsley-type="integer" class="form-control" id="HandOverAmount" required max="{{$total}}" data-parsley-type-message="{{ __('messages.this_value_should_be_a_valid_integer') }}" data-parsley-required-message="" name="hand_over_amount" data-parsley-greater-than-zero="true">
-                                                                                        </div>
-                                                                                        <div class="col-md-2">
-                                                                                            <label for="interestRate" class="form-label">{{ __('messages.rental_duration') }}</label>
-                                                                                            <select data-parsley-type="integer" class="form-control " id="" required max="{{$monthCount}}" data-parsley-max-message="{{ __('messages.month_count_limit', ['monthCount' => $monthCount]) }}" data-parsley-type-message="{{ __('messages.this_value_should_be_a_valid_integer') }}" data-parsley-required-message="" name="rental_duration" data-parsley-greater-than-zero="true">
-                                                                                                <option value="">{{ __('messages.rental_duration') }}</option>
-                                                                                                @foreach ($months as $key => $val)
-                                                                                                    <option value="{{$val['val']}}">{{$val['month']}}</option>
-                                                                                                @endforeach
-                                                                                            </select>
-
-                                                                                        </div>
-
-                                                                                        <div class="col-md-2">
-                                                                                            <button type="submit" class="btn btn-warning w-100" style="border-radius: 4px; margin-top: 30px">{{ __('messages.calculate_emi') }}</button>
-                                                                                        </div>
-                                                                                        <div class="col-md-2">
-                                                                                            @if(Auth::check() && (Auth::user()->role != '1'))
-                                                                                                <a href="#" class="btn btn-warning w-100" style="border-radius: 4px; margin-top: 30px" id="bookNowBtn" onclick="redirectToSpecificCheckout(event)">
-                                                                                                    {{ __('messages.book_now') }}
-                                                                                                </a>
-                                                                                            @else
-                                                                                                <a href="javascript:;" class="btn btn-warning w-100 modal-open" style="border-radius: 4px; margin-top: 30px">
-                                                                                                    {{ __('messages.book_now') }}
-                                                                                                </a>
-                                                                                            @endif
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </form>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="card">
-                                                                            <div class="card-body">
-                                                                                <div class="table-responsive ">
-                                                                                    <div class="d-flex justify-content-between mb-3">
-                                                                                        <h5 class="card-title">{{ __('messages.payment_schedule') }}</h5>
-                                                                                        <a href="javascript:void(0)" id="downloadCalculationPdf" class="btn btn-primary">
-                                                                                            <i class="fa fa-download"></i> {{ __('messages.download_pdf') }}
-                                                                                        </a>
-                                                                                    </div>
-                                                                                    <table class="payment-table table">
-                                                                                        <thead>
-                                                                                            <tr>
-                                                                                                <th>{{ __('messages.month') }}</th>
-                                                                                                <th>{{ __('messages.percentage') }}</th>
-                                                                                                <th>{{ __('messages.payment') }}</th>
-                                                                                                <th>{{ __('messages.total_payment') }}</th>
-                                                                                                <th>{{ __('messages.total_percentage') }}</th>
-                                                                                            </tr>
-                                                                                        </thead>
-                                                                                        <tbody class="calculate_em_tbody">
-
-                                                                                        </tbody>
-                                                                                    </table>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
 
                                                     </div>
                                                 </div>
@@ -584,7 +488,7 @@
                                                         <div class="geodir-category-listing">
                                                             <div class="geodir-category-img">
                                                                 <a href="{{url('property-details/'.$sim_property->slug)}}" class="geodir-category-img_item">
-                                                                    <div class="bg" data-bg=" @if(isset($sim_property->images[0])) {{aws_asset_path($sim_property->images[0]->image)}} @endif "></div>
+                                                                    <div class="bg" data-bg=" @if(isset($sim_property->images[0])) {{$live_asset_path($sim_property->images[0]->image)}} @endif "></div>
                                                                     <div class="overlay"></div>
                                                                 </a>
                                                                 <div class="geodir-category-location">
@@ -662,6 +566,12 @@
 @section('script')
 <script>
     $(document).ready(function() {
+        // Ensure content sits above the fixed footer by adding padding to wrapper
+        var footerHeight = $('.main-footer').outerHeight(true);
+        if (footerHeight) {
+            $('.wrapper').css('padding-bottom', footerHeight + 'px');
+        }
+
         // Handle download calculator PDF button click
         $('#downloadCalculationPdf').click(function() {
             var property_id = $('input[name="property_id"]').val();

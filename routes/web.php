@@ -31,6 +31,7 @@ Route::get('/google41802e3e0f5e94ab.html', function () {
     return File::get(public_path('google41802e3e0f5e94ab.html'));
 });
 Route::get('/property-details/{slug}', 'App\Http\Controllers\front\HomeController@property_details');
+Route::get('/payment-calculator/{slug}', 'App\Http\Controllers\front\HomeController@payment_calculator')->name('payment_calculator');
 Route::get('/property-listing', 'App\Http\Controllers\front\HomeController@property_listing');
 Route::post('/get-projects', 'App\Http\Controllers\front\HomeController@getProjects');
 Route::post('/calculate_emi', 'App\Http\Controllers\front\HomeController@calculate_emi');

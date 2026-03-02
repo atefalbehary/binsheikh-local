@@ -25,7 +25,7 @@ class DashboardController extends Controller
 
         $user = \Auth::user();
 
-        if ($user->hasPermission('view_all_clients') || $user->hasPermission('manage_content')) {
+        if ($user->hasPermission('view_all_clients') || $user->hasPermission('manage_content') || $user->hasPermission('view_finance_menu')) {
              $bookings = Booking::where(['type' => 'Down Payment'])->count();
              $properties = Properties::where(['deleted' => 0])->count();
              $rent = Properties::where(['deleted' => 0])->whereIn('sale_type', [2, 3])->count();

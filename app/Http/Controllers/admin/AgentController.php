@@ -311,6 +311,15 @@ class AgentController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
+            // Load registered clients for this specific agent
+            $clients = collect();
+            if (in_array(auth()->user()->role_id, [1, 4])) {
+                $clients = \App\Models\Client::with('project')
+                    ->where('agent_id', $id)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+
             // Calculate Stats
             $totalProperties = $reservations->count();
             $pendingProperties = $reservations->where('status', \App\Models\Reservation::STATUS_WAITING_APPROVAL)->count();
@@ -319,7 +328,7 @@ class AgentController extends Controller
                 return $r->property ? $r->property->price : 0;
             });
 
-            return view('admin.agent.details', compact('page_heading', 'agent', 'last', 'last_license', 'last_id_card', 'visitSchedules', 'reservations', 'totalProperties', 'pendingProperties', 'activeProperties', 'totalPurchase'));
+            return view('admin.agent.details', compact('page_heading', 'agent', 'last', 'last_license', 'last_id_card', 'visitSchedules', 'reservations', 'totalProperties', 'pendingProperties', 'activeProperties', 'totalPurchase', 'clients'));
         } catch (\Throwable $e) {
             dd($e->getMessage(), $e->getTraceAsString());
         }

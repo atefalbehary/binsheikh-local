@@ -481,6 +481,56 @@ class HomeController extends Controller
         return view('front_end.property_details', compact('page_heading', 'property', 'similar', 'settings', 'months', 'monthCount'));
 
     }
+
+    public function payment_calculator($slug)
+    {
+        $property = Properties::with(['property_type', 'images', 'amenities'])->where(['slug' => $slug, 'active' => '1', 'deleted' => 0])->first();
+        if (!$property) {
+            abort(404);
+        }
+
+        $page_heading = __('messages.payment_calculator') . " - " . $property->name;
+        $settings = Settings::find(1);
+
+        $cur_month = Carbon::now();
+        $cur_month->startOfMonth();
+        if (isset($property->project->end_date) && $property->project->end_date) {
+            $targetDate = Carbon::createFromFormat('Y-m', $property->project->end_date)->endOfMonth();
+            $monthsDifference = $cur_month->diffInMonths($targetDate);
+        } else {
+            $monthsDifference = $settings->month_count;
+        }
+
+        $ser_amt = ($settings->service_charge_perc / 100) * $property->price;
+        $total = $property->price + $ser_amt;
+        $full_price_calc = $property->price;
+        $down_payment = ($settings->advance_perc / 100) * $full_price_calc;
+        $pending_amt = $full_price_calc - $down_payment;
+
+        $payableEmiAmount = $pending_amt;
+        $monthCount = $monthsDifference;
+        $monthlyPayment = $payableEmiAmount / $monthCount;
+        $percentageRate = (100 - $settings->advance_perc) / $monthCount;
+
+        $months = [];
+        $totalPercentage = $settings->advance_perc;
+        $remainingAmount = $payableEmiAmount;
+
+        for ($i = 0; $i < $monthCount; $i++) {
+            $remainingAmount -= $monthlyPayment;
+            $totalPercentage += $percentageRate;
+            $month = $cur_month->addMonth()->format('M-y');
+            $months[$i]['month'] = $month;
+            $months[$i]['month_list'] = Carbon::createFromFormat('M-y', $month)->format('F - Y');
+            $months[$i]['val'] = $i + 1;
+            $months[$i]['ordinal'] = $this->getOrdinalSuffix($i + 1);
+            $months[$i]['payment'] = round($monthlyPayment, 2);
+            $months[$i]['remaining_amount'] = round($remainingAmount, 2);
+            $months[$i]['total_percentage'] = round($totalPercentage, 2);
+        }
+
+        return view('front_end.payment_calculator', compact('page_heading', 'property', 'settings', 'months', 'monthCount', 'total', 'ser_amt'));
+    }
     public function getOrdinalSuffix($number)
     {
         if (in_array($number % 100, [11, 12, 13])) {
@@ -1081,7 +1131,7 @@ class HomeController extends Controller
     {
         $user_id = Auth::user()->id;
         $page_heading = "My Profile";
-        $countries = Country::orderBy('name', 'asc')->select('name', 'name_ar', 'code_iso', 'phone_code')->get();
+        $countries = \App\Models\Country::orderBy('name', 'asc')->select('name', 'name_ar', 'code_iso', 'phone_code')->get();
         return view('front_end.my_profile', compact('page_heading', 'countries'));
     }
     public function update_profile(Request $request)
