@@ -532,31 +532,7 @@ class HomeController extends Controller
         return view('front_end.payment_calculator', compact('page_heading', 'property', 'settings', 'months', 'monthCount', 'total', 'ser_amt'));
     }
 
-    public function payment_calculator($slug)
-    {
-        $property = Properties::with(['property_type', 'images', 'amenities'])->where(['slug' => $slug, 'active' => '1', 'deleted' => 0])->first();
-        if (!$property) {
-            abort(404);
-        }
 
-        $page_heading = $property->name;
-        $settings = Settings::find(1);
-
-        $cur_month = Carbon::now();
-        $cur_month->startOfMonth();
-        if (isset($property->project->end_date) && $property->project->end_date) {
-            $targetDate = Carbon::createFromFormat('Y-m', $property->project->end_date)->endOfMonth();
-        }
-
-        // Removed monthsDifference to prevent undefined variable errors as per previous fix
-        if (isset($property->project->end_date) && $property->project->end_date) {
-            $monthCount = $cur_month->diffInMonths($targetDate);
-        } else {
-            $monthCount = $settings->month_count;
-        }
-
-        return view('front_end.payment_calculator', compact('page_heading', 'property', 'settings', 'monthCount'));
-    }
     public function getOrdinalSuffix($number)
     {
         if (in_array($number % 100, [11, 12, 13])) {
