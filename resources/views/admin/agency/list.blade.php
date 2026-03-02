@@ -208,8 +208,12 @@
                             </div>
 
                             <div class="float-right col-md-4 mb-2" >
+                                @can('export_data')
                                 <button id="exportAgencies" class="btn btn-success mr-2">Export Agencies</button>
+                                @endcan
+                                @can('delete_records')
                                 <button id="deleteSelected" class="btn btn-danger">Delete Selected</button>
+                                @endcan
                             </div>
 
                             <table class="table table-responsive-sm table-bordered" id="agencyTable">
@@ -252,17 +256,21 @@
                                                     data-offstyle="danger">
                                             </td>
                                             <td>
+                                                @can('delete_records')
                                                 <a href="{{ url('admin/customer/delete/' . $cust->id) }}"
                                                     class="btn btn-outline-danger active deleteListItem" data-role="unlink"
                                                     data-message="Do you want to remove this agency?" title="Delete"
                                                     aria-hidden="true"><i class="fas fa-trash-alt fa-1x"></i></a>
+                                                @endcan
                                                 <a href="{{ url('admin/agency/details/' . $cust->id) }}"
                                                     class="btn btn-outline-info active" title="View Details"
                                                     aria-hidden="true"><i class="fas fa-eye fa-1x"></i></a>
                                                 @if(!$cust->verified)
-                                                <a href="{{ url('admin/customer/approve/' . $cust->id) }}"
-                                                    class="btn btn-outline-success active approveCustomer" title="Approve Agency"
-                                                    data-message="Do you want to approve this agency?" aria-hidden="true"><i class="fas fa-check fa-1x"></i></a>
+                                                    @can('approve_agency')
+                                                    <a href="{{ url('admin/customer/approve/' . $cust->id) }}"
+                                                        class="btn btn-outline-success active approveCustomer" title="Approve Agency"
+                                                        data-message="Do you want to approve this agency?" aria-hidden="true"><i class="fas fa-check fa-1x"></i></a>
+                                                    @endcan
                                                 @endif
                                             </td>
                                         </tr>
@@ -275,17 +283,21 @@
                                                         <h5>AGENCY INFO</h5>
                                                         <div class="header-actions">
                                                             @if(!$cust->verified)
-                                                            <a href="{{ url('admin/customer/approve/' . $cust->id) }}"
-                                                                class="btn-action btn-success approveCustomer" 
-                                                                title="Approve Agency"
-                                                                data-message="Do you want to approve this agency?"
-                                                                aria-hidden="true">
-                                                                <i class="fas fa-check"></i>
-                                                            </a>
+                                                                @can('approve_agency')
+                                                                <a href="{{ url('admin/customer/approve/' . $cust->id) }}"
+                                                                    class="btn-action btn-success approveCustomer" 
+                                                                    title="Approve Agency"
+                                                                    data-message="Do you want to approve this agency?"
+                                                                    aria-hidden="true">
+                                                                    <i class="fas fa-check"></i>
+                                                                </a>
+                                                                @endcan
                                                             @endif
+                                                            @can('reject_agency')
                                                             <button class="btn-action btn-danger" title="Reject">
                                                                 <i class="fas fa-times"></i>
                                                             </button>
+                                                            @endcan
                                                         </div>
                                                     </div>
                                                     

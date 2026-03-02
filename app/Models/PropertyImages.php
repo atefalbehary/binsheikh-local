@@ -13,8 +13,10 @@ use Illuminate\Database\Eloquent\Model;
 
 
 class PropertyImages extends Model
-
 {
+    use HasFactory;
+
+    protected $fillable = ['property_id', 'image', 'order', 'alt_text', 'alt_text_ar'];
 
     use HasFactory;
 

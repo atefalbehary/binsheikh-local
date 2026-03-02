@@ -11,8 +11,8 @@ function is_local_env()
 {
     // Check the request scheme: HTTP = local, HTTPS = production
     $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-             || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
-             || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+        || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+        || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
 
     return !$isSecure;
 }
@@ -60,8 +60,8 @@ if (!function_exists('get_uploaded_image_url')) {
             if (\Storage::disk($disk)->exists($dir . $filename)) {
                 return \Storage::disk($disk)->url($dir . $filename);
             }
-            
-             \Illuminate\Support\Facades\Log::warning("get_uploaded_image_url: Not found [{$dir}{$filename}] on disk [{$disk}]. Returning fallback.");
+
+            \Illuminate\Support\Facades\Log::warning("get_uploaded_image_url: Not found [{$dir}{$filename}] on disk [{$disk}]. Returning fallback.");
         }
 
         return $fallback_image;
@@ -262,6 +262,14 @@ function resolve_image_url($value, $subdir = 'users', $placeholder = null)
         return $value;
     }
 
+    // If running locally, fetch from production so images load correctly
+    if (is_local_env() || request()->getHost() == '127.0.0.1' || request()->getHost() == 'localhost') {
+        if (strpos($value, 'uploads/') === 0) {
+            return "https://bsbqa.com/" . ltrim($value, '/');
+        }
+        return "https://bsbqa.com/uploads/" . $subdir . "/" . ltrim($value, '/');
+    }
+
     // Relative path starting with "uploads/" — resolve based on environment
     if (strpos($value, 'uploads/') === 0) {
         if (is_local_env()) {
@@ -407,7 +415,7 @@ function file_save($file, $model, $mb_file_size = 25)
 //         // Use public_path() to store in public/uploads directly, matching existing structure
 //         // and avoiding missing 'storage' symlink issues.
 //         $destinationPath = public_path('uploads/' . $model);
-        
+
 //         // Ensure directory exists
 //         if (!file_exists($destinationPath)) {
 //             mkdir($destinationPath, 0755, true);
@@ -442,8 +450,14 @@ function aws_asset_path($path)
         return $path;
     }
 
-    // Check if it is a storage or uploads path (likely local)
     $cleanPath = ltrim($path, '/');
+
+    // If running locally, force use of bsbqa.com since local lacks images
+    if (is_local_env() || request()->getHost() == '127.0.0.1' || request()->getHost() == 'localhost') {
+        return "https://bsbqa.com/" . $cleanPath;
+    }
+
+    // Check if it is a storage or uploads path (likely local)
     if (strpos($cleanPath, 'storage/') === 0 || strpos($cleanPath, 'uploads/') === 0) {
         // Return root-relative path to ensure it uses the current domain (localhost)
         return asset('/' . $cleanPath);

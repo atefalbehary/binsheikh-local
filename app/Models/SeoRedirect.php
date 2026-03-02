@@ -5,12 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProjectImages extends Model
+class SeoRedirect extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['project_id', 'image', 'alt_text', 'alt_text_ar'];
-
-    protected $guarded = [];
-
+    protected $fillable = ['old_url', 'new_url', 'status_code'];
 }

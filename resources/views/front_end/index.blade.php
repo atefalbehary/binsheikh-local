@@ -997,7 +997,7 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="about-img">
-                                            <img src="{{ asset('') }}front-assets/images/about.jpg" class="respimg" alt="">
+                                            <img src="{{ asset('') }}front-assets/images/about.jpg" class="respimg" alt="{{ __('messages.about_us') }}">
                                         </div>
                                     </div>
                                 </div>
@@ -1148,7 +1148,7 @@
                                             <div class="testi-item">
                                                 <div class="testimonilas-text pb-4">
                                                     <div class="testi-header">
-                                                        <div class="testi-avatar"><img src="{{aws_asset_path($rev->image)}}" alt=""></div>
+                                                        <div class="testi-avatar"><img src="{{aws_asset_path($rev->image)}}" alt="{{ $rev->name }}"></div>
                                                         <h3>{{$rev->name}}</h3>
                                                     </div>
                                                     <div class="testimonilas-text-item">
@@ -1182,7 +1182,7 @@
                 <div class="api-wrap">
                     <div class="api-container">
                         <div class="api-img">
-                            <img src="{{ asset('') }}front-assets/images/bin-sheikh.png" alt="" class="respimg" style="width:100%">
+                            <img src="{{ asset('') }}front-assets/images/bin-sheikh.png" alt="{{ config('global.site_name', 'Bin Al Sheikh') }}" class="respimg" style="width:100%">
                         </div>
                         <div class="api-text">
                             <h3>{{ __("messages.home_heading") }}</h3>

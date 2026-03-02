@@ -1,0 +1,912 @@
+/*
+ * Payment Calculator — Scoped Styles
+ * =====================================
+ * Add this file to your layout:
+ *   <link rel="stylesheet" href="{{ asset('front-assets/css/payment-calculator.css') }}">
+ *
+ * All rules are scoped under .pc-wrap so nothing bleeds into the rest of the page.
+ * Exact colors are taken from the React design-system tokens:
+ *   --gold       hsl(38 45% 50%)  →  #c9a84c
+ *   --gold-light hsl(38 58% 66%)  →  #e8c96d
+ *   --navy       hsl(220 45% 18%) →  #1e2a42
+ *   --background hsl(36 30% 97%)  →  #f8f5f0  (warm ivory)
+ *   --muted      hsl(36 22% 94%)  →  #f3ede6
+ *   --border     hsl(38 30% 82%)  →  #d4be8f
+ */
+
+/* ─────────────────────────────────────────────────────────────────
+   ROOT WRAPPER
+   ───────────────────────────────────────────────────────────────── */
+
+.pc-wrap {
+    font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: hsl(220 45% 13%);
+    /* Warm ivory page background — matches React bg-background */
+    background: hsl(36 30% 97%);
+    padding: 2rem 0;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   SECTION CARDS
+   ───────────────────────────────────────────────────────────────── */
+
+/* Property info + scenario selector: bg-muted/40 */
+.pc-wrap .pc-section {
+    background: hsla(36, 22%, 94%, 0.45);
+    border: 1px solid hsla(38, 30%, 82%, 0.55);
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Custom input rows: slightly lighter bg-muted/20 */
+.pc-wrap .pc-section-light {
+    background: hsla(36, 22%, 94%, 0.22);
+    border: 1px solid hsla(38, 30%, 82%, 0.32);
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Duration badge: bg-muted/30 */
+.pc-wrap .pc-badge {
+    text-align: center;
+    background: hsla(36, 22%, 94%, 0.32);
+    border: 1px solid hsla(38, 30%, 82%, 0.42);
+    border-radius: 0.75rem;
+    padding: 0.4rem 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.pc-wrap .pc-badge .pc-badge-label {
+    font-size: 0.75rem;
+    color: hsl(220 18% 45%);
+    font-weight: 500;
+}
+
+.pc-wrap .pc-badge .pc-badge-val {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: hsl(220 45% 13%);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   PROPERTY INFO GRID
+   ───────────────────────────────────────────────────────────────── */
+
+.pc-wrap .pc-info-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem;
+}
+
+@media (max-width: 680px) {
+    .pc-wrap .pc-info-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 420px) {
+    .pc-wrap .pc-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.pc-wrap .pc-info-grid .pc-info-cell {
+    text-align: center;
+}
+
+.pc-wrap .pc-info-grid .pc-info-key {
+    font-size: 0.72rem;
+    color: hsl(220 18% 45%);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.2rem;
+}
+
+/* Gold text gradient on the value — matches .gold-text-gradient in React */
+.pc-wrap .pc-info-grid .pc-info-val {
+    font-size: 0.875rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, hsl(38 45% 50%), hsl(38 58% 66%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.3;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   FORM LABELS
+   ───────────────────────────────────────────────────────────────── */
+
+.pc-wrap .pc-label-muted {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: hsl(220 18% 45%);
+    margin-bottom: 0.3rem;
+}
+
+/* Gold label — used on custom EMI inputs */
+.pc-wrap .pc-label-gold {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(38 45% 50%);
+    margin-bottom: 0.3rem;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   INPUTS & SELECTS
+   ───────────────────────────────────────────────────────────────── */
+
+/* Default (scenario/balloon selects) */
+.pc-wrap .pc-select,
+.pc-wrap .pc-input {
+    background: hsl(36 40% 99%) !important;
+    border: 1px solid hsl(38 30% 82%) !important;
+    border-radius: 0.75rem !important;
+    color: hsl(220 45% 13%) !important;
+    font-size: 0.875rem;
+    padding: 0.45rem 0.75rem !important;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.pc-wrap .pc-select:focus,
+.pc-wrap .pc-input:focus {
+    border-color: hsl(38 45% 50%) !important;
+    box-shadow: 0 0 0 3px hsla(38, 45%, 50%, 0.15) !important;
+}
+
+/* Gold inputs — advance / handover / duration */
+.pc-wrap .pc-input-gold,
+.pc-wrap select.pc-input-gold {
+    background: hsl(36 40% 99%) !important;
+    border: 1px solid hsl(38 45% 50%) !important;
+    border-radius: 0.75rem !important;
+    color: hsl(25 75% 31%) !important;
+    /* text-gold / warm amber-brown */
+    font-weight: 700 !important;
+    font-size: 0.875rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pc-wrap .pc-input-gold::placeholder {
+    color: hsla(38, 45%, 50%, 0.40) !important;
+}
+
+.pc-wrap .pc-input-gold:focus {
+    border-color: hsl(38 45% 50%) !important;
+    box-shadow: 0 0 0 3px hsla(38, 45%, 50%, 0.18) !important;
+}
+
+.pc-wrap .pc-input-error {
+    border-color: hsl(0 75% 55%) !important;
+    box-shadow: 0 0 0 3px hsla(0, 75%, 55%, 0.12) !important;
+}
+
+.pc-wrap .pc-error-text {
+    font-size: 0.75rem;
+    color: hsl(0 75% 55%);
+    margin-top: 0.25rem;
+}
+
+/* Bootstrap form-select / form-control overrides inside pc-wrap */
+.pc-wrap .form-select,
+.pc-wrap .form-control {
+    background-color: hsl(36 40% 99%) !important;
+    border-color: hsl(38 30% 82%) !important;
+    border-radius: 0.75rem !important;
+    color: hsl(220 45% 13%) !important;
+}
+
+.pc-wrap .form-select:focus,
+.pc-wrap .form-control:focus {
+    border-color: hsl(38 45% 50%) !important;
+    box-shadow: 0 0 0 3px hsla(38, 45%, 50%, 0.15) !important;
+}
+
+.pc-wrap .form-select.pc-input-gold,
+.pc-wrap .form-control.pc-input-gold {
+    border-color: hsl(38 45% 50%) !important;
+    color: hsl(25 75% 31%) !important;
+    font-weight: 700 !important;
+}
+
+.pc-wrap .form-select.pc-input-gold:focus,
+.pc-wrap .form-control.pc-input-gold:focus {
+    border-color: hsl(38 45% 50%) !important;
+    box-shadow: 0 0 0 3px hsla(38, 45%, 50%, 0.18) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BUTTONS
+   ───────────────────────────────────────────────────────────────── */
+
+/* Gold filled — matches .gold-gradient in React */
+.pc-wrap .pc-btn-gold {
+    background: linear-gradient(135deg, hsl(38 45% 50%), hsl(38 58% 66%)) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 0.75rem !important;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: opacity 0.15s;
+    box-shadow: 0 2px 8px hsla(38, 45%, 50%, 0.30);
+}
+
+.pc-wrap .pc-btn-gold:hover,
+.pc-wrap .pc-btn-gold:focus {
+    opacity: 0.88 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 16px hsla(38, 45%, 50%, 0.38);
+}
+
+.pc-wrap .pc-btn-gold:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed;
+}
+
+/* Gold outline — matches border border-gold text-gold in React */
+.pc-wrap .pc-btn-outline-gold {
+    background: transparent !important;
+    border: 1.5px solid hsl(38 45% 50%) !important;
+    color: hsl(38 45% 50%) !important;
+    border-radius: 0.75rem !important;
+    font-weight: 600;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.pc-wrap .pc-btn-outline-gold:hover,
+.pc-wrap .pc-btn-outline-gold:focus {
+    background: linear-gradient(135deg, hsl(38 45% 50%), hsl(38 58% 66%)) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BALLOON CONFIGURATOR
+   ───────────────────────────────────────────────────────────────── */
+
+.pc-wrap .pc-balloon-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: hsl(38 45% 50%);
+    margin-bottom: 0.75rem;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   DIVIDER
+   ───────────────────────────────────────────────────────────────── */
+
+.pc-wrap hr.pc-divider {
+    border: none;
+    border-top: 1px solid hsla(38, 30%, 82%, 0.55);
+    margin: 1rem 0;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   PAYMENT SCHEDULE — HEADER BAR
+   ───────────────────────────────────────────────────────────────── */
+
+.pc-wrap .pc-schedule-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.pc-wrap .pc-schedule-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Thin gold bar before "Payment Schedule" — matches the h-1 w-6 gold-gradient in React */
+.pc-wrap .pc-accent-bar {
+    display: inline-block;
+    width: 1.5rem;
+    height: 4px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, hsl(38 45% 50%), hsl(38 58% 66%));
+    flex-shrink: 0;
+}
+
+.pc-wrap .pc-schedule-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: hsl(220 45% 13%);
+}
+
+.pc-wrap .pc-discount-badge {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #047857;
+    /* emerald-700 */
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   PAYMENT SCHEDULE — TABLE
+   ───────────────────────────────────────────────────────────────── */
+
+/* Wrapper: luxury shadow matching React */
+.pc-wrap .pc-table-wrap {
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid hsla(38, 30%, 82%, 0.55);
+    /* Matches .luxury-shadow in React */
+    box-shadow:
+        0 20px 60px hsla(220, 45%, 18%, 0.09),
+        0 4px 16px hsla(38, 45%, 50%, 0.10);
+    overflow-x: auto;
+}
+
+.pc-wrap .pc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+/* Navy gradient header — exact match from React inline style */
+.pc-wrap .pc-table thead tr {
+    background: linear-gradient(135deg, hsl(220 45% 18%), hsl(220 40% 24%));
+}
+
+.pc-wrap .pc-table thead th {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.90);
+    text-align: center;
+    border: none !important;
+    white-space: nowrap;
+}
+
+.pc-wrap .pc-table thead th:first-child {
+    text-align: left;
+}
+
+.pc-wrap .pc-table tbody td {
+    padding: 0.5rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid hsl(36 22% 94%);
+    border-right: none;
+    border-left: none;
+}
+
+.pc-wrap .pc-table tbody td:first-child {
+    text-align: left;
+    font-weight: 500;
+}
+
+/* Bootstrap table-bordered override */
+.pc-wrap .pc-table.table-bordered> :not(caption)>*>* {
+    border-width: 0 0 1px 0 !important;
+    border-color: hsl(36 22% 94%) !important;
+}
+
+.pc-wrap .pc-table.table-bordered>thead>*>* {
+    border-bottom-width: 0 !important;
+}
+
+/* ── Row type backgrounds (exact Tailwind color values from React) ── */
+
+/* Management Fees row: bg-amber-50 */
+.pc-wrap .pc-table tbody tr.pc-row-mgmt {
+    background-color: #fffbeb !important;
+}
+
+.pc-wrap .pc-table tbody tr.pc-row-mgmt td {
+    color: #b45309 !important;
+    /* text-amber-700 */
+}
+
+/* Discount row: bg-emerald-50 */
+.pc-wrap .pc-table tbody tr.pc-row-discount {
+    background-color: #f0fdf4 !important;
+}
+
+.pc-wrap .pc-table tbody tr.pc-row-discount td {
+    color: #047857 !important;
+    /* text-emerald-700 */
+}
+
+/* Down payment / Handover row: bg-rose-50 */
+.pc-wrap .pc-table tbody tr.pc-row-highlight {
+    background-color: #fff1f2 !important;
+}
+
+.pc-wrap .pc-table tbody tr.pc-row-highlight td {
+    color: #be123c !important;
+    /* text-rose-700 */
+}
+
+/* Regular even rows: bg-background (warm ivory, not pure white) */
+.pc-wrap .pc-table tbody tr.pc-row-even {
+    background-color: hsl(36 40% 99%) !important;
+    /* --card: warm white */
+}
+
+/* Regular odd rows: bg-muted/30 */
+.pc-wrap .pc-table tbody tr.pc-row-odd {
+    background-color: hsla(36, 22%, 94%, 0.55) !important;
+}
+
+/* Hover effect on regular rows */
+.pc-wrap .pc-table tbody tr.pc-row-even:hover,
+.pc-wrap .pc-table tbody tr.pc-row-odd:hover {
+    background-color: hsla(38, 45%, 50%, 0.06) !important;
+    transition: background-color 0.12s;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BOOTSTRAP CLASS OVERRIDES (inside .pc-wrap only)
+   ───────────────────────────────────────────────────────────────── */
+
+/* Override Bootstrap's default gray backgrounds on sections */
+.pc-wrap .bg-light {
+    background-color: hsla(36, 22%, 94%, 0.45) !important;
+}
+
+/* Override Bootstrap rounded-3 to match React's rounded-2xl */
+.pc-wrap .rounded-3 {
+    border-radius: 1rem !important;
+}
+
+/* Table bordered overrides */
+.pc-wrap .table-bordered {
+    border-color: hsla(38, 30%, 82%, 0.40) !important;
+}
+
+.pc-wrap .table> :not(caption)>* {
+    border-color: hsl(36 22% 94%) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   UTILITY — used in Blade
+   ───────────────────────────────────────────────────────────────── */
+
+.pc-gold-text {
+    color: hsl(38 45% 50%);
+}
+
+/* Gold text gradient variant (used on property values, same as React) */
+.pc-gold-text-gradient {
+    background: linear-gradient(135deg, hsl(38 45% 50%), hsl(38 58% 66%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   PDF DOWNLOAD BUTTON — #downloadCalculationPdfNew
+   Matches the React "Download PDF" button exactly.
+   Brand colors from generatePaymentPDF.ts:
+     GOLD  rgb(181,148,82)  |  NAVY  rgb(26,35,54)
+   ───────────────────────────────────────────────────────────────── */
+
+#downloadCalculationPdfNew {
+    border: 1.5px solid rgb(181, 148, 82) !important;
+    color: rgb(150, 118, 55) !important;
+    /* GOLD_DARK */
+    background: rgb(253, 250, 244) !important;
+    /* IVORY */
+    border-radius: 0.75rem !important;
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.01em;
+    transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s;
+    box-shadow: 0 2px 8px rgba(181, 148, 82, 0.18);
+    padding: 0.45rem 1rem;
+}
+
+#downloadCalculationPdfNew:hover,
+#downloadCalculationPdfNew:focus {
+    background: rgb(181, 148, 82) !important;
+    /* GOLD fill on hover */
+    color: #fff !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 16px rgba(181, 148, 82, 0.35);
+}
+
+#downloadCalculationPdfNew svg {
+    flex-shrink: 0;
+    transition: transform 0.18s;
+}
+
+#downloadCalculationPdfNew:hover svg {
+    transform: translateY(2px);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   PRINT / PDF STYLES
+   ───────────────────────────────────────────────────────────────────
+   These rules fire when the user triggers Ctrl+P / browser print,
+   which is what "Download PDF" usually triggers in older setups, or
+   when jsPDF uses window.print() as a fallback.
+
+   Brand colors replicated from generatePaymentPDF.ts:
+     NAVY     rgb(26,  35,  54)   — table head, text
+     GOLD     rgb(181, 148, 82)   — separators, accents
+     GOLD_DARK rgb(150, 118, 55)  — headings
+     IVORY    rgb(253, 250, 244)  — page background
+     LIGHT_GRAY rgb(245,244,240) — alternating rows
+     AMBER_BG rgb(255,248,225)   AMBER_TEXT rgb(160,110,20)
+     ROSE_BG  rgb(255,244,244)   ROSE_TEXT  rgb(160,40,40)
+     GOLD_BG  rgb(250,242,220)   GOLD_TEXT  rgb(130,95,25)
+   ───────────────────────────────────────────────────────────────── */
+
+@media print {
+
+    /* ── 1. Page setup ─────────────────────────────────────────── */
+    @page {
+        size: A4 portrait;
+        margin: 14mm 14mm 28mm 14mm;
+        /* extra bottom for footer */
+    }
+
+    /* ── 2. Hide everything EXCEPT the calculator ──────────────── */
+    body>*:not(.pc-wrap),
+    body>*:not(#pc-print-root) {
+        display: none !important;
+    }
+
+    /* If the .pc-wrap is nested deep, show all its ancestors */
+    body,
+    html {
+        background: rgb(253, 250, 244) !important;
+        /* IVORY */
+        margin: 0;
+        padding: 0;
+    }
+
+    .pc-wrap {
+        display: block !important;
+        background: rgb(253, 250, 244) !important;
+        color: rgb(45, 45, 60) !important;
+        /* CHARCOAL */
+        padding: 0 !important;
+        width: 100%;
+    }
+
+    /* ── 3. Print-only header (mimics PDF addHeader) ───────────── */
+    .pc-wrap::before {
+        content: '';
+        display: block;
+        /* Gold separator line at top — mirrors doc.line(14, 37, 196, 37) */
+        border-top: 0.7px solid rgb(181, 148, 82);
+        margin-bottom: 6mm;
+        /* Company name shown via the page header area — logo not reproducible
+           in CSS, so we render a text fallback matching the PDF fallback branch */
+    }
+
+    /* Print header injected via JS (see note in INSTRUCTIONS.md) */
+    .pc-print-header {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4mm;
+    }
+
+    .pc-print-header-brand {
+        display: block !important;
+    }
+
+    .pc-print-header-brand .pc-print-brand-name {
+        font-size: 13pt;
+        font-weight: 700;
+        color: rgb(26, 35, 54);
+        /* NAVY */
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .pc-print-header-brand .pc-print-brand-sub {
+        font-size: 7pt;
+        color: rgb(181, 148, 82);
+        /* GOLD */
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .pc-print-header-date {
+        font-size: 8pt;
+        color: rgb(45, 45, 60);
+        /* CHARCOAL */
+        text-align: right;
+    }
+
+    /* Gold rule below header */
+    .pc-print-divider {
+        display: block !important;
+        height: 0.7px;
+        background: rgb(181, 148, 82) !important;
+        /* GOLD */
+        border: none;
+        margin-bottom: 6mm;
+    }
+
+    /* ── 4. Hide interactive controls ─────────────────────────── */
+    #downloadCalculationPdfNew,
+    #btnCalculateScenario,
+    #btnCalculateUser,
+    .btn.pc-btn-gold:not(#downloadCalculationPdfNew),
+    label[for="scenarioSelector"],
+    label[for="discountSelector"],
+    label[for="AdvAmount"],
+    label[for="HandAmount"],
+    label[for="userDuration"],
+    label[for="userHandoverDate"],
+    #scenarioSelector,
+    #discountSelector,
+    #AdvAmount,
+    #HandAmount,
+    #userDuration,
+    #userHandoverDate,
+    #balloonConfigurator,
+    .pc-badge,
+    hr.pc-divider {
+        display: none !important;
+    }
+
+    /* Hide the entire scenario + custom input sections */
+    .pc-section:not(.pc-info-grid),
+    .pc-section-light {
+        display: none !important;
+    }
+
+    /* Show ONLY the property info grid section */
+    .pc-section.pc-info-grid {
+        display: grid !important;
+    }
+
+    /* ── 5. Property info grid — print-safe ────────────────────── */
+    .pc-wrap .pc-info-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4mm;
+        margin-bottom: 5mm;
+        border: 0.4px solid rgb(220, 215, 200);
+        border-radius: 4px;
+        padding: 4mm;
+        background: rgb(253, 250, 244) !important;
+        /* IVORY */
+    }
+
+    .pc-wrap .pc-info-grid .pc-info-key {
+        font-size: 7pt;
+        color: rgb(45, 45, 60) !important;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Override gradient text — not print-safe in all browsers */
+    .pc-wrap .pc-info-grid .pc-info-val {
+        font-size: 9pt;
+        font-weight: 700;
+        background: none !important;
+        -webkit-background-clip: unset !important;
+        -webkit-text-fill-color: rgb(150, 118, 55) !important;
+        /* GOLD_DARK */
+        background-clip: unset !important;
+        color: rgb(150, 118, 55) !important;
+    }
+
+    /* ── 6. Schedule table — always visible, print-safe ────────── */
+    #scheduleTableContainer {
+        display: block !important;
+        margin-top: 4mm !important;
+    }
+
+    .pc-wrap .pc-schedule-header {
+        margin-bottom: 3mm;
+    }
+
+    .pc-wrap .pc-schedule-title {
+        font-size: 11pt;
+        font-weight: 700;
+        color: rgb(150, 118, 55) !important;
+        /* GOLD_DARK */
+    }
+
+    /* Gold accent bar — print-safe solid color */
+    .pc-wrap .pc-accent-bar {
+        background: rgb(181, 148, 82) !important;
+        /* GOLD */
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    /* Table wrapper — remove shadow, keep border */
+    .pc-wrap .pc-table-wrap {
+        box-shadow: none !important;
+        border: 0.4px solid rgb(220, 215, 200) !important;
+        border-radius: 0 !important;
+        overflow: visible !important;
+    }
+
+    /* Table base */
+    .pc-wrap .pc-table {
+        font-size: 8pt;
+        white-space: normal;
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    /* Navy gradient header → solid NAVY for print */
+    .pc-wrap .pc-table thead tr {
+        background: rgb(26, 35, 54) !important;
+        /* NAVY */
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .pc-wrap .pc-table thead th {
+        color: rgb(255, 255, 255) !important;
+        font-size: 8pt;
+        padding: 3mm 2mm;
+        border-bottom: 0.5px solid rgb(181, 148, 82) !important;
+        /* GOLD underline */
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    /* Table body cells */
+    .pc-wrap .pc-table tbody td {
+        padding: 2.5mm 2mm;
+        font-size: 8pt;
+        color: rgb(45, 45, 60) !important;
+        /* CHARCOAL */
+        border-bottom: 0.3px solid rgb(220, 215, 200) !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    /* Alternating light-gray rows (LIGHT_GRAY from PDF) */
+    .pc-wrap .pc-table tbody tr.pc-row-even {
+        background-color: rgb(255, 255, 255) !important;
+    }
+
+    .pc-wrap .pc-table tbody tr.pc-row-odd {
+        background-color: rgb(245, 244, 240) !important;
+        /* LIGHT_GRAY */
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    /* Management fees row (AMBER) */
+    .pc-wrap .pc-table tbody tr.pc-row-mgmt {
+        background-color: rgb(255, 248, 225) !important;
+        /* AMBER_BG */
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .pc-wrap .pc-table tbody tr.pc-row-mgmt td {
+        color: rgb(160, 110, 20) !important;
+        /* AMBER_TEXT */
+        font-weight: 600;
+    }
+
+    /* Handover / highlight row (ROSE) */
+    .pc-wrap .pc-table tbody tr.pc-row-highlight {
+        background-color: rgb(255, 244, 244) !important;
+        /* ROSE_BG */
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .pc-wrap .pc-table tbody tr.pc-row-highlight td {
+        color: rgb(160, 40, 40) !important;
+        /* ROSE_TEXT */
+        font-weight: 600;
+    }
+
+    /* Down payment / balloon row (GOLD_BG) — .pc-row-highlight that's NOT handover
+       JS should add an extra class "pc-row-down" for this; if not, it falls
+       back to ROSE which is still acceptable. */
+    .pc-wrap .pc-table tbody tr.pc-row-down {
+        background-color: rgb(250, 242, 220) !important;
+        /* GOLD_BG */
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .pc-wrap .pc-table tbody tr.pc-row-down td {
+        color: rgb(130, 95, 25) !important;
+        /* GOLD_TEXT */
+        font-weight: 600;
+    }
+
+    /* Discount row (emerald) */
+    .pc-wrap .pc-table tbody tr.pc-row-discount {
+        background-color: #f0fdf4 !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .pc-wrap .pc-table tbody tr.pc-row-discount td {
+        color: #047857 !important;
+        font-weight: 600;
+    }
+
+    /* ── 7. Page-break rules ──────────────────────────────────── */
+    #scheduleTableContainer {
+        page-break-before: auto;
+    }
+
+    .pc-wrap .pc-table thead {
+        display: table-header-group;
+        /* repeat header on every page */
+    }
+
+    .pc-wrap .pc-table tbody tr {
+        page-break-inside: avoid;
+    }
+
+    /* ── 8. Print footer (mimics PDF addFooter) ─────────────────
+       Use a real .pc-print-footer element injected by JS, or rely on
+       the CSS @page margin area. The rules below style it if present. */
+    .pc-print-footer {
+        display: block !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 3mm 14mm 2mm;
+        background: rgb(253, 250, 244) !important;
+        /* IVORY */
+        border-top: 0.5px solid rgb(181, 148, 82);
+        /* GOLD rule */
+    }
+
+    .pc-print-footer-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        font-size: 7pt;
+        color: rgb(26, 35, 54) !important;
+        /* NAVY */
+    }
+
+    .pc-print-footer-inner a,
+    .pc-print-footer-inner span {
+        color: inherit !important;
+        text-decoration: none;
+    }
+
+    .pc-print-footer-center {
+        text-align: center;
+    }
+
+    .pc-print-footer-right {
+        text-align: right;
+    }
+
+    /* ── 9. Disclaimer note (optional .pc-print-note element) ─── */
+    .pc-print-note {
+        display: block !important;
+        font-size: 7pt;
+        font-style: italic;
+        color: rgb(160, 40, 40) !important;
+        /* ROSE_TEXT */
+        text-align: center;
+        margin: 2mm 0 4mm;
+    }
+
+    /* ── 10. Discount badge — keep visible in print ─────────────── */
+    #discountTitleLabel {
+        display: inline !important;
+        font-size: 8pt;
+        color: #047857 !important;
+        font-weight: 600;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+}

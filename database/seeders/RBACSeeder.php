@@ -15,11 +15,12 @@ class RBACSeeder extends Seeder
     {
         // 1. Create Roles
         $roles = [
-            'Super Admin' => 'Full system access',
-            'Admin' => 'Administrator with some restrictions',
-            'Accountant Manager' => 'Finance and payment management',
-            'Sales Manager' => 'Sales and client management',
-            'Editor' => 'Content management only',
+            'Super Admin' => 'System owner / final decision maker',
+            'Admin' => 'System operator / daily control',
+            'Accountant Manager' => 'Financial validation and compliance',
+            'Sales Manager' => 'Manage sales team and client flow',
+            'Editor' => 'Manage website/app content and presentation',
+            'Content Creator' => 'Create content (no publishing)',
         ];
 
         $roleInstances = [];
@@ -29,35 +30,39 @@ class RBACSeeder extends Seeder
 
         // 2. Define Permissions
         $permissions = [
-            // Content Management
-            ['name' => 'manage_content', 'module' => 'content'],
-            ['name' => 'edit_content', 'module' => 'content'],
-            ['name' => 'publish_scenarios', 'module' => 'content'],
-
-            // Sales and Client
-            ['name' => 'view_all_clients', 'module' => 'sales'],
-            ['name' => 'edit_all_clients', 'module' => 'sales'],
-            ['name' => 'create_payment_plan', 'module' => 'sales'],
-
-            // Financial and Payment
-            ['name' => 'view_finance_menu', 'module' => 'finance'],
-            ['name' => 'approve_payment_plan', 'module' => 'finance'],
-            ['name' => 'approve_financial_override', 'module' => 'finance'],
-            ['name' => 'view_financial_audit_logs', 'module' => 'finance'],
-            
-            // Approval Authority
-            ['name' => 'view_approval_menu', 'module' => 'approval'],
-            ['name' => 'approve_general', 'module' => 'approval'],
-
-            // Deletion Rights
-            ['name' => 'delete_payment_plan', 'module' => 'deletion'],
-            ['name' => 'delete_approved_payment_plan', 'module' => 'deletion'], // Super Admin only
-
-            // Key Restrictions (Capabilities)
-            ['name' => 'override_locked_record', 'module' => 'admin'],
-            ['name' => 'manage_users', 'module' => 'admin'],
+            // Admin Core
+            ['name' => 'manage_users', 'module' => 'admin'], // Create/Manage users
             ['name' => 'manage_roles', 'module' => 'admin'],
+            ['name' => 'manage_settings', 'module' => 'admin'],
             ['name' => 'view_audit_logs', 'module' => 'admin'],
+            ['name' => 'override_locked_record', 'module' => 'admin'], // Super Admin only
+            ['name' => 'delete_records', 'module' => 'admin'], // Super Admin generic delete
+
+            // Content (Editor)
+            ['name' => 'manage_content', 'module' => 'content'], // Edit homepage, projects, blogs
+            ['name' => 'publish_content', 'module' => 'content'],
+
+            // Sales & Clients
+            ['name' => 'view_clients', 'module' => 'sales'],
+            ['name' => 'edit_clients', 'module' => 'sales'],
+            ['name' => 'view_visits', 'module' => 'sales'],
+            ['name' => 'edit_visits', 'module' => 'sales'],
+            ['name' => 'view_agents', 'module' => 'sales'], // View agents/agencies
+            ['name' => 'view_agencies', 'module' => 'sales'],
+            ['name' => 'approve_agency', 'module' => 'sales'], // Admin/Super Admin
+            ['name' => 'reject_agency', 'module' => 'sales'],
+            ['name' => 'export_data', 'module' => 'sales'],
+
+            // Finance
+            ['name' => 'view_finance_reports', 'module' => 'finance'],
+            ['name' => 'view_finance_audit_logs', 'module' => 'finance'],
+            ['name' => 'view_payment_plans', 'module' => 'finance'],
+            ['name' => 'create_payment_plan', 'module' => 'finance'], // Sales (Draft)
+            ['name' => 'generate_payment_scenarios', 'module' => 'finance'], // Admin/Sales (Draft)
+            ['name' => 'publish_scenarios', 'module' => 'finance'], // Super Admin
+            ['name' => 'approve_payment_plan', 'module' => 'finance'], // Super Admin
+            ['name' => 'approve_financial_override', 'module' => 'finance'], // Accountant/Super Admin
+            ['name' => 'delete_payment_plan', 'module' => 'finance'], // Super Admin
         ];
 
         foreach ($permissions as $perm) {
@@ -65,38 +70,100 @@ class RBACSeeder extends Seeder
         }
 
         // 3. Assign Permissions
-        // Super Admin gets ALL
+
+        // Super Admin - ALL Permissions
         $allPermissions = \App\Models\Permission::all();
         $roleInstances['Super Admin']->permissions()->sync($allPermissions->pluck('id'));
 
         // Admin
-        $adminPermissions = $allPermissions->reject(function ($perm) {
-            return in_array($perm->name, ['delete_approved_payment_plan']);
+        // "Create and manage users (except Super Admin); Manage system data"
+        // "View all agents, agencies, and clients; Export data"
+        // "Create payment plan scenarios (Draft); Generate plans"
+        // "Approve/reject before Super Admin"
+        $adminPermissions = $allPermissions->filter(function ($perm) {
+            return in_array($perm->name, [
+                'manage_users',
+                'manage_settings',
+                'view_audit_logs',
+                'manage_content',
+                'publish_content',
+                'view_clients',
+                'edit_clients',
+                'view_visits',
+                'edit_visits',
+                'view_agents',
+                'view_agencies',
+                'approve_agency',
+                'reject_agency',
+                'export_data',
+                'view_payment_plans',
+                'create_payment_plan',
+                'generate_payment_scenarios'
+            ]);
         });
         $roleInstances['Admin']->permissions()->sync($adminPermissions->pluck('id'));
 
         // Accountant Manager
-        $accountantPermissions = \App\Models\Permission::whereIn('module', ['finance', 'approval'])->get();
+        // "View audit logs related to finance only"
+        // "View all payment plans; Review discounts, fees"
+        // "Approve/reject financial overrides"
+        $accountantPermissions = $allPermissions->filter(function ($perm) {
+            return in_array($perm->name, [
+                'view_finance_reports',
+                'view_finance_audit_logs',
+                'view_payment_plans',
+                'approve_financial_override'
+            ]);
+        });
         $roleInstances['Accountant Manager']->permissions()->sync($accountantPermissions->pluck('id'));
 
         // Sales Manager
-        $salesPermissions = \App\Models\Permission::whereIn('module', ['sales'])->get();
-        // Add specific creation rights
-        $salesPermissions = $salesPermissions->merge(\App\Models\Permission::where('name', 'create_payment_plan')->get());
+        // "View visit schedules, client history"
+        // "View agents under assigned agency; View clients and visits"
+        // "Create and generate payment plans using approved scenarios"
+        // "Request only (Internal approval)"
+        $salesPermissions = $allPermissions->filter(function ($perm) {
+            return in_array($perm->name, [
+                'view_clients',
+                'edit_clients',
+                'view_visits',
+                'edit_visits',
+                'view_agents',
+                'view_agencies', // Can view but NOT approve
+                'create_payment_plan',
+                'generate_payment_scenarios'
+            ]);
+        });
         $roleInstances['Sales Manager']->permissions()->sync($salesPermissions->pluck('id'));
 
         // Editor
-        $editorPermissions = \App\Models\Permission::where('module', 'content')->get();
+        // "Edit homepage, project descriptions, property listings"
+        $editorPermissions = $allPermissions->filter(function ($perm) {
+            return in_array($perm->name, [
+                'manage_content',
+                'publish_content'
+            ]);
+        });
         $roleInstances['Editor']->permissions()->sync($editorPermissions->pluck('id'));
 
-        // 4. Create Default Users
+        // Content Creator
+        // "Create content (no publishing)"
+        $contentCreatorPermissions = $allPermissions->filter(function ($perm) {
+            return in_array($perm->name, [
+                'manage_content',
+                'publish_content',
+            ]);
+        });
+        $roleInstances['Content Creator']->permissions()->sync($contentCreatorPermissions->pluck('id'));
+
+        // 4. Create Default Users (Preserve existing logic or create new)
         $users = [
             [
                 'name' => 'Super Admin User',
                 'email' => 'superadmin@binsheikh.com',
                 'password' => bcrypt('password'),
                 'role_id' => $roleInstances['Super Admin']->id,
-                'role' => '1', // Legacy support
+                'role' => '1',
             ],
             [
                 'name' => 'Admin User',
@@ -124,6 +191,13 @@ class RBACSeeder extends Seeder
                 'email' => 'editor@binsheikh.com',
                 'password' => bcrypt('password'),
                 'role_id' => $roleInstances['Editor']->id,
+                'role' => '2',
+            ],
+            [
+                'name' => 'Content Creator User',
+                'email' => 'content@binsheikh.com',
+                'password' => bcrypt('password'),
+                'role_id' => $roleInstances['Content Creator']->id,
                 'role' => '2',
             ],
         ];

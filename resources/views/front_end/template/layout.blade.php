@@ -18,24 +18,71 @@ if (!$locale) {
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{{ config('global.site_name') }} | {{ $page_heading }}</title>
 
-    @if($currentRouteUri == "property-details/{slug}")
-        <meta name="title" content="{{$property->meta_title ?? ''}}">
-        <meta name="description" content="{{$property->meta_description ?? ''}}">
 
-        <meta name="title" lang="ar" content="{{$property->meta_title_ar ?? ''}}">
-        <meta name="description" lang="ar" content="{{$property->meta_description_ar ?? ''}}">
+    @php
+        $seo_title = config('global.site_name') . ' | ' . ($page_heading ?? '');
+        $seo_description = '';
+        $seo_keywords = '';
+        $seo_image = '';
+        $seo_canonical = url()->current();
+        $seo_og_title = '';
+        $seo_og_description = '';
+        $seo_no_index = 0;
+
+        // Global Settings
+        $global_seo = \App\Models\SeoSetting::all()->pluck('value', 'key');
+
+        $seo_title = $global_seo['meta_title'] ?? $seo_title;
+        $seo_description = $global_seo['meta_description'] ?? '';
+        $seo_keywords = $global_seo['keywords'] ?? '';
+        $seo_image = $global_seo['og_image'] ?? '';
+        $seo_canonical = $global_seo['canonical_url'] ?? $seo_canonical;
+        $seo_og_title = $global_seo['og_title'] ?? $seo_title;
+        $seo_og_description = $global_seo['og_description'] ?? $seo_description;
+
+        // Page Specific Overrides
+        if ($currentRouteUri == "property-details/{slug}" && isset($property)) {
+            $seo_title = $property->meta_title ?: $seo_title;
+            $seo_description = $property->meta_description ?: $seo_description;
+            // Add other property specific fields if available
+        } elseif ($currentRouteUri == "blog-details/{slug}" && isset($blog)) {
+            $seo_title = $blog->meta_title ?: $blog->name;
+            $seo_description = $blog->meta_description ?: $blog->short_description;
+            $seo_keywords = $blog->keywords ?: $seo_keywords;
+            $seo_canonical = $blog->canonical_url ?: $seo_canonical;
+            $seo_og_title = $blog->og_title ?: $seo_title;
+            $seo_og_description = $blog->og_description ?: $seo_description;
+            $seo_image = $blog->og_image ?: ($blog->image ? aws_asset_path($blog->image) : $seo_image);
+            $seo_no_index = $blog->no_index;
+        }
+    @endphp
+
+    @if($seo_no_index)
+        <meta name="robots" content="noindex, nofollow">
     @else
-        @php
-            $set = \App\Models\Settings::find(1);
-        @endphp
-        <meta name="title" content="{{$set->meta_title ?? ''}}">
-        <meta name="description" content="{{$set->meta_description ?? ''}}">
-
-        <meta name="title" lang="ar" content="{{$set->meta_title_ar ?? ''}}">
-        <meta name="description" lang="ar" content="{{$set->meta_description_ar ?? ''}}">
+        <meta name="robots" content="index, follow">
     @endif
+
+    <title>{{ $seo_title }}</title>
+    <meta name="description" content="{{ $seo_description }}">
+    <meta name="keywords" content="{{ $seo_keywords }}">
+    <link rel="canonical" href="{{ $seo_canonical }}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="{{ $seo_og_title }}">
+    <meta property="og:description" content="{{ $seo_og_description }}">
+    <meta property="og:image" content="{{ $seo_image }}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ url()->current() }}">
+    <meta property="twitter:title" content="{{ $seo_og_title }}">
+    <meta property="twitter:description" content="{{ $seo_og_description }}">
+    <meta property="twitter:image" content="{{ $seo_image }}">
+
 
     <!--=============== css  ===============-->
     <link type="text/css" rel="stylesheet" href="{{ asset('') }}front-assets/css/bootstrap.min.css">
@@ -53,7 +100,7 @@ if (!$locale) {
         <?php
         \Illuminate\Support\Facades\Session::put('locale', 'en');
         \Illuminate\Support\Facades\App::setLocale('en');
-                                                                                                                                                ?>
+                                                                                                                                                                ?>
         <link type="text/css" rel="stylesheet" href="{{ asset('') }}front-assets/css/style.css">
     @endif
     <link type="text/css" rel="stylesheet" href="{{ asset('') }}front-assets/css/db-style.css">
@@ -61,8 +108,63 @@ if (!$locale) {
     <!--=============== favicons ===============-->
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('') }}admin-assets/assets/favicon/favicon.png" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link rel="alternate" hreflang="en" href="https://bsbqa.com" />
-    <link rel="alternate" hreflang="ar" href="https://bsbqa.com" />
+    <link rel="alternate" hreflang="en" href="{{ url()->current() }}?lang=en" />
+    <link rel="alternate" hreflang="ar" href="{{ url()->current() }}?lang=ar" />
+    <link rel="alternate" hreflang="x-default" href="{{ url()->current() }}" />
+
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "{{ config('global.site_name', 'Bin Al Sheikh') }}",
+      "url": "{{ url('/') }}",
+      "logo": "{{ asset('front-assets/images/logo.png') }}",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+97450258942",
+        "contactType": "customer service"
+      },
+      "sameAs": [
+        "https://www.facebook.com/BINALSHEIKHQA",
+        "https://x.com/BinAlSheikhqa",
+        "https://www.instagram.com/binalsheikhqa/x",
+        "https://www.tiktok.com/@binalsheikhqa",
+        "https://youtube.com/@binalsheikhtowers1457"
+      ]
+    }
+    </script>
+
+    <!-- BreadcrumbList Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "{{ url('/') }}"
+      }
+      @if(Request::segment(1))
+          ,{
+            "@type": "ListItem",
+            "position": 2,
+            "name": "{{ ucfirst(Request::segment(1)) }}",
+            "item": "{{ url(Request::segment(1)) }}"
+          }
+      @endif
+      @if(Request::segment(2))
+          ,{
+            "@type": "ListItem",
+            "position": 3,
+            "name": "{{ ucfirst(Request::segment(2)) }}",
+            "item": "{{ url(Request::segment(1) . '/' . Request::segment(2)) }}"
+          }
+      @endif
+      ]
+    }
+    </script>
     <style>
         .txt-two-lines {
             overflow: hidden;
@@ -202,8 +304,8 @@ if (!$locale) {
                                     @endif>{{ __("messages.about_us") }}</a>
                                 </li>
                                 <li>
-                                    <a href="{{url('find-agent-agency')}}" @if($currentRouteUri == "find-agent-agency") class="act-link"
-                                    @endif>{{ __("messages.find_agent_agency") }}</a>
+                                    <a href="{{url('find-agent-agency')}}" @if($currentRouteUri == "find-agent-agency")
+                                    class="act-link" @endif>{{ __("messages.find_agent_agency") }}</a>
                                 </li>
                                 <li>
                                     <a href="{{url('property-listing')}}" @if($currentRouteUri == "property-listing" || $currentRouteUri == "property-details/{slug}") class="act-link"
@@ -277,8 +379,9 @@ if (!$locale) {
                                 @endif>{{ __("messages.home") }}</a>
                                 <a class="d-block py-2" href="{{url('about-us')}}" @if($currentRouteUri == "about-us")
                                 class="act-link" @endif>{{ __("messages.about_us") }}</a>
-                                <a class="d-block py-2" href="{{url('find-agent-agency')}}" @if($currentRouteUri == "find-agent-agency")
-                                class="act-link" @endif>{{ __("messages.find_agent_agency") }}</a>
+                                <a class="d-block py-2" href="{{url('find-agent-agency')}}"
+                                    @if($currentRouteUri == "find-agent-agency") class="act-link"
+                                    @endif>{{ __("messages.find_agent_agency") }}</a>
 
                                 <div class="dropdown mt-2">
                                     <a href="#" class="dropdown-toggle" type="button" id="dropdownMenuButton"
@@ -323,9 +426,9 @@ if (!$locale) {
                                 @else
                                     <div class=" modal-open"
                                         style="    color: #000;
-                                                                                                                                                                    width: auto;
-                                                                                                                                                                    top: 20px;
-                                                                                                                                                                    background: none; float:none"
+                                                                                                                                                                                    width: auto;
+                                                                                                                                                                                    top: 20px;
+                                                                                                                                                                                    background: none; float:none"
                                         data-bs-dismiss="offcanvas" aria-label="Close">
                                         <i
                                             class="fa fa-user ms-1 me-1 d-inline-block"></i><span>{{ __('messages.sign_in') }}</span>
@@ -375,12 +478,13 @@ if (!$locale) {
                         </a>
                     @else
                         <div class="show-reg-form modal-open">
-                            <i class="fa fa-user"></i><span>{{ __('messages.sign_in') }}</span> / {{ __('messages.register') }}</span>
+                            <i class="fa fa-user"></i><span>{{ __('messages.sign_in') }}</span> /
+                            {{ __('messages.register') }}</span>
                         </div>
                         <!--
-                        <div class="show-reg-form modal-open-register">
-                            <i class="fa fa-user-plus"></i><span>{{ __('messages.register') }}</span>
-                        </div> -->
+                                        <div class="show-reg-form modal-open-register">
+                                            <i class="fa fa-user-plus"></i><span>{{ __('messages.register') }}</span>
+                                        </div> -->
                     @endif
 
                     <!-- header-search-wrap  -->
@@ -700,7 +804,7 @@ if (!$locale) {
 
                                                 <!-- Phone Number with Country Picker -->
                                                 <div class="cs-intputwrap phone-input-container">
-                                                
+
 
                                                     <!-- Country Code Picker -->
                                                     <select name="country_code" id="country_code"
@@ -733,25 +837,23 @@ if (!$locale) {
                                                     </select>
 
                                                     <div class="cs-intputwrap">
-                                                    <!-- Phone Number Input -->
-                                                         <i class="fa-light fa-mobile"></i>
-                                                         <!-- phone-number-input -->
-                                                    <input type="text"
-                                                        style="height:36px;margin-top:7px;"
-                                                        placeholder="{{ __('messages.phone_number') ?? 'Phone Number' }}"
-                                                        name="phone_local" id="phone_local" class=""
-                                                        required
-                                                        data-parsley-required-message="{{ __('messages.enter_your_phone') }}"
-                                                        data-parsley-type="digits"
-                                                        data-parsley-type-message="{{ __('messages.phone_digits_only') ?? 'Phone number must contain only digits' }}">
+                                                        <!-- Phone Number Input -->
+                                                        <i class="fa-light fa-mobile"></i>
+                                                        <!-- phone-number-input -->
+                                                        <input type="text" style="height:36px;margin-top:7px;"
+                                                            placeholder="{{ __('messages.phone_number') ?? 'Phone Number' }}"
+                                                            name="phone_local" id="phone_local" class="" required
+                                                            data-parsley-required-message="{{ __('messages.enter_your_phone') }}"
+                                                            data-parsley-type="digits"
+                                                            data-parsley-type-message="{{ __('messages.phone_digits_only') ?? 'Phone number must contain only digits' }}">
 
-                                                    <!-- Hidden input for full phone with country code -->
-                                                    <input type="hidden" name="phone" id="phone_full">
-</div>
+                                                        <!-- Hidden input for full phone with country code -->
+                                                        <input type="hidden" name="phone" id="phone_full">
+                                                    </div>
 
                                                     <div class="view-view-button-verify-phone">
-                                                        <button type="button"
-                                                            class="verify-phone-btn" style="right:0; height:36px">{{ __('messages.verify') }}</button>
+                                                        <button type="button" class="verify-phone-btn"
+                                                            style="right:0; height:36px">{{ __('messages.verify') }}</button>
                                                     </div>
                                                 </div>
 

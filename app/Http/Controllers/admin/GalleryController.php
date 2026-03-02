@@ -29,7 +29,7 @@ class GalleryController extends Controller
 
         $page_heading = "Photos";
         $folders = Folder::all();
-        return view("admin.photos.create", compact('page_heading','folders'));
+        return view("admin.photos.create", compact('page_heading', 'folders'));
     }
 
     public function store(Request $request)
@@ -50,13 +50,15 @@ class GalleryController extends Controller
             //     Photo::create($im);
             // }
             foreach ($gallery as $file) {
-                Log::info($request->folder_id );
+                Log::info($request->folder_id);
                 $name = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
                 $path = '/uploads/gallery/photos/' . $name;
                 Storage::disk('s3')->put($path, fopen($file, 'r+'));
                 $im['created_at'] = gmdate('Y-m-d H:i:s');
                 $im['image'] = '/uploads/gallery/photos/' . $name;
-                $im['folder_id'] = ($request->folder_id != '')?$request->folder_id:NULL;
+                $im['folder_id'] = ($request->folder_id != '') ? $request->folder_id : NULL;
+                $im['alt_text'] = $request->alt_text;
+                $im['alt_text_ar'] = $request->alt_text_ar;
                 Photo::create($im);
             }
         }

@@ -36,7 +36,7 @@ class VideoController extends Controller
         $mode = "create";
         $id = "";
         $folders = Folder::all();
-        return view("admin.videos.create", compact('page_heading', 'mode', 'id','folders'));
+        return view("admin.videos.create", compact('page_heading', 'mode', 'id', 'folders'));
     }
 
     public function store(Request $request)
@@ -60,7 +60,9 @@ class VideoController extends Controller
             $ins = [
                 'link' => $request->link,
                 'active' => $request->active,
-                'folder_id' => $request->folder_id != "" ? $request->folder_id : NULL
+                'folder_id' => $request->folder_id != "" ? $request->folder_id : NULL,
+                'alt_text' => $request->alt_text,
+                'alt_text_ar' => $request->alt_text_ar
             ];
             if ($request->id != "") {
                 $data = Video::find($request->id);
@@ -85,7 +87,7 @@ class VideoController extends Controller
             $page_heading = "Video";
             $mode = "edit";
             $id = $data->id;
-            return view("admin.videos.create", compact('page_heading', 'mode', 'id','data'));
+            return view("admin.videos.create", compact('page_heading', 'mode', 'id', 'data'));
         } else {
             abort(404);
         }

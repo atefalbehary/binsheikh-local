@@ -25,6 +25,9 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        //
+        // Dynamically register permissions as Gates
+        \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
+            return $user->hasPermission($ability) ?: null;
+        });
     }
 }
