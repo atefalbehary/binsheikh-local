@@ -16,7 +16,7 @@ class AgencyController extends Controller
      */
     public function index(Request $request)
     {
-        $search_text = $request->get('search_text')?? '';
+        $search_text = $request->get('search_text') ?? '';
         $role = $request->get('role');
         $from = $request->get('from', \Carbon\Carbon::create(2010, 1, 1)->format('Y-m-d'));
         $to = $request->get('to', \Carbon\Carbon::today()->format('Y-m-d'));
@@ -50,12 +50,12 @@ class AgencyController extends Controller
     public function create()
     {
 
-        $page_heading   = "Customer";
-        $mode           = "create";
-        $id             = "";
-        $name           = "";
-        $name_ar        = "";
-        $description    = "";
+        $page_heading = "Customer";
+        $mode = "create";
+        $id = "";
+        $name = "";
+        $name_ar = "";
+        $description = "";
         $description_ar = "";
 
         $active = "1";
@@ -65,48 +65,48 @@ class AgencyController extends Controller
 
     public function store(Request $request)
     {
-        $status      = "0";
-        $message     = "";
-        $o_data      = [];
-        $errors      = [];
+        $status = "0";
+        $message = "";
+        $o_data = [];
+        $errors = [];
         $redirectUrl = '';
 
         $validator = Validator::make($request->all(), [
-            'name'           => 'required',
-            'name_ar'        => 'required',
-            'description'    => 'required',
+            'name' => 'required',
+            'name_ar' => 'required',
+            'description' => 'required',
             'description_ar' => 'required',
 
         ]);
         if ($validator->fails()) {
-            $status  = "0";
+            $status = "0";
             $message = "Validation error occured";
-            $errors  = $validator->messages();
+            $errors = $validator->messages();
         } else {
             $input = $request->all();
 
             $ins = [
-                'name'           => $request->name,
-                'name_ar'        => $request->name_ar,
-                'active'         => $request->active,
-                'description'    => $request->description,
+                'name' => $request->name,
+                'name_ar' => $request->name_ar,
+                'active' => $request->active,
+                'description' => $request->description,
                 'description_ar' => $request->description_ar,
 
             ];
 
             if ($request->id != "") {
-                $dest_id           = $request->id;
-                $customer            = User::find($request->id);
+                $dest_id = $request->id;
+                $customer = User::find($request->id);
                 $ins['updated_at'] = gmdate('Y-m-d H:i:s');
                 $customer->update($ins);
-                $status  = "1";
+                $status = "1";
                 $message = "Customer updated succesfully";
             } else {
                 $ins['created_at'] = gmdate('Y-m-d H:i:s');
-                $prd               = User::create($ins);
-                $dest_id           = $prd->id;
-                $status            = "1";
-                $message           = "Customer added successfully";
+                $prd = User::create($ins);
+                $dest_id = $prd->id;
+                $status = "1";
+                $message = "Customer added successfully";
             }
         }
         echo json_encode(['status' => $status, 'message' => $message, 'errors' => $errors]);
@@ -135,14 +135,14 @@ class AgencyController extends Controller
         $customer = User::find($id);
         if ($customer) {
             $page_heading = "Customer";
-            $mode         = "edit";
-            $id           = $customer->id;
+            $mode = "edit";
+            $id = $customer->id;
 
-            $name    = $customer->name;
+            $name = $customer->name;
             $name_ar = $customer->name_ar;
 
-            $active         = $customer->active;
-            $description    = $customer->description;
+            $active = $customer->active;
+            $description = $customer->description;
             $description_ar = $customer->description_ar;
 
             return view("admin.customer.create", compact('page_heading', 'mode', 'id', 'name', 'name_ar', 'active', 'description', 'description_ar'));
@@ -171,17 +171,20 @@ class AgencyController extends Controller
      */
     public function destroy($id)
     {
-        $status  = "0";
+        if (!\Auth::user()->can('delete_records')) {
+            abort(403);
+        }
+        $status = "0";
         $message = "";
-        $o_data  = [];
+        $o_data = [];
 
         $customer = User::find($id);
         if ($customer) {
-            $customer->deleted    = 1;
-            $customer->active     = 0;
+            $customer->deleted = 1;
+            $customer->active = 0;
             $customer->updated_at = gmdate('Y-m-d H:i:s');
             $customer->save();
-            $status  = "1";
+            $status = "1";
             $message = "Customer removed successfully";
         } else {
             $message = "Something went wrong";
@@ -192,12 +195,16 @@ class AgencyController extends Controller
     }
     public function change_status(Request $request)
     {
-        $status  = "0";
+        if (!\Auth::user()->can('approve_agency')) {
+            echo json_encode(['status' => "0", 'message' => "Unauthorized action"]);
+            return;
+        }
+        $status = "0";
         $message = "";
         if (User::where('id', $request->id)->update(['active' => $request->status])) {
             $status = "1";
-            $msg    = "Successfully activated";
-            if (! $request->status) {
+            $msg = "Successfully activated";
+            if (!$request->status) {
                 $msg = "Successfully deactivated";
             }
             $message = $msg;
@@ -211,8 +218,8 @@ class AgencyController extends Controller
     {
 
         $page_heading = "Customer Applications";
-        $search_text  = $_GET['search_text'] ?? '';
-        $applications       = CustomerApplication::with('customer')->where(['deleted' => 0])->orderBy('created_at', 'desc');
+        $search_text = $_GET['search_text'] ?? '';
+        $applications = CustomerApplication::with('customer')->where(['deleted' => 0])->orderBy('created_at', 'desc');
         if ($search_text) {
             $applications = $applications->whereRaw("(name like '%$search_text%' OR email like '%$search_text%' OR phone like '%$search_text%')");
         }
@@ -221,16 +228,16 @@ class AgencyController extends Controller
     }
     public function delete_application($id)
     {
-        $status  = "0";
+        $status = "0";
         $message = "";
-        $o_data  = [];
+        $o_data = [];
 
         $dt = CustomerApplication::find($id);
         if ($dt) {
-            $dt->deleted    = 1;
+            $dt->deleted = 1;
             $dt->updated_at = gmdate('Y-m-d H:i:s');
             $dt->save();
-            $status  = "1";
+            $status = "1";
             $message = "Application removed successfully";
         } else {
             $message = "Something went wrong";
@@ -242,6 +249,9 @@ class AgencyController extends Controller
 
     public function deleteAll(Request $request)
     {
+        if (!\Auth::user()->can('delete_records')) {
+            abort(403);
+        }
         //Log::info($request->all());
         if ($request->has('delete_all_id')) {
             $ids = explode(',', $request->delete_all_id);
@@ -251,7 +261,7 @@ class AgencyController extends Controller
             return redirect()->back()->with('success', 'Selected customers deleted successfully.');
         }
         return redirect()->back()->with('error', 'No customers selected.');
-//        $delete_all_id = explode(",", $request->delete_all_id);
+        //        $delete_all_id = explode(",", $request->delete_all_id);
 //        User::whereIn('id', $delete_all_id)->delete();
 //        return redirect('admin/sections')->with('success', 'Sections deleted successfully.');
     }
@@ -261,6 +271,9 @@ class AgencyController extends Controller
 
     public function update_agency(Request $request, $id)
     {
+        if (!\Auth::user()->can('manage_users')) {
+            return redirect()->back()->with('error', 'Unauthorized action');
+        }
         $agency = User::find($id);
         if (!$agency) {
             return redirect()->back()->with('error', 'Agency not found');
@@ -268,7 +281,7 @@ class AgencyController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'email' => 'required|email|unique:users,email,'.$id,
+            'email' => 'required|email|unique:users,email,' . $id,
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -286,11 +299,11 @@ class AgencyController extends Controller
         $agency->twitter = $request->twitter;
         $agency->linkedin = $request->linkedin;
         $agency->instagram = $request->instagram;
-        
+
         if ($request->hasFile('image')) {
             Log::info('Agency Update: Using image_upload helper');
             $upload_result = image_upload($request, 'users', 'image');
-            
+
             if ($upload_result['status']) {
                 // Use the returned filename, which matches what get_uploaded_image_url expects for S3
                 // (it prepends the dir 'users/')
@@ -298,13 +311,13 @@ class AgencyController extends Controller
                 $agency->user_image = $filename;
                 Log::info('Agency Update: Helper success', ['filename' => $filename, 'link' => $upload_result['link']]);
             } else {
-                 Log::error('Agency Update: Helper failed', ['message' => $upload_result['message']]);
-                 return redirect()->back()->with('error', 'Error uploading image: ' . $upload_result['message'])->withInput();
+                Log::error('Agency Update: Helper failed', ['message' => $upload_result['message']]);
+                return redirect()->back()->with('error', 'Error uploading image: ' . $upload_result['message'])->withInput();
             }
         } else {
             Log::info('Agency Update: No image file in request');
         }
-        
+
         if ($request->has('active')) {
             $agency->active = 1;
         } else {
@@ -333,7 +346,7 @@ class AgencyController extends Controller
         if (!$customer) {
             abort(404);
         }
-        
+
         $parts = explode('/', $customer->professional_practice_certificate);
         $last = end($parts);
         $parts = explode('/', $customer->license);
@@ -343,13 +356,13 @@ class AgencyController extends Controller
 
         // Get all agent IDs for this agency
         $agentIds = $customer->agencyUsers->pluck('id')->toArray();
-        
+
         // Load visit schedules for all agents in this agency
         $visitSchedules = \App\Models\VisiteSchedule::with(['agent', 'project'])
             ->whereIn('agent_id', $agentIds)
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         // Load reservations for all agents in this agency
         $reservations = \App\Models\Reservation::with(['agent', 'property'])
             ->whereIn('agent_id', $agentIds)
@@ -357,14 +370,14 @@ class AgencyController extends Controller
             ->get();
 
         // Calculate Stats
-    $totalProperties = $reservations->count();
-    $pendingProperties = $reservations->where('status', \App\Models\Reservation::STATUS_WAITING_APPROVAL)->count();
-    $activeProperties = $reservations->whereIn('status', [\App\Models\Reservation::STATUS_RESERVED, \App\Models\Reservation::STATUS_PREPARING_DOCUMENT])->count();
-    $totalPurchase = $reservations->where('status', \App\Models\Reservation::STATUS_CLOSED_DEAL)->sum(function($r) {
+        $totalProperties = $reservations->count();
+        $pendingProperties = $reservations->where('status', \App\Models\Reservation::STATUS_WAITING_APPROVAL)->count();
+        $activeProperties = $reservations->whereIn('status', [\App\Models\Reservation::STATUS_RESERVED, \App\Models\Reservation::STATUS_PREPARING_DOCUMENT])->count();
+        $totalPurchase = $reservations->where('status', \App\Models\Reservation::STATUS_CLOSED_DEAL)->sum(function ($r) {
             return $r->property ? $r->property->price : 0;
-    });
+        });
 
-    return view('admin.agency.details', compact('page_heading', 'customer', 'last', 'last_license', 'last_id_card', 'visitSchedules', 'reservations', 'totalProperties', 'pendingProperties', 'activeProperties', 'totalPurchase'));
+        return view('admin.agency.details', compact('page_heading', 'customer', 'last', 'last_license', 'last_id_card', 'visitSchedules', 'reservations', 'totalProperties', 'pendingProperties', 'activeProperties', 'totalPurchase'));
     }
 
     /**
@@ -399,6 +412,10 @@ class AgencyController extends Controller
 
     public function approve($id)
     {
+        if (!\Auth::user()->can('approve_agency')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $status = "0";
         $message = "";
         $o_data = [];
@@ -412,7 +429,7 @@ class AgencyController extends Controller
 
             // Send approval email
             $mailbody = view('front_end.approve_mail')->render();
-            if(send_email($customer->email, 'Account Approved - Bin Al Sheikh', $mailbody)) {
+            if (send_email($customer->email, 'Account Approved - Bin Al Sheikh', $mailbody)) {
                 $status = "1";
                 $message = "Agency approved successfully";
             } else {
@@ -436,10 +453,13 @@ class AgencyController extends Controller
 
     public function reject(Request $request)
     {
+        if (!\Auth::user()->can('reject_agency')) {
+            abort(403, 'Unauthorized action.');
+        }
         $status = "0";
         $message = "";
 
-        if($request->agency_id) {
+        if ($request->agency_id) {
             $customer = User::find($request->agency_id);
             if ($customer) {
                 // Soft delete the agency
@@ -454,9 +474,9 @@ class AgencyController extends Controller
                 $message = "Agency not found";
             }
         } else {
-             $message = "Invalid Request";
+            $message = "Invalid Request";
         }
-        
+
         return redirect()->back()->with($status == "1" ? 'success' : 'error', $message);
     }
 
@@ -543,13 +563,13 @@ class AgencyController extends Controller
             try {
                 // Find the reservation
                 $reservation = \App\Models\Reservation::find($request->reservation_id);
-                
+
                 if ($reservation) {
                     // Update the commission
                     $reservation->commission = $request->commission;
                     $reservation->updated_at = gmdate('Y-m-d H:i:s');
                     $reservation->save();
-                    
+
                     $status = "1";
                     $message = "Commission updated successfully";
                 } else {
@@ -594,13 +614,13 @@ class AgencyController extends Controller
             try {
                 // Find the reservation
                 $reservation = \App\Models\Reservation::find($request->reservation_id);
-                
+
                 if ($reservation) {
                     // Update the status
                     $reservation->status = $request->status;
                     $reservation->updated_at = gmdate('Y-m-d H:i:s');
                     $reservation->save();
-                    
+
                     // Get the status label for response
                     $statusLabels = [
                         'waitingApproval' => 'Waiting Approval',
@@ -608,7 +628,7 @@ class AgencyController extends Controller
                         'PreparingDocument' => 'Preparing Document',
                         'ClosedDeal' => 'Closed Deal'
                     ];
-                    
+
                     $status = "1";
                     $message = "Status updated successfully";
                     $status_label = $statusLabels[$request->status] ?? $request->status;
@@ -639,44 +659,44 @@ class AgencyController extends Controller
     {
         $ids = $request->get('ids');
         $agencyIds = $ids ? explode(',', $ids) : [];
-        
+
         // Get filter parameters
         $search_text = $request->get('search_text', '');
         $from = $request->get('from', \Carbon\Carbon::create(2010, 1, 1)->format('Y-m-d'));
         $to = $request->get('to', \Carbon\Carbon::today()->format('Y-m-d'));
-        
+
         $query = \App\Models\User::where('deleted', 0)->where('role', 4); // Role 4 is for agencies
-        
+
         // Apply date range filter
         $query->whereDate('created_at', '>=', $from)
-              ->whereDate('created_at', '<=', $to);
-        
+            ->whereDate('created_at', '<=', $to);
+
         // Apply search filter
         if ($search_text) {
             $query->where(function ($q) use ($search_text) {
                 $q->where('name', 'like', "%$search_text%")
-                  ->orWhere('email', 'like', "%$search_text%")
-                  ->orWhere('phone', 'like', "%$search_text%");
+                    ->orWhere('email', 'like', "%$search_text%")
+                    ->orWhere('phone', 'like', "%$search_text%");
             });
         }
-        
+
         // If specific IDs are provided, filter by them
         if (!empty($agencyIds)) {
             $query->whereIn('id', $agencyIds);
         }
-        
+
         $agencies = $query->orderBy('created_at', 'desc')->get();
-        
+
         $filename = 'agencies_export_' . date('Y-m-d_H-i-s') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
-        
-        return response()->stream(function() use ($agencies) {
+
+        return response()->stream(function () use ($agencies) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV Headers
             fputcsv($file, [
                 'ID',
@@ -687,7 +707,7 @@ class AgencyController extends Controller
                 'Verified',
                 'Status'
             ]);
-            
+
             // CSV Data
             foreach ($agencies as $agency) {
                 fputcsv($file, [
@@ -700,7 +720,7 @@ class AgencyController extends Controller
                     $agency->active ? 'Active' : 'Inactive'
                 ]);
             }
-            
+
             fclose($file);
         }, 200, $headers);
     }
@@ -715,25 +735,25 @@ class AgencyController extends Controller
     {
         $ids = $request->get('ids');
         $reservationIds = $ids ? explode(',', $ids) : [];
-        
+
         $query = \App\Models\Reservation::with(['agent', 'property']);
-        
+
         if (!empty($reservationIds)) {
             $query->whereIn('id', $reservationIds);
         }
-        
+
         $reservations = $query->get();
-        
+
         $filename = 'reservations_export_' . date('Y-m-d_H-i-s') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
-        
-        return response()->stream(function() use ($reservations) {
+
+        return response()->stream(function () use ($reservations) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV Headers
             fputcsv($file, [
                 'ID',
@@ -744,7 +764,7 @@ class AgencyController extends Controller
                 'Price (QAR)',
                 'Created At'
             ]);
-            
+
             // CSV Data
             foreach ($reservations as $reservation) {
                 fputcsv($file, [
@@ -757,7 +777,7 @@ class AgencyController extends Controller
                     $reservation->created_at->format('Y-m-d H:i:s')
                 ]);
             }
-            
+
             fclose($file);
         }, 200, $headers);
     }
@@ -772,25 +792,25 @@ class AgencyController extends Controller
     {
         $ids = $request->get('ids');
         $scheduleIds = $ids ? explode(',', $ids) : [];
-        
+
         $query = \App\Models\VisiteSchedule::with(['agent', 'project']);
-        
+
         if (!empty($scheduleIds)) {
             $query->whereIn('id', $scheduleIds);
         }
-        
+
         $schedules = $query->get();
-        
+
         $filename = 'visit_schedules_export_' . date('Y-m-d_H-i-s') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
-        
-        return response()->stream(function() use ($schedules) {
+
+        return response()->stream(function () use ($schedules) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV Headers
             fputcsv($file, [
                 'ID',
@@ -804,7 +824,7 @@ class AgencyController extends Controller
                 'Agent Name',
                 'Created At'
             ]);
-            
+
             // CSV Data
             foreach ($schedules as $schedule) {
                 fputcsv($file, [
@@ -820,7 +840,7 @@ class AgencyController extends Controller
                     $schedule->created_at->format('Y-m-d H:i:s')
                 ]);
             }
-            
+
             fclose($file);
         }, 200, $headers);
     }
@@ -856,7 +876,7 @@ class AgencyController extends Controller
                         'active' => 0,
                         'updated_at' => gmdate('Y-m-d H:i:s')
                     ]);
-                
+
                 if ($deletedCount > 0) {
                     $status = "1";
                     $message = "Successfully deleted {$deletedCount} employee(s)";
@@ -901,7 +921,7 @@ class AgencyController extends Controller
         } else {
             try {
                 $deletedCount = \App\Models\Reservation::whereIn('id', $request->reservation_ids)->delete();
-                
+
                 if ($deletedCount > 0) {
                     $status = "1";
                     $message = "Successfully deleted {$deletedCount} reservation(s)";
@@ -946,7 +966,7 @@ class AgencyController extends Controller
         } else {
             try {
                 $deletedCount = \App\Models\VisiteSchedule::whereIn('id', $request->schedule_ids)->delete();
-                
+
                 if ($deletedCount > 0) {
                     $status = "1";
                     $message = "Successfully deleted {$deletedCount} visit schedule(s)";

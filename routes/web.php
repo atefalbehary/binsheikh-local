@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\File;
 use Laravel\Socialite\Facades\Socialite;
+use App\Http\Controllers\PaymentCalculatorController;
 
 Route::get('/clear', function () {
 
@@ -20,8 +21,15 @@ Route::get('/clear', function () {
 
 });
 
+Route::get('/payment-calculator', [PaymentCalculatorController::class, 'index'])
+    ->name('payment-calculator.index');
 
-Route::get('migrate', function() {
+Route::post('/payment-calculator/calculate', [PaymentCalculatorController::class, 'calculate'])
+    ->name('payment-calculator.calculate');
+
+
+
+Route::get('migrate', function () {
     Artisan::call('migrate');
     die('migrate');
 });
@@ -31,6 +39,7 @@ Route::get('/google41802e3e0f5e94ab.html', function () {
     return File::get(public_path('google41802e3e0f5e94ab.html'));
 });
 Route::get('/property-details/{slug}', 'App\Http\Controllers\front\HomeController@property_details');
+Route::get('/property-details/{slug}/calculator', 'App\Http\Controllers\front\HomeController@payment_calculator')->name('property.calculator');
 Route::get('/property-listing', 'App\Http\Controllers\front\HomeController@property_listing');
 Route::post('/get-projects', 'App\Http\Controllers\front\HomeController@getProjects');
 Route::post('/calculate_emi', 'App\Http\Controllers\front\HomeController@calculate_emi');
@@ -92,7 +101,7 @@ Route::
 
             // Route::get('change-password', 'AdminController@changePassword')->name('change.password');
             // Route::post('change-password', 'AdminController@changePasswordSave')->name('change.password.save');
-
+        
             Route::match(array('GET', 'POST'), 'change_password', 'UsersController@change_password');
 
             Route::get('logout', 'LoginController@logout')->name('logout');
@@ -351,6 +360,15 @@ Route::
             Route::middleware(['check_permission:manage_roles'])->group(function () {
                 Route::resource('roles', 'RoleController');
             });
+
+            // SEO Routes
+            Route::get('seo/settings', 'SeoController@index')->name('seo_settings');
+            Route::post('seo/settings', 'SeoController@updateSettings')->name('seo_settings_update');
+            Route::get('seo/redirects', 'SeoController@redirects')->name('seo_redirects');
+            Route::post('seo/redirects', 'SeoController@storeRedirect')->name('seo_redirect_store');
+            Route::get('seo/redirects/delete/{id}', 'SeoController@destroyRedirect')->name('seo_redirect_delete');
+            Route::get('seo/404', 'SeoController@monitor404')->name('seo_404');
+            Route::post('seo/generate-sitemap', 'SeoController@generateSitemap')->name('seo_generate_sitemap');
 
         });
 

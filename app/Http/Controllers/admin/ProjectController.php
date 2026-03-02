@@ -38,7 +38,7 @@ class ProjectController extends Controller
         $id = "";
         $images = [];
         $project_countries = ProjectCountry::where(['deleted' => 0, 'active' => 1])->orderBy('name', 'asc')->get();
-        return view("admin.project.create", compact('page_heading', 'mode', 'id', 'images','project_countries'));
+        return view("admin.project.create", compact('page_heading', 'mode', 'id', 'images', 'project_countries'));
     }
 
     public function store(Request $request)
@@ -69,7 +69,7 @@ class ProjectController extends Controller
                 'is_recommended' => isset($request->is_recommended) ? 1 : 0,
                 'link_360' => $request->link_360,
                 'active' => $request->active,
-                'country' => $request->country??0,
+                'country' => $request->country ?? 0,
                 'end_date' => $request->end_date,
                 'suggested_apartments' => $request->suggested_apartments ? implode(',', $request->suggested_apartments) : null,
             ];
@@ -127,18 +127,10 @@ class ProjectController extends Controller
             $imgs = [];
             $images = $request->file('prj_image');
             $prj_image_type = $request->prj_image_type;
+            $prj_image_alt_text = $request->prj_image_alt_text;
+            $prj_image_alt_text_ar = $request->prj_image_alt_text_ar;
+
             if ($images) {
-                // foreach ($images as $key => $file) {
-                //     $name = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
-                //     $path = public_path() . '/uploads/project/';
-                //     $file->move($path, $name);
-
-                //     $im['image'] = '/uploads/project/' . $name;
-                //     $im['project_id'] = $prpty_id;
-                //     $im['type'] = $prj_image_type[$key];
-                //     ProjectImages::create($im);
-                // }
-
                 foreach ($images as $key => $file) {
                     $name = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
                     $path = '/uploads/project/' . $name;
@@ -147,7 +139,20 @@ class ProjectController extends Controller
                     $im['image'] = '/uploads/project/' . $name;
                     $im['project_id'] = $prpty_id;
                     $im['type'] = $prj_image_type[$key];
+                    $im['alt_text'] = $prj_image_alt_text[$key] ?? null;
+                    $im['alt_text_ar'] = $prj_image_alt_text_ar[$key] ?? null;
                     ProjectImages::create($im);
+                }
+            }
+
+            // Update existing images alt text
+            if ($request->image_alt_text) {
+                foreach ($request->image_alt_text as $id => $alt_text) {
+                    $updateData = ['alt_text' => $alt_text];
+                    if (isset($request->image_alt_text_ar[$id])) {
+                        $updateData['alt_text_ar'] = $request->image_alt_text_ar[$id];
+                    }
+                    ProjectImages::where('id', $id)->update($updateData);
                 }
             }
         }
@@ -180,7 +185,7 @@ class ProjectController extends Controller
             $mode = "edit";
             $images = ProjectImages::where('project_id', $id)->get();
             $project_countries = ProjectCountry::where(['deleted' => 0, 'active' => 1])->orderBy('name', 'asc')->get();
-            return view("admin.project.create", compact('page_heading', 'mode', 'id', 'project', 'images','project_countries'));
+            return view("admin.project.create", compact('page_heading', 'mode', 'id', 'project', 'images', 'project_countries'));
         } else {
             abort(404);
         }

@@ -1,6 +1,33 @@
 @extends('front_end.template.layout')
 @section('header')
-
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Residence",
+  "name": "{{ $project->name }}",
+  "description": "{{ trim(str_replace('"', '\"', strip_tags($project->description))) }}",
+  "url": "{{ url()->current() }}",
+  "image": [
+    @foreach($project->images as $img)
+      "{{ aws_asset_path($img->image) }}"{{ !$loop->last ? ',' : '' }}
+    @endforeach
+  ],
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "{{ $project->location }}",
+    "addressCountry": "QA"
+  },
+  "amenityFeature": [
+      @foreach($project->amenities ?? [] as $amty)
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "{{ $amty->amnety->name ?? '' }}",
+        "value": "True"
+      }{{ !$loop->last ? ',' : '' }}
+      @endforeach
+  ]
+}
+</script>
 @stop
 
 @section('content')
@@ -116,10 +143,14 @@
                                                     </div>
                                                     <!-- gallery-items   -->
                                                     <div class="gallery-items gisp grid-small-pad list-single-gallery three-coulms lightgallery">
+                                                        @php
+                                                            $locale = session()->get('locale') ?? 'ar';
+                                                            $alt_col = $locale == 'en' ? 'alt_text' : 'alt_text_ar';
+                                                        @endphp
                                                         @foreach($project->images as $img)
                                                         <div class="gallery-item {{$img->type}}">
                                                             <div class="grid-item-holder hovzoom">
-                                                                <img src="{{aws_asset_path($img->image)}}" alt="">
+                                                                <img src="{{aws_asset_path($img->image)}}" alt="{{ $img->$alt_col ?? $project->name }}">
                                                                 <a href="{{aws_asset_path($img->image)}}" class="gal-link popup-image"><i class="fa fa-search"></i></a>
                                                             </div>
                                                         </div>

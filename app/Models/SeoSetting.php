@@ -5,12 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProjectImages extends Model
+class SeoSetting extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['project_id', 'image', 'alt_text', 'alt_text_ar'];
-
-    protected $guarded = [];
-
+    protected $fillable = ['key', 'value'];
 }

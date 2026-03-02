@@ -5,7 +5,6 @@ use Illuminate\Database\Eloquent\Model;
 
 
 class Photo extends Model
-
 {
     use HasFactory;
     protected $guarded = [];
@@ -13,7 +12,9 @@ class Photo extends Model
     protected $fillable = [
         'folder_id',
         'image',
-        'active'
+        'active',
+        'alt_text',
+        'alt_text_ar'
     ];
 
     public function folder()

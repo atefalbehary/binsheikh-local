@@ -49,212 +49,240 @@ $CurrentUrl = url()->current();
             </li>
 
             @if(Auth::user()->hasPermission('manage_content'))
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/categories/', $CurrentUrl) ? 'c-active' : null }}"
-                    href="{{ url('admin/categories') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-list"></i>
-                    </div> Property Types
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/categories/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/categories') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-list"></i>
+                        </div> Property Types
+                    </a>
+                </li>
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/amenities/', $CurrentUrl) ? 'c-active' : null }}"
-                    href="{{ url('admin/amenities') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-list"></i>
-                    </div> Amenities
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/amenities/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/amenities') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-list"></i>
+                        </div> Amenities
+                    </a>
+                </li>
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/properties/', $CurrentUrl) ? 'c-active' : null }}"
-                    href="{{ url('admin/properties') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-building"></i>
-                    </div> Properties
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/properties/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/properties') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-building"></i>
+                        </div> Properties
+                    </a>
+                </li>
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/projects/', $CurrentUrl) ? 'c-active' : null }}"
-                    href="{{ url('admin/projects') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-building"></i>
-                    </div> Projects
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/projects/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/projects') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-building"></i>
+                        </div> Projects
+                    </a>
+                </li>
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/project_countries/', $CurrentUrl) ? 'c-active' : null }}"
-                    href="{{ url('admin/project_countries') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-list"></i>
-                    </div> Project Countries
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/project_countries/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/project_countries') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-list"></i>
+                        </div> Project Countries
+                    </a>
+                </li>
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/services/', $CurrentUrl) ? 'c-active' : null }}"
-                    href="{{ url('admin/services') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-list"></i>
-                    </div> Services
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/services/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/services') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-list"></i>
+                        </div> Services
+                    </a>
+                </li>
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/blog/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/blog') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-list"></i>
-                    </div> Blog
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/blog/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/blog') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-list"></i>
+                        </div> Blog
+                    </a>
+                </li>
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/photos/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/photos') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-images"></i>
-                    </div> Photos
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/photos/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/photos') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-images"></i>
+                        </div> Photos
+                    </a>
+                </li>
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/videos/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/videos') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-video"></i>
-                    </div> Videos
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/videos/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/videos') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-video"></i>
+                        </div> Videos
+                    </a>
+                </li>
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/folders/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/folders') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-folder"></i>
-                    </div> Folders
-                </a>
-            </li>
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/popups/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/popups') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-folder"></i>
-                    </div> PopUp
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/folders/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/folders') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-folder"></i>
+                        </div> Folders
+                    </a>
+                </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/popups/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/popups') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-folder"></i>
+                        </div> PopUp
+                    </a>
+                </li>
+
+                <li class="c-sidebar-nav-dropdown"><a class="c-sidebar-nav-dropdown-toggle" href="#">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-search"></i>
+                        </div> SEO
+                    </a>
+                    <ul class="c-sidebar-nav-dropdown-items">
+                        <li class="c-sidebar-nav-item"><a class="c-sidebar-nav-link"
+                                href="{{ route('admin.seo_settings') }}"><span class="c-sidebar-nav-icon"></span>
+                                Settings</a></li>
+                        <li class="c-sidebar-nav-item"><a class="c-sidebar-nav-link"
+                                href="{{ route('admin.seo_redirects') }}"><span class="c-sidebar-nav-icon"></span>
+                                Redirects</a></li>
+                        <li class="c-sidebar-nav-item"><a class="c-sidebar-nav-link"
+                                href="{{ route('admin.seo_404') }}"><span class="c-sidebar-nav-icon"></span> 404 Monitor</a>
+                        </li>
+                    </ul>
+                </li>
+
             @endif
 
             @if(Auth::user()->hasPermission('manage_users'))
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/superu\/users/', $CurrentUrl) ? 'c-active' : null }}"
-                    href="{{ route('admin.superadmin.users.index') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-users"></i>
-                    </div> User Management
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/superu\/users/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ route('admin.superadmin.users.index') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-users"></i>
+                        </div> User Management
+                    </a>
+                </li>
             @endif
 
             @if(Auth::user()->hasPermission('manage_roles'))
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/roles/', $CurrentUrl) ? 'c-active' : null }}"
-                    href="{{ route('admin.roles.index') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-shield-alt"></i>
-                    </div> Role Management
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/roles/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ route('admin.roles.index') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-shield-alt"></i>
+                        </div> Role Management
+                    </a>
+                </li>
             @endif
 
-            @if(Auth::user()->hasPermission('manage_users'))
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/settings/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/settings') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-cog"></i>
-                    </div> Settings
-                </a>
-            </li>
+            @if(Auth::user()->hasPermission('manage_settings'))
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/settings/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/settings') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-cog"></i>
+                        </div> Settings
+                    </a>
+                </li>
             @endif
 
             @if(Auth::user()->hasPermission('manage_content'))
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/reviews/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/reviews') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-pen"></i>
-                    </div> Reviews
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/reviews/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/reviews') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-pen"></i>
+                        </div> Reviews
+                    </a>
+                </li>
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/career/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/career') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div> Careers
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/career/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/career') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div> Careers
+                    </a>
+                </li>
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/job_application/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/job_application') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div> Career Applications
-                </a>
-            </li>
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/job_application/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/job_application') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div> Career Applications
+                    </a>
+                </li>
             @endif
 
-            @if(Auth::user()->hasPermission('view_all_clients'))
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ (request()->get('role') == 2 || (!request()->has('role') && strpos($CurrentUrl, 'admin/customer') !== false)) ? 'c-active' : null }}"
-                    href="{{ url('admin/customer?role=2') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fas fa-users"></i>
-                    </div> Users
-                </a>
-            </li>
+            @if(Auth::user()->hasPermission('view_clients'))
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ (request()->get('role') == 2 || (!request()->has('role') && strpos($CurrentUrl, 'admin/customer') !== false)) ? 'c-active' : null }}"
+                        href="{{ url('admin/customer?role=2') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fas fa-users"></i>
+                        </div> Users
+                    </a>
+                </li>
+            @endif
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/agent/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/agent') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fas fa-user-tie"></i>
-                    </div> Agents
-                </a>
-            </li>
+            @if(Auth::user()->hasPermission('view_agents'))
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/agent/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/agent') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div> Agents
+                    </a>
+                </li>
+            @endif
 
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/agencies/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/agencies') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fas fa-building"></i>
-                    </div> Agencies
-                </a>
-            </li>
+            @if(Auth::user()->hasPermission('view_agencies'))
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/agencies/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/agencies') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fas fa-building"></i>
+                        </div> Agencies
+                    </a>
+                </li>
+            @endif
 
-            <li class="c-sidebar-nav-item"><a
-                class="c-sidebar-nav-link {{ preg_match('/admin\/bookings/', $CurrentUrl)  ? 'c-active' : null }}"
-                href="{{ url('admin/bookings') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fas fa-list"></i>
-                    </div> Bookings
-                </a>
-            </li>
-            
-            <li class="c-sidebar-nav-item"><a
-                    class="c-sidebar-nav-link {{ preg_match('/admin\/subscribers/', $CurrentUrl)  ? 'c-active' : null }}"
-                    href="{{ url('admin/subscribers') }}">
-                    <div class="c-sidebar-nav-icon">
-                        <i class="fa fa-envelope"></i>
-                    </div> Subscribers
-                </a>
-            </li>
+            @if(Auth::user()->hasPermission('view_clients'))
+
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/bookings/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/bookings') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fas fa-list"></i>
+                        </div> Bookings
+                    </a>
+                </li>
+            @endif
+
+            @if(Auth::user()->hasPermission('manage_content'))
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/subscribers/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ url('admin/subscribers') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-envelope"></i>
+                        </div> Subscribers
+                    </a>
+                </li>
             @endif
 
 
@@ -277,8 +305,8 @@ $CurrentUrl = url()->current();
                 <svg width="118" height="46" alt="CoreUI Logo">
                     <use xlink:href="{{ asset('') }}admin-assets/assets/brand/coreui.svg#full"></use>
                 </svg></a> -->
-            <button class="c-header-toggler c-class-toggler mfs-3 d-md-down-none" type="button"
-                data-target="#sidebar" data-class="c-sidebar-lg-show" responsive="true">
+            <button class="c-header-toggler c-class-toggler mfs-3 d-md-down-none" type="button" data-target="#sidebar"
+                data-class="c-sidebar-lg-show" responsive="true">
                 <svg class="c-icon c-icon-lg">
                     <use xlink:href="{{ asset('') }}admin-assets/vendors/@coreui/icons/svg/free.svg#cil-menu">
                     </use>
@@ -287,19 +315,21 @@ $CurrentUrl = url()->current();
 
             <ul class="c-header-nav ml-auto mr-4">
                 <?php
-                    $pending_approvals_count = \App\Models\User::whereIn('role', [3, 4])->where('verified', 0)->where('deleted', 0)->count();
+$pending_approvals_count = \App\Models\User::whereIn('role', [3, 4])->where('verified', 0)->where('deleted', 0)->count();
                 ?>
                 <li class="c-header-nav-item mx-2">
-                    <a class="c-header-nav-link" href="{{ route('admin.pending_approvals.index') }}" title="Pending Approvals">
+                    <a class="c-header-nav-link" href="{{ route('admin.pending_approvals.index') }}"
+                        title="Pending Approvals">
                         <i class="far fa-bell" style="font-size: 1.2rem;"></i>
                         @if($pending_approvals_count > 0)
-                            <span class="badge badge-pill badge-danger" style="vertical-align: top; margin-left: -10px;">{{ $pending_approvals_count }}</span>
+                            <span class="badge badge-pill badge-danger"
+                                style="vertical-align: top; margin-left: -10px;">{{ $pending_approvals_count }}</span>
                         @endif
                     </a>
                 </li>
 
-                <li class="c-header-nav-item dropdown"><a class="c-header-nav-link" data-toggle="dropdown"
-                        href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                <li class="c-header-nav-item dropdown"><a class="c-header-nav-link" data-toggle="dropdown" href="#"
+                        role="button" aria-haspopup="true" aria-expanded="false">
                         <div class="c-avatar"><img class="c-avatar-img" width="32"
                                 src="{{ asset('') }}admin-assets/icons/user.png" alt="Cake Studio">
 
@@ -355,19 +385,19 @@ $CurrentUrl = url()->current();
 
     <script>
         window.Parsley.addValidator('lte', {
-            validateString: function(value, requirement) {
+            validateString: function (value, requirement) {
                 return parseFloat(value) <= parseRequirement(requirement);
             },
             priority: 32
         });
-        var parseRequirement = function(requirement) {
+        var parseRequirement = function (requirement) {
             if (isNaN(+requirement))
                 return parseFloat(jQuery(requirement).val());
             else
                 return +requirement;
         };
         window.Parsley.addValidator('fileextension', {
-            validateString: function(value, requirement) {
+            validateString: function (value, requirement) {
                 var fileExtension = value.split('.').pop();
                 extns = requirement.split(',');
                 if (extns.indexOf(fileExtension.toLowerCase()) == -1) {
@@ -376,7 +406,7 @@ $CurrentUrl = url()->current();
             },
         });
         window.Parsley.addValidator('maxFileSize', {
-            validateString: function(_value, maxSize, parsleyInstance) {
+            validateString: function (_value, maxSize, parsleyInstance) {
                 var files = parsleyInstance.$element[0].files;
                 return files.length != 1 || files[0].size <= maxSize * 1024;
             },
@@ -384,14 +414,14 @@ $CurrentUrl = url()->current();
         });
         window.Parsley.addValidator('imagedimensions', {
             requirementType: 'string',
-            validateString: function(value, requirement, parsleyInstance) {
+            validateString: function (value, requirement, parsleyInstance) {
                 let file = parsleyInstance.$element[0].files[0];
                 let [width, height] = requirement.split('x');
                 let image = new Image();
                 let deferred = $.Deferred();
 
                 image.src = window.URL.createObjectURL(file);
-                image.onload = function() {
+                image.onload = function () {
                     if (image.width == width && image.height == height) {
                         deferred.resolve();
                     } else {
@@ -407,7 +437,7 @@ $CurrentUrl = url()->current();
         });
 
         window.Parsley.addValidator('dategttoday', {
-            validateString: function(value) {
+            validateString: function (value) {
                 if (value !== '') {
                     return Date.parse(value) >= Date.parse(today);
                 }
@@ -424,29 +454,29 @@ $CurrentUrl = url()->current();
                 format: 'yyyy-mm-dd',
                 todayHighlight: true
             });
-            $(".c-body").on('scroll', function() {
+            $(".c-body").on('scroll', function () {
                 $('.datepicker').datepicker('hide');
                 $('.datepicker').blur();
             });
-            $(".c-body").resize(function() {
+            $(".c-body").resize(function () {
                 $('.datepicker').datepicker('hide');
                 $('.datepicker').blur();
             });
         }
-        $('body').on('change', '[data-role="file-image"]', function() {
+        $('body').on('change', '[data-role="file-image"]', function () {
             readURL(this, $(this).data('preview'));
         });
-        var readURL = function(input, previewId) {
+        var readURL = function (input, previewId) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     $('#' + previewId).prop('src', e.target.result);
                 }
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        $(".toggle_status").change(function() {
+        $(".toggle_status").change(function () {
             status = 0;
             if (this.checked) {
                 status = 1;
@@ -463,12 +493,12 @@ $CurrentUrl = url()->current();
                 },
                 timeout: 600000,
                 dataType: 'json',
-                success: function(res) {
+                success: function (res) {
 
                     if (res['status'] == 0) {
                         var m = res['message']
                         show_msg(0, m);
-                        setTimeout(function() {
+                        setTimeout(function () {
                             window.location.reload();
                         }, 1500);
                     } else {
@@ -476,14 +506,14 @@ $CurrentUrl = url()->current();
                         show_msg(1, m);
                     }
                 },
-                error: function(e) {
+                error: function (e) {
                     show_msg(0, e.responseText);
                 }
             });
         });
 
         $('body').off('click', '[data-role="unlink"]');
-        $('body').on('click', '[data-role="unlink"]', function(e) {
+        $('body').on('click', '[data-role="unlink"]', function (e) {
             e.preventDefault();
             var msg = $(this).data('message') || 'Are you sure that you want to delete this record?';
             var href = $(this).attr('href');
@@ -505,12 +535,12 @@ $CurrentUrl = url()->current();
                         data: {
                             "_token": "{{ csrf_token() }}",
                         },
-                        success: function(res) {
+                        success: function (res) {
                             if (res['status'] == 1) {
 
                                 show_msg(1, 'Deleted successfully');
 
-                                setTimeout(function() {
+                                setTimeout(function () {
                                     window.location.reload();
                                 }, 1500);
 
@@ -518,7 +548,7 @@ $CurrentUrl = url()->current();
                                 show_msg(0, res['message'] || 'Unable to delete the record.');
                             }
                         },
-                        error: function(e) {
+                        error: function (e) {
                             show_msg(0, e.responseText);
                         }
                     });

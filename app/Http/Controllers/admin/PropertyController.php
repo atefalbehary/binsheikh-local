@@ -34,15 +34,15 @@ class PropertyController extends Controller
             $properties = $properties->whereRaw("(properties.name like '%$search_text%' OR apartment_no like '%$search_text%')");
         }
         if ($sale_type) {
-            $properties = $properties->where("sale_type",$sale_type);
+            $properties = $properties->where("sale_type", $sale_type);
         }
         if ($project_id) {
-            $properties = $properties->where("project_id",$project_id);
+            $properties = $properties->where("project_id", $project_id);
         }
 
         $properties = $properties->paginate(10);
-        $projects = Projects::select('id','name')->where(['deleted' => 0, 'active' => 1])->orderBy('name', 'asc')->get();
-        return view('admin.property.list', compact('page_heading', 'properties', 'search_text','sale_type','projects','project_id'));
+        $projects = Projects::select('id', 'name')->where(['deleted' => 0, 'active' => 1])->orderBy('name', 'asc')->get();
+        return view('admin.property.list', compact('page_heading', 'properties', 'search_text', 'sale_type', 'projects', 'project_id'));
     }
 
     /**
@@ -106,21 +106,21 @@ class PropertyController extends Controller
                 'sale_type' => $request->sale_type,
                 'apartment_no' => $request->apartment_no,
                 'project_id' => $request->project_id,
-                'link_360' =>  $request->link_360,
-                'unit_layout' =>  $request->unit_layout,
-                'video_link' =>  $request->video_link,
+                'link_360' => $request->link_360,
+                'unit_layout' => $request->unit_layout,
+                'video_link' => $request->video_link,
                 'is_recommended' => isset($request->is_recommended) ? 1 : 0,
                 'is_sold' => isset($request->is_sold) ? 1 : 0,
                 'is_featured' => isset($request->is_featured) ? 1 : 0,
                 'order' => $request->order,
 
-                'balcony_size' =>  $request->balcony_size,
-                'gross_area' =>  $request->gross_area,
-                'floor_no' =>  $request->floor_no,
-                'meta_title' =>  $request->meta_title,
-                'meta_title_ar' =>  $request->meta_title_ar,
-                'meta_description' =>  $request->meta_description,
-                'meta_description_ar' =>  $request->meta_description_ar,
+                'balcony_size' => $request->balcony_size,
+                'gross_area' => $request->gross_area,
+                'floor_no' => $request->floor_no,
+                'meta_title' => $request->meta_title,
+                'meta_title_ar' => $request->meta_title_ar,
+                'meta_description' => $request->meta_description,
+                'meta_description_ar' => $request->meta_description_ar,
                 'similar_properties' => $request->similar_properties ? implode(',', $request->similar_properties) : null,
             ];
 
@@ -135,14 +135,14 @@ class PropertyController extends Controller
                 // }
                 foreach ($images as $file) {
                     //$name = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
-                   // $path = '/uploads/property/' . $name;
-                   // Storage::disk('s3')->put($path, fopen($file, 'r+'));
+                    // $path = '/uploads/property/' . $name;
+                    // Storage::disk('s3')->put($path, fopen($file, 'r+'));
                     if ($file && $file->isValid()) {
                         $name = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
                         $path = 'uploads/property/' . $name;
 
                         Storage::disk('s3')->put($path, fopen($file->getRealPath(), 'r+'));
-                        $imgs[] = '/'.$path;
+                        $imgs[] = '/' . $path;
                     }
 
                 }
@@ -217,18 +217,29 @@ class PropertyController extends Controller
             // }
             // Process image orders if provided
             $imageOrders = $request->input('image_order', []);
+            $imageAltTexts = $request->input('image_alt_text', []);
+            $imageAltTextsAr = $request->input('image_alt_text_ar', []);
 
             foreach ($imgs as $img) {
                 $im['property_id'] = $prpty_id;
                 $im['image'] = $img;
                 $im['order'] = 0; // Default order
+                $im['alt_text'] = $request->new_image_alt_text;
+                $im['alt_text_ar'] = $request->new_image_alt_text_ar;
                 PropertyImages::create($im);
             }
 
-            // Update orders for existing images if provided
+            // Update orders and alt text for existing images if provided
             if (!empty($imageOrders)) {
                 foreach ($imageOrders as $imageId => $order) {
-                    PropertyImages::where('id', $imageId)->update(['order' => (int)$order]);
+                    $updateData = ['order' => (int) $order];
+                    if (isset($imageAltTexts[$imageId])) {
+                        $updateData['alt_text'] = $imageAltTexts[$imageId];
+                    }
+                    if (isset($imageAltTextsAr[$imageId])) {
+                        $updateData['alt_text_ar'] = $imageAltTextsAr[$imageId];
+                    }
+                    PropertyImages::where('id', $imageId)->update($updateData);
                 }
             }
 

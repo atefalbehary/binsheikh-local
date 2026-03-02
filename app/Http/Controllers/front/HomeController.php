@@ -481,6 +481,32 @@ class HomeController extends Controller
         return view('front_end.property_details', compact('page_heading', 'property', 'similar', 'settings', 'months', 'monthCount'));
 
     }
+
+    public function payment_calculator($slug)
+    {
+        $property = Properties::with(['property_type', 'images', 'amenities'])->where(['slug' => $slug, 'active' => '1', 'deleted' => 0])->first();
+        if (!$property) {
+            abort(404);
+        }
+
+        $page_heading = $property->name;
+        $settings = Settings::find(1);
+
+        $cur_month = Carbon::now();
+        $cur_month->startOfMonth();
+        if (isset($property->project->end_date) && $property->project->end_date) {
+            $targetDate = Carbon::createFromFormat('Y-m', $property->project->end_date)->endOfMonth();
+        }
+
+        // Removed monthsDifference to prevent undefined variable errors as per previous fix
+        if (isset($property->project->end_date) && $property->project->end_date) {
+            $monthCount = $cur_month->diffInMonths($targetDate);
+        } else {
+            $monthCount = $settings->month_count;
+        }
+
+        return view('front_end.payment_calculator', compact('page_heading', 'property', 'settings', 'monthCount'));
+    }
     public function getOrdinalSuffix($number)
     {
         if (in_array($number % 100, [11, 12, 13])) {
@@ -1443,10 +1469,10 @@ class HomeController extends Controller
             ->get();
 
         // Get all clients (users with role 2) for the dropdown
-       /*  $clients = User::where('role', 2)
-            ->select('id', 'name', 'phone', 'email', 'id_card', 'qid')
-            ->orderBy('name', 'asc')
-            ->get(); */
+        /*  $clients = User::where('role', 2)
+             ->select('id', 'name', 'phone', 'email', 'id_card', 'qid')
+             ->orderBy('name', 'asc')
+             ->get(); */
         if ($customer->role == 4) {
             // For agency, get all clients registered by their agents
             $agentIds = $customer->agencyUsers()->pluck('id')->toArray();
@@ -2720,48 +2746,55 @@ class HomeController extends Controller
             // Get settings
             $settings = Settings::first();
 
-            // Get calculation parameters from request
-            $advance_amount = $request->advance_amount;
-            $hand_over_amount = $request->hand_over_amount;
-            $rental_duration = $request->rental_duration;
+            // Get parameters
+            $advance_amount = $request->advance_amount ?? 0;
+            $discount_rate = $request->discount_rate ?? 0;
 
-            // Calculate payment details
+            // Decode the generated schedule from frontend
+            $schedule_data = json_decode($request->schedule_data, true);
+
+            if (!$schedule_data || !is_array($schedule_data)) {
+                return response()->json(['error' => 'Invalid schedule data provided.'], 400);
+            }
+
+            // Calculations based on property
             $ser_amt = ($settings->service_charge_perc / 100) * $property->price;
             $total = $property->price + $ser_amt;
             $full_price_calc = $property->price;
+
             $down_payment = $advance_amount;
-            $hand_over_payment = $hand_over_amount;
-            $pending_amt = $full_price_calc - $down_payment - $hand_over_payment;
+            $downPaymentPercentage = ($full_price_calc > 0) ? ($down_payment / $full_price_calc) * 100 : 0;
 
-            // Calculate percentages
-            $downPaymentPercentage = ($down_payment / $full_price_calc) * 100;
-            $handOverPaymentPercentage = ($hand_over_payment / $full_price_calc) * 100;
-            $monthlyPercentage = (100 - $downPaymentPercentage - $handOverPaymentPercentage) / $rental_duration;
+            // Use values from schedule data if present (e.g., handover amount)
+            $handover_row = collect($schedule_data)->firstWhere('isHandover', true);
+            $hand_over_amount = $handover_row['payment'] ?? 0;
+            $handOverPaymentPercentage = $handover_row['percentage'] ?? 0;
 
-            // Generate months and payment schedule
-            $cur_month = Carbon::now();
-            $cur_month->startOfMonth();
-
-            $monthlyPayment = $pending_amt / $rental_duration;
-
+            // Generate structured months array for the PDF view
             $months = [];
-            $totalPercentage = $downPaymentPercentage;
-            $totalPayment = $down_payment;
-            $remainingAmount = $pending_amt;
+            foreach ($schedule_data as $i => $row) {
+                // Skip the explicit "Management Fees" and "Handover Payment" rows if they are injected by JS,
+                // since $getPdfCalulator currently appends them manually at the bottom of the table.
+                if (isset($row['isMgmtFee']) && $row['isMgmtFee']) {
+                    continue;
+                }
+                if (isset($row['isHandover']) && $row['isHandover']) {
+                    // We'll let the existing PDF generator add its own row for handover at the end
+                    continue;
+                }
+                // Also skip advance payment row to match old logic (which adds Down Payment manually)
+                if (isset($row['isAdvance']) && $row['isAdvance']) {
+                    continue;
+                }
 
-            for ($i = 0; $i < $rental_duration; $i++) {
-                $remainingAmount -= $monthlyPayment;
-                $totalPercentage += $monthlyPercentage;
-                $totalPayment += $monthlyPayment;
-                $month = $cur_month->copy()->addMonths($i + 1)->format('M-y');
                 $months[] = [
                     'ordinal' => $this->getOrdinalSuffix($i + 1),
-                    'month' => $month,
-                    'payment' => round($monthlyPayment, 2),
-                    'total_payment' => round($totalPayment, 2),
-                    'remaining_amount' => round($remainingAmount, 2),
-                    'percentage' => round($monthlyPercentage, 2),
-                    'total_percentage' => round($totalPercentage, 2)
+                    'month' => $row['label'] ?? $row['month'],
+                    'payment' => $row['payment'],
+                    'total_payment' => $row['totalPayment'],
+                    'remaining_amount' => $row['dueAmount'],
+                    'percentage' => $row['percentage'],
+                    'total_percentage' => $row['totalPercentage']
                 ];
             }
 
@@ -2779,16 +2812,34 @@ class HomeController extends Controller
                 $imageData = file_get_contents($waterMarkPath);
                 $waterMarkBase64 = 'data:image/png;base64,' . base64_encode($imageData);
             }
+
             $payment_plan = 'Custom Payment Plan';
             $payment_term = 'Custom Payment Terms';
-            // Generate PDF with bookmarks
-            $unit_number = $property->apartment_no;
-            $balcony_size = $property->balcony_size;
-            $gross_area = $property->gross_area;
-            $floor_no = $property->floor_no;
             $project_name = $property->project ? $property->project->name : '';
             $management_fees_percentage = $settings->service_charge_perc;
-            $pdf = $this->getPdfCalulator($payment_plan, $payment_term, $property, $ser_amt, $total, $full_price_calc, $down_payment, $downPaymentPercentage, $months, $settings, $rental_duration, $logoBase64, $waterMarkBase64, $project_name, $hand_over_amount, $handOverPaymentPercentage, $management_fees_percentage);
+
+            // Assuming rental duration is simply the count of normal installment months
+            $rental_duration = count($months);
+
+            $pdf = $this->getPdfCalulator(
+                $payment_plan,
+                $payment_term,
+                $property,
+                $ser_amt,
+                $total,
+                $full_price_calc,
+                $down_payment,
+                $downPaymentPercentage,
+                $months,
+                $settings,
+                $rental_duration,
+                $logoBase64,
+                $waterMarkBase64,
+                $project_name,
+                $hand_over_amount,
+                $handOverPaymentPercentage,
+                $management_fees_percentage
+            );
 
             return $pdf->download('payment_calculator_' . $property->apartment_no . '.pdf');
 
@@ -3491,7 +3542,7 @@ class HomeController extends Controller
             }
 
             \DB::beginTransaction();
-            
+
             try {
                 // Update status
                 $visit->status = $request->status;
@@ -3653,7 +3704,7 @@ class HomeController extends Controller
 
             $creatorName = $noteItem->creator->name ?? 'N/A';
             $createdAt = web_date_in_timezone($noteItem->created_at, 'd-M-Y h:i A');
-            
+
             $html .= '
             <div class="note-item" style="border-bottom: 1px solid #eee; padding: 12px 0; margin-bottom: 10px;">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
