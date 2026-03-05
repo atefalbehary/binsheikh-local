@@ -85,14 +85,9 @@
                     <div class="swiper-container">
                         <div class="swiper-wrapper">
                             <!-- swiper-slide-->
-                            @php
-                                $locale = session()->get('locale') ?? 'ar';
-                                $alt_col = $locale == 'en' ? 'alt_text' : 'alt_text_ar';
-                             @endphp
                             @foreach($property->images as $image)
                                 <div class="swiper-slide hov_zoom">
-                                    <img src="{{aws_asset_path($image->image)}}"
-                                        alt="{{ $image->$alt_col ?? $property->name }}">
+                                    <img src="{{aws_asset_path($image->image)}}" alt="">
                                     <a href="{{aws_asset_path($image->image)}}" class="box-media-zoom   popup-image"><i
                                             class="fal fa-search"></i></a>
 
