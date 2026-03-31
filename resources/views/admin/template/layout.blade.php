@@ -285,8 +285,33 @@ $CurrentUrl = url()->current();
                 </li>
             @endif
 
+            @if(Auth::user()->hasPermission('manage_content'))
+                <li class="c-sidebar-nav-item">
+                    <a class="c-sidebar-nav-link {{ preg_match('/admin\/mobile-app/', $CurrentUrl) ? 'c-active' : null }}" 
+   href="https://mobile-app.bsbqa.com" 
+   target="_blank" 
+   rel="noopener noreferrer">
+    <div class="c-sidebar-nav-icon">
+        <i class="fa fa-mobile-alt"></i>
+    </div>
+    Mobile App
+</a>
+                </li>
+            @endif
 
 
+
+
+            @if(Auth::user()->hasRole('Super Admin') || Auth::user()->hasRole('Sales Manager') || Auth::user()->hasRole('Editor') || Auth::user()->hasRole('Admin'))
+                <li class="c-sidebar-nav-item"><a
+                        class="c-sidebar-nav-link {{ preg_match('/admin\/sales-toolkit/', $CurrentUrl) ? 'c-active' : null }}"
+                        href="{{ route('admin.sales_toolkit.index') }}">
+                        <div class="c-sidebar-nav-icon">
+                            <i class="fa fa-briefcase"></i>
+                        </div> Sales Toolkit
+                    </a>
+                </li>
+            @endif
 
         </ul>
         <button class="c-sidebar-minimizer c-class-toggler" type="button" data-target="_parent"

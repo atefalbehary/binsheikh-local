@@ -161,7 +161,7 @@ class RBACSeeder extends Seeder
             [
                 'name' => 'Super Admin User',
                 'email' => 'superadmin@binsheikh.com',
-                'password' => bcrypt('password'),
+                'password' => bcrypt('password1'),
                 'role_id' => $roleInstances['Super Admin']->id,
                 'role' => '1',
             ],

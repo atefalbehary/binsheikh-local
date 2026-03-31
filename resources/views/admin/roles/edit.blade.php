@@ -51,7 +51,7 @@
                             </div>
 
                             <hr>
-                            <h4>Permissions</h4>
+                            <h4>Permissions Code Check</h4>
                             <div class="row">
                                 @foreach($permissions as $module => $modulePermissions)
                                 <div class="col-md-6">

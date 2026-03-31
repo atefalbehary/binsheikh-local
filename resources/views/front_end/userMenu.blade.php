@@ -15,20 +15,18 @@
 
         {{-- Agency Role --}}
         @if(Auth::user()->role == 4)
-        <li>
-            <a href="{{ url('my-employees') }}"
-                class="{{ request()->is('my-employees') ? 'menu-active' : '' }}">
-                {{ __('messages.employees') }}
-            </a>
-        </li>
+            <li>
+                <a href="{{ url('my-employees') }}" class="{{ request()->is('my-employees') ? 'menu-active' : '' }}">
+                    {{ __('messages.employees') }}
+                </a>
+            </li>
         @endif
 
         {{-- Client Registration --}}
         <li>
             <a href="{{ request()->is('my-profile')
-                        ? 'javascript:void(0);'
-                        : url('my-profile') . '?registration=true' }}"
-                id="clientRegistrationBtn"
+    ? 'javascript:void(0);'
+    : url('my-profile') . '?registration=true' }}" id="clientRegistrationBtn"
                 class="{{ request()->has('registration') ? 'menu-active' : '' }}">
                 Client Registration
             </a>
@@ -36,39 +34,45 @@
 
         {{-- Client List --}}
         @if(Auth::user()->role == 4 || Auth::user()->role == 3)
-        <li>
-            <a href="{{ url('client-list') }}"
-                class="{{ request()->is('client-list') ? 'menu-active' : '' }}">
-                Client List
-            </a>
-        </li>
+            <li>
+                <a href="{{ url('client-list') }}" class="{{ request()->is('client-list') ? 'menu-active' : '' }}">
+                    Client List
+                </a>
+            </li>
         @endif
 
         {{-- Visit Schedule --}}
         @if(Auth::user()->role == 3)
-        <li>
-            <a href="{{ url('visit-schedule') }}"
-                class="{{ request()->is('visit-schedule') ? 'menu-active' : '' }}">
-                {{ __('messages.my_visit_schedule') }}
-            </a>
-        </li>
+            <li>
+                <a href="{{ url('visit-schedule') }}" class="{{ request()->is('visit-schedule') ? 'menu-active' : '' }}">
+                    {{ __('messages.my_visit_schedule') }}
+                </a>
+            </li>
         @endif
 
         {{-- Reservations --}}
         <li>
-            <a href="{{ url('my-reservations') }}"
-                class="{{ request()->is('my-reservations') ? 'menu-active' : '' }}">
+            <a href="{{ url('my-reservations') }}" class="{{ request()->is('my-reservations') ? 'menu-active' : '' }}">
                 {{ __('messages.my_reservations') }}
             </a>
         </li>
 
         {{-- Favorite --}}
         <li>
-            <a href="{{ url('favorite') }}"
-                class="{{ request()->is('favorite') ? 'menu-active' : '' }}">
+            <a href="{{ url('favorite') }}" class="{{ request()->is('favorite') ? 'menu-active' : '' }}">
                 {{ __('messages.my_favorite') }}
             </a>
         </li>
+
+        {{-- Sales Toolkit --}}
+        @if(Auth::user()->role == 4 || Auth::user()->role == 3)
+            <li>
+                <a href="{{ route('frontend.sales_toolkit.index') }}"
+                    class="{{ request()->is('my-profile/sales-toolkit') ? 'menu-active' : '' }}">
+                    Sales Toolkit
+                </a>
+            </li>
+        @endif
     </ul>
 
     <a href="{{ url('user/logout') }}" class="hum_log-out_btn">

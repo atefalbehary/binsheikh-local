@@ -107,6 +107,7 @@ Route::
             Route::get('logout', 'LoginController@logout')->name('logout');
 
             Route::get('dashboard', 'DashboardController@dashboard')->name('dashboard');
+            Route::get('mobile-app', 'MobileAppController@index')->name('mobile_app.index');
 
             Route::get('bookings', 'DashboardController@bookings')->name('bookings');
 
@@ -370,6 +371,11 @@ Route::
             Route::get('seo/404', 'SeoController@monitor404')->name('seo_404');
             Route::post('seo/generate-sitemap', 'SeoController@generateSitemap')->name('seo_generate_sitemap');
 
+            // Sales Toolkit Routes (Super Admin)
+            Route::get("sales-toolkit", "SalesToolkitController@index")->name('sales_toolkit.index');
+            Route::post("sales-toolkit", "SalesToolkitController@store")->name('sales_toolkit.store');
+            Route::delete("sales-toolkit/delete/{id}", "SalesToolkitController@destroy")->name('sales_toolkit.destroy');
+
         });
 
 Route::any('/check_sms', 'App\Http\Controllers\front\HomeController@check_sms')
@@ -409,6 +415,9 @@ Route::middleware('user')->group(function () {
     Route::get('/checkout/{property}', 'App\Http\Controllers\front\HomeController@checkout');
 
     Route::get('/specific-checkout/{property}', 'App\Http\Controllers\front\HomeController@specific_checkout');
+
+    Route::get('my-profile/sales-toolkit', 'App\Http\Controllers\front\SalesToolkitController@index')->name('frontend.sales_toolkit.index');
+    Route::get('my-profile/sales-toolkit/download/{id}', 'App\Http\Controllers\front\SalesToolkitController@download')->name('frontend.sales_toolkit.download');
 
     Route::get('user/logout', 'App\Http\Controllers\front\HomeController@logout')->name('frontend.logout');
 

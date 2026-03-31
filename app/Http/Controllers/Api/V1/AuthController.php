@@ -3,11 +3,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\MobileUser;
 use Carbon\Carbon;
 // use Kreait\Firebase\Database;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Kreait\Firebase\Contract\Database;
 use Validator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
@@ -15,9 +15,8 @@ use Illuminate\Support\Str;
 class AuthController extends Controller
 {
     public $lang = '';
-    public function __construct(Database $database, Request $request)
+    public function __construct(Request $request)
     {
-        $this->database = $database;
     }
     public function login(Request $request)
     {
@@ -44,39 +43,32 @@ class AuthController extends Controller
 
         }
         $lemail = strtolower($request->email);
-        if (Auth::attempt(['email' => $lemail, 'password' => $request->password, 'deleted' => 0])) {
-            if (Auth::user()->role == 1) {
-                $authUser = Auth::user();
-                $authUser->tokens()->delete();
-                return response()->json([
-                    'message' => __('messages.invalid_credentials'),
-                ], 401);
-            }
+        if (Auth::guard('mobile')->attempt(['email' => $lemail, 'password' => $request->password, 'deleted' => 0])) {
 
-            if (!Auth::user()->active) {
+            if (!Auth::guard('mobile')->user()->active) {
                 return response()->json([
                     'message' => __('messages.account_deactivated_by_admin'),
                 ], 401);
             }
-            if (!Auth::user()->verified) {
+            if (!Auth::guard('mobile')->user()->verified) {
                 return response()->json(['message' => __('messages.account_need_approve_from_admin')], 401);
             }
-            $user = User::find(auth()->user()->id);
+            $user = MobileUser::find(Auth::guard('mobile')->user()->id);
             $user->user_device_token = $request->fcm_token;
             $user->user_device_type = $request->device_type;
             $user->social_type = '';
             $user->save();
             $data = [
-                    'email' => $user->email,
-                    'user_type' => $user->role,
-                    'name' => $user->name,
-                    'id' => $user->id,
-                    'phone' => $user->phone,
-                    'image' => $user->image ? aws_asset_path($user->image) : asset('').'front-assets/images/avatar/profile-icon.png',
-                    'token' => $user->createToken('binalsheikh')->plainTextToken,
+                'email' => $user->email,
+                'user_type' => $user->role,
+                'name' => $user->name,
+                'id' => $user->id,
+                'phone' => $user->phone,
+                'image' => $user->image ? aws_asset_path($user->image) : asset('') . 'front-assets/images/avatar/profile-icon.png',
+                'token' => $user->createToken('binalsheikh')->plainTextToken,
             ];
             return response()->json([
-                'message' =>  __('messages.logged_in_successfully'),
+                'message' => __('messages.logged_in_successfully'),
                 'data' => convert_all_elements_to_string($data),
             ], 200);
 
@@ -110,21 +102,19 @@ class AuthController extends Controller
                 'error' => $errors,
             ], 403);
         }
-        if ($user = User::where('email', $request->email)->where("deleted", 0)->where(function ($query) {
-            $query->where('role','!=',1);
-        })->first()) {
+        if ($user = MobileUser::where('email', $request->email)->where("deleted", 0)->first()) {
             $user->user_device_token = $request->fcm_token;
             $user->user_device_type = $request->device_type;
             $user->social_type = $request->social_type;
             $user->active = 1;
             $user->save();
         } else {
-            $user = new User([
+            $user = new MobileUser([
                 'name' => $request->name,
                 'email' => $request->email,
                 'social_type' => $request->social_type,
-                'user_device_type' => $request->device_type,
-                'user_device_token' => $request->fcm_token,
+                'user_device_type' => $request->device_type ?? 'web',
+                'user_device_token' => $request->fcm_token ?? '',
                 'password' => bcrypt(uniqid()),
                 'role' => 2,
                 'active' => 1,
@@ -138,11 +128,11 @@ class AuthController extends Controller
             'name' => $user->name,
             'id' => $user->id,
             'phone' => $user->phone,
-            'image' => $user->image ? aws_asset_path($user->image) : asset('').'front-assets/images/avatar/profile-icon.png',
+            'image' => $user->image ? aws_asset_path($user->image) : asset('') . 'front-assets/images/avatar/profile-icon.png',
             'token' => $user->createToken('binalsheikh')->plainTextToken,
         ];
         return response()->json([
-            'message' =>  __('messages.logged_in_successfully'),
+            'message' => __('messages.logged_in_successfully'),
             'data' => convert_all_elements_to_string($data),
         ], 200);
 
@@ -178,26 +168,26 @@ class AuthController extends Controller
         }
         $phone = $request->phone;
         $phone = ltrim($phone, '+');
-        $user = User::whereRaw("REPLACE(phone, '+', '') = ?", [$phone])->first();
-        if($user){
-            $otp = rand(100000,999999);
+        $user = MobileUser::whereRaw("REPLACE(phone, '+', '') = ?", [$phone])->first();
+        if ($user) {
+            $otp = rand(100000, 999999);
             $otp_token = Str::random(60);
             $user->otp = $otp;
             $user->otp_token = $otp_token;
             $user->otp_time = gmdate('Y-m-d H:i:s');
             $user->save();
             $mailbody = View::make('front_end.otp_mail', compact('otp'))->render();
-            if(send_email($user->email,'Your OTP Code - Bin Al Sheikh',$mailbody)){
+            if (send_email($user->email, 'Your OTP Code - Bin Al Sheikh', $mailbody)) {
                 return response()->json([
-                    'message' =>  __('messages.otp_sent_to_mail_and_phone'),
-                    'otp_token'=>$otp_token,
+                    'message' => __('messages.otp_sent_to_mail_and_phone'),
+                    'otp_token' => $otp_token,
                 ], 200);
-            }else{
+            } else {
                 return response()->json([
                     'message' => __('messages.something_went_wrong_try_again'),
                 ], 401);
             }
-        }else{
+        } else {
             return response()->json([
                 'message' => __('messages.no_matching_user_found'),
             ], 401);
@@ -225,8 +215,8 @@ class AuthController extends Controller
         }
         $otp = $request->otp;
         $otp_token = $request->otp_token;
-        $user = User::where("otp_token",$otp_token)->where('otp',$otp)->first();
-        if($user){
+        $user = MobileUser::where("otp_token", $otp_token)->where('otp', $otp)->first();
+        if ($user) {
             $user->otp_token = '';
             $user->save();
             $data = [
@@ -235,14 +225,14 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'id' => $user->id,
                 'phone' => $user->phone,
-                'image' => $user->image ? aws_asset_path($user->image) : asset('').'front-assets/images/avatar/profile-icon.png',
+                'image' => $user->image ? aws_asset_path($user->image) : asset('') . 'front-assets/images/avatar/profile-icon.png',
                 'token' => $user->createToken('binalsheikh')->plainTextToken,
             ];
             return response()->json([
-                'message' =>  __('messages.logged_in_successfully'),
+                'message' => __('messages.logged_in_successfully'),
                 'data' => convert_all_elements_to_string($data),
             ], 200);
-        }else{
+        } else {
             return response()->json([
                 'message' => __('messages.invalid_otp'),
             ], 401);
@@ -259,7 +249,7 @@ class AuthController extends Controller
             'password' => 'required',
             'fcm_token' => 'required',
             'phone' => 'required',
-            'user_type'=>'required'
+            'user_type' => 'required'
         ];
         $messages = [
             'phone.required' => __('messages.phone_required'),
@@ -282,13 +272,13 @@ class AuthController extends Controller
 
         $lemail = strtolower($request->email);
 
-        if (User::where('email', $lemail)->first() != null) {
+        if (MobileUser::where('email', $lemail)->first() != null) {
             return response()->json([
-                'message' => $request->email . " ".__('messages.already_added'),
+                'message' => $request->email . " " . __('messages.already_added'),
             ], 401);
         }
 
-        $ins =[
+        $ins = [
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
@@ -336,37 +326,38 @@ class AuthController extends Controller
                 }
             }
         }
-        if($request->user_type == 2)
-        {
+        if ($request->user_type == 2) {
             $ins['verified'] = 1;
         }
-        if ($user = User::create($ins)) {
-            if($request->user_type == 2)
-            {
-                $data = [
-                    'email' => $user->email,
-                    'name' => $user->name,
-                    'phone' => $user->phone,
-                    'id' => $user->id,
-                    'image' => asset('').'front-assets/images/avatar/profile-icon.png',
-                    'token' => $user->createToken('binalsheikh')->plainTextToken,
-                ];
+        try {
+            if ($user = MobileUser::create($ins)) {
+                if ($request->user_type == 2) {
+                    $data = [
+                        'email' => $user->email,
+                        'name' => $user->name,
+                        'phone' => $user->phone,
+                        'id' => $user->id,
+                        'image' => asset('') . 'front-assets/images/avatar/profile-icon.png',
+                        'token' => $user->createToken('binalsheikh')->plainTextToken,
+                    ];
+                    return response()->json([
+                        'message' => __('messages.registration_completed_without_verification'),
+                        'data' => convert_all_elements_to_string($data),
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'message' => __('messages.registration_completed'),
+                    ], 200);
+                }
+            } else {
                 return response()->json([
-                    'message' => __('messages.registration_completed_without_verification'),
-                    'data' => convert_all_elements_to_string($data),
-                ], 200);
+                    'message' => __('messages.something_went_wrong'),
+                ], 401);
             }
-            else
-            {
-                return response()->json([
-                    'message' => __('messages.registration_completed'),
-                ], 200);
-            }
-
-        } else {
+        } catch (\Exception $e) {
             return response()->json([
-                'message' => __('messages.something_went_wrong'),
-            ], 401);
+                'message' => 'Exception: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -396,26 +387,26 @@ class AuthController extends Controller
 
         }
         $lemail = strtolower($request->email);
-        $user = User::where('email', $lemail)->first();
-        if($user){
-            $otp = rand(100000,999999);
+        $user = MobileUser::where('email', $lemail)->first();
+        if ($user) {
+            $otp = rand(100000, 999999);
             $password_token = Str::random(60);
             $user->password_otp = $otp;
             $user->password_token = $password_token;
             $user->password_time = gmdate('Y-m-d H:i:s');
             $user->save();
             $mailbody = View::make('front_end.pswd_otp_mail', compact('otp'))->render();
-            if(send_email($user->email,'Your OTP Code - Bin Al Sheikh',$mailbody)){
+            if (send_email($user->email, 'Your OTP Code - Bin Al Sheikh', $mailbody)) {
                 return response()->json([
-                    'message' =>  __('messages.otp_sent_to_mail_and_phone'),
-                    'otp_token'=>$password_token,
+                    'message' => __('messages.otp_sent_to_mail_and_phone'),
+                    'otp_token' => $password_token,
                 ], 200);
-            }else{
+            } else {
                 return response()->json([
                     'message' => __('messages.something_went_wrong_try_again'),
                 ], 401);
             }
-        }else{
+        } else {
             return response()->json([
                 'message' => __('messages.no_matching_user_found'),
             ], 401);
@@ -447,17 +438,17 @@ class AuthController extends Controller
         }
         $password_otp = $request->otp;
         $password_token = $request->otp_token;
-        $user = User::where("password_token",$password_token)->where('password_otp',$password_otp)->first();
-        if($user){
+        $user = MobileUser::where("password_token", $password_token)->where('password_otp', $password_otp)->first();
+        if ($user) {
             $user->password = bcrypt($request->password);
             $user->updated_at = gmdate('Y-m-d H:i:s');
             $user->password_token = '';
             $user->save();
             return response()->json([
-                'message' =>  __('messages.password_updated'),
+                'message' => __('messages.password_updated'),
                 'data' => [],
             ], 200);
-        }else{
+        } else {
             return response()->json([
                 'message' => __('messages.invalid_otp'),
             ], 401);
@@ -488,7 +479,7 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-        
+
         // Verify old password
         if (!password_verify($request->old_password, $user->password)) {
             return response()->json([

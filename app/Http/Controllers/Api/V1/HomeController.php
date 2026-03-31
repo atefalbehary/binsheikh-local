@@ -31,8 +31,8 @@ class HomeController extends Controller
     }
     public function projects(Request $request)
     {
-        $projects = Projects::select('id', 'name', 'name_ar', 'image','location','location_ar','app_image')->where(['active' => '1', 'deleted' => 0]);
-        if($request->country_id){
+        $projects = Projects::select('id', 'name', 'name_ar', 'image', 'location', 'location_ar', 'app_image')->where(['active' => '1', 'deleted' => 0]);
+        if ($request->country_id) {
             $projects = $projects->where('country', $request->country_id);
         }
         $projects = $projects->orderBy('created_at', 'desc')->get();
@@ -44,9 +44,9 @@ class HomeController extends Controller
                 'deleted' => 0
             ])->count();
 
-            $projects[$key]->name  = $val->name;
-            $projects[$key]->location  = $val->location;
-            $projects[$key]->image = $val->app_image ? aws_asset_path($val->app_image) : ($val->image ?aws_asset_path($val->image) : '');
+            $projects[$key]->name = $val->name;
+            $projects[$key]->location = $val->location;
+            $projects[$key]->image = $val->app_image ? aws_asset_path($val->app_image) : ($val->image ? aws_asset_path($val->image) : '');
             $projects[$key]->apartment_count = $apartment_count;
             // $projects[$key]->image = $val->image ? aws_asset_path($val->image) : "";
             unset($projects[$key]->name_ar);
@@ -59,20 +59,20 @@ class HomeController extends Controller
     public function project_details(Request $request)
     {
         $project = Projects::with(['images'])->where(['id' => $request->id, 'active' => '1', 'deleted' => 0])->first();
-        $data    = [];
+        $data = [];
         if ($project) {
-            $data['name']        = $project->name;
-            $data['location']    = $project->location;
+            $data['name'] = $project->name;
+            $data['location'] = $project->location;
             $data['description'] = $project->description;
-            $data['link_360']    = $project->link_360;
-            $data['image']           = $project->app_image ? aws_asset_path($project->app_image) : ($project->image ?aws_asset_path($project->image) : '');
-            $data['banner']          = $project->banner ? aws_asset_path($project->banner) : "";
-            $data['video']           = $project->video ? aws_asset_path($project->video) : "";
+            $data['link_360'] = $project->link_360;
+            $data['image'] = $project->app_image ? aws_asset_path($project->app_image) : ($project->image ? aws_asset_path($project->image) : '');
+            $data['banner'] = $project->banner ? aws_asset_path($project->banner) : "";
+            $data['video'] = $project->video ? aws_asset_path($project->video) : "";
             $data['video_thumbnail'] = $project->video_thumbnail ? aws_asset_path($project->video_thumbnail) : "";
-            $data['images'] = $project->images->map(function($imgs) {
+            $data['images'] = $project->images->map(function ($imgs) {
                 return [
                     'image' => $imgs->image ? aws_asset_path($imgs->image) : "",
-                    'type'  => $imgs->type,
+                    'type' => $imgs->type,
                 ];
             });
 
@@ -105,8 +105,8 @@ class HomeController extends Controller
                 }
             }
 
-            if ($similar){
-              $suggested_apartments = $similar->map(function($property) {
+            if ($similar) {
+                $suggested_apartments = $similar->map(function ($property) {
                     return [
                         'id' => $property->id,
                         'name' => $property->name,
@@ -118,9 +118,7 @@ class HomeController extends Controller
                     ];
                 });
                 $data['suggested_apartments'] = $suggested_apartments;
-            }
-            else
-            {
+            } else {
                 $data['suggested_apartments'] = [];
             }
         }
@@ -141,19 +139,19 @@ class HomeController extends Controller
         $sort = $request->sort ?? 'latest';
         $floor = $request->floor;
 
-        $limit = isset($request->limit) ? (int)$request->limit : 10;
-        $page = isset($request->page) ? (int)$request->page : 1;
+        $limit = isset($request->limit) ? (int) $request->limit : 10;
+        $page = isset($request->page) ? (int) $request->page : 1;
         $offset = ($page - 1) * $limit;
 
-        $properties = Properties::select('properties.*')->with(['property_type', 'images'])->where(['properties.active' => '1', 'properties.deleted' => 0])->leftjoin('projects','projects.id','properties.project_id');
+        $properties = Properties::select('properties.*')->with(['property_type', 'images'])->where(['properties.active' => '1', 'properties.deleted' => 0])->leftjoin('projects', 'projects.id', 'properties.project_id');
 
-        if ($sort =="featured") {
+        if ($sort == "featured") {
             $properties = $properties->orderBy('properties.is_featured', 'desc')->orderBy('properties.order', 'asc');
         }
-//        if ($sort =="latest") {
+        //        if ($sort =="latest") {
 //            $properties = $properties->orderBy('properties.created_at', 'desc');
 //        }
-        if ($sort =="latest") {
+        if ($sort == "latest") {
             $properties = $properties->orderBy('properties.order', 'asc');
         }
         if ($sort == "price_low_to_high") {
@@ -220,31 +218,31 @@ class HomeController extends Controller
         $properties = $properties->limit($limit)->skip($offset)->get();
         $totalPages = ceil($totalProperties / $limit);
         $hasNextPage = $page < $totalPages;
-        $data    = [];
+        $data = [];
         foreach ($properties as $key => $val) {
 
-            $data[$key]['id']  = $val->id;
-            $data[$key]['name']  = $val->name;
-            $data[$key]['price']  = moneyFormat($val->price);
-            $data[$key]['bedrooms']  = $val->bedrooms;
-            $data[$key]['bathrooms']  = $val->bathrooms;
-            $data[$key]['location']  = $val->location;
-            $data[$key]['location_link']  = $val->location_link;
-            $data[$key]['unit_number']  = $val->apartment_no;
-            $data[$key]['floor_number']  = $val->floor_no;
-            $data[$key]['is_featured']  = $val->is_featured;
-            $data[$key]['image']  = $val->images->first() ? aws_asset_path($val->images->first()->image) : '';
-            $data[$key]['area']  = $val->area.'m2';
-            $data[$key]['property_type']  = $val->property_type->name;
+            $data[$key]['id'] = $val->id;
+            $data[$key]['name'] = $val->name;
+            $data[$key]['price'] = moneyFormat($val->price);
+            $data[$key]['bedrooms'] = $val->bedrooms;
+            $data[$key]['bathrooms'] = $val->bathrooms;
+            $data[$key]['location'] = $val->location;
+            $data[$key]['location_link'] = $val->location_link;
+            $data[$key]['unit_number'] = $val->apartment_no;
+            $data[$key]['floor_number'] = $val->floor_no;
+            $data[$key]['is_featured'] = $val->is_featured;
+            $data[$key]['image'] = $val->images->first() ? aws_asset_path($val->images->first()->image) : '';
+            $data[$key]['area'] = $val->area . 'm2';
+            $data[$key]['property_type'] = $val->property_type->name;
 
-            if($val->sale_type == 1 || $val->sale_type == 3){
-                $data[$key]['sale_type']  = __('messages.buy');
+            if ($val->sale_type == 1 || $val->sale_type == 3) {
+                $data[$key]['sale_type'] = __('messages.buy');
             }
-            if($val->sale_type == 2 || $val->sale_type == 3){
-                $data[$key]['sale_type']  = __('messages.rent');
+            if ($val->sale_type == 2 || $val->sale_type == 3) {
+                $data[$key]['sale_type'] = __('messages.rent');
             }
             $data[$key]['is_fav'] = 0;
-            if(Auth::guard('sanctum')->user() && Auth::guard('sanctum')->user()->id){
+            if (Auth::guard('sanctum')->user() && Auth::guard('sanctum')->user()->id) {
                 if (FavouriteProperty::where(['user_id' => Auth::guard('sanctum')->user()->id, 'property_id' => $val->id])->first()) {
                     $data[$key]['is_fav'] = 1;
                 }
@@ -263,51 +261,51 @@ class HomeController extends Controller
     public function property_details(Request $request)
     {
         $property = Properties::with(['property_type', 'images', 'amenities'])->where(['id' => $request->id, 'active' => '1', 'deleted' => 0])->first();
-        $data    = [];
+        $data = [];
         if ($property) {
 
-            $data['id']  = $property->id;
-            $data['name']  = $property->name;
-            $data['price']  = moneyFormat($property->price);
-            $data['bedrooms']  = $property->bedrooms;
-            $data['bathrooms']  = $property->bathrooms;
-            $data['floor_number']  = $property->floor_no;
-            $data['is_featured']  = $property->is_featured;
+            $data['id'] = $property->id;
+            $data['name'] = $property->name;
+            $data['price'] = moneyFormat($property->price);
+            $data['bedrooms'] = $property->bedrooms;
+            $data['bathrooms'] = $property->bathrooms;
+            $data['floor_number'] = $property->floor_no;
+            $data['is_featured'] = $property->is_featured;
 
-            $data['gross_area']  = $property->gross_area ? $property->gross_area.'m2' : '';
-            $data['net_area']  = $property->area.'m2';
-            $data['balcony_size']  = $property->balcony_size;
+            $data['gross_area'] = $property->gross_area ? $property->gross_area . 'm2' : '';
+            $data['net_area'] = $property->area . 'm2';
+            $data['balcony_size'] = $property->balcony_size;
 
-            $data['description']  = $property->description;
-            $data['short_description']  = $property->short_description;
-            $data['video_link']  = $property->video_link;
-            $data['link_360']  = $property->link_360;
-            $data['unit_layout']  = $property->unit_layout;
-            $data['floor_plan']  = $property->floor_plan ? aws_asset_path($property->floor_plan) : '';
+            $data['description'] = $property->description;
+            $data['short_description'] = $property->short_description;
+            $data['video_link'] = $property->video_link;
+            $data['link_360'] = $property->link_360;
+            $data['unit_layout'] = $property->unit_layout;
+            $data['floor_plan'] = $property->floor_plan ? aws_asset_path($property->floor_plan) : '';
 
-            $data['location']  = $property->location;
-            $data['location_link']  = $property->location_link;
+            $data['location'] = $property->location;
+            $data['location_link'] = $property->location_link;
             $data['image'] = $property->images->first() ? aws_asset_path($property->images->first()->image) : '';
-            $data['area']  = $property->area.'m2';
-            $data['property_type']  = $property->property_type->name;
+            $data['area'] = $property->area . 'm2';
+            $data['property_type'] = $property->property_type->name;
             $data['images'] = $property->images->pluck('image')->map(fn($image) => aws_asset_path($image))->toArray();
 
-            if($property->sale_type == 1 || $property->sale_type == 3){
-                $data['sale_type']  = __('messages.buy');
+            if ($property->sale_type == 1 || $property->sale_type == 3) {
+                $data['sale_type'] = __('messages.buy');
             }
-            if($property->sale_type == 2 || $property->sale_type == 3){
-                $data['sale_type']  = __('messages.rent');
+            if ($property->sale_type == 2 || $property->sale_type == 3) {
+                $data['sale_type'] = __('messages.rent');
             }
-            $data['amenities'] = $property->amenities->map(function($amt) {
+            $data['amenities'] = $property->amenities->map(function ($amt) {
                 return [
                     'name' => $amt->amnety->name,
                     'icon' => $amt->amnety->icon,
-                    'icon_image' => $amt->amnety->icon_image ?  aws_asset_path($amt->amnety->icon_image) : '',
+                    'icon_image' => $amt->amnety->icon_image ? aws_asset_path($amt->amnety->icon_image) : '',
                 ];
             });
             $data['is_fav'] = 0;
 
-            if(Auth::guard('sanctum')->user() && Auth::guard('sanctum')->user()->id){
+            if (Auth::guard('sanctum')->user() && Auth::guard('sanctum')->user()->id) {
                 if (FavouriteProperty::where(['user_id' => Auth::guard('sanctum')->user()->id, 'property_id' => $property->id])->first()) {
                     $data['is_fav'] = 1;
                 }
@@ -317,34 +315,35 @@ class HomeController extends Controller
             $ser_amt = ($settings->service_charge_perc / 100) * $property->price;
             $total = $property->price + $ser_amt;
 
-            $data['unit_number']  = $property->apartment_no;
-            $data['management_fees']  = moneyFormat($ser_amt);
-            $data['total']  = moneyFormat($total);
+            $data['unit_number'] = $property->apartment_no;
+            $data['management_fees'] = moneyFormat($ser_amt);
+            $data['total'] = moneyFormat($total);
 
-            $data['price_plain']  = $property->price;
-            $data['management_fees_plain']  = $ser_amt;
-            $data['total_plain']  = $total;
+            $data['price_plain'] = $property->price;
+            $data['management_fees_plain'] = $ser_amt;
+            $data['total_plain'] = $total;
 
 
 
 
             $cur_month = Carbon::now();
             $cur_month->startOfMonth();
-            if(isset($property->project->end_date) && $property->project->end_date){
-                $targetDate = Carbon::createFromFormat('Y-m', $property->project->end_date)->endOfMonth();;
+            if (isset($property->project->end_date) && $property->project->end_date) {
+                $targetDate = Carbon::createFromFormat('Y-m', $property->project->end_date)->endOfMonth();
+                ;
                 $monthsDifference = $cur_month->diffInMonths($targetDate);
-            }else{
+            } else {
                 $monthsDifference = $settings->month_count;
             }
             $data['available_months'] = $monthsDifference;
 
-            if($property->sale_type == 1){
+            if ($property->sale_type == 1) {
                 $ser_amt = ($settings->service_charge_perc / 100) * $property->price;
                 $total = $property->price + $ser_amt;
                 $full_price_calc = $property->price;
                 $down_payment = ($settings->advance_perc / 100) * $full_price_calc;
                 $pending_amt = $full_price_calc - $down_payment;
-                $data['down_payment_plain']  = $down_payment;
+                $data['down_payment_plain'] = $down_payment;
 
                 $payableEmiAmount = $pending_amt;
                 $monthCount = $monthsDifference;//$settings->month_count;
@@ -357,7 +356,7 @@ class HomeController extends Controller
                 $months[0]['month'] = date('M-y');
                 $months[0]['type'] = __('messages.down_payment');
                 $months[0]['payment'] = moneyFormat($down_payment);
-                $months[0]['total_percentage'] = $settings->advance_perc.'%';
+                $months[0]['total_percentage'] = $settings->advance_perc . '%';
                 $months[1]['month'] = date('M-y');
                 $months[1]['type'] = __('messages.management_fees');
                 $months[1]['payment'] = moneyFormat($ser_amt);
@@ -366,13 +365,13 @@ class HomeController extends Controller
                     $remainingAmount -= $monthlyPayment;
                     $totalPercentage += $percentageRate;
                     $month = $cur_month->addMonth()->format('M-y');
-                    $months[$i+2]['month'] = $month;
-                    $months[$i+2]['type'] = $this->getOrdinalSuffix($i + 1). ' '.__('messages.installment');
-                    $months[$i+2]['payment'] = moneyFormat($monthlyPayment);
-                    $months[$i+2]['total_percentage'] = round($totalPercentage, 2).'%';
+                    $months[$i + 2]['month'] = $month;
+                    $months[$i + 2]['type'] = $this->getOrdinalSuffix($i + 1) . ' ' . __('messages.installment');
+                    $months[$i + 2]['payment'] = moneyFormat($monthlyPayment);
+                    $months[$i + 2]['total_percentage'] = round($totalPercentage, 2) . '%';
                 }
                 $data['payment_plan'] = $months;
-            }else{
+            } else {
                 $data['payment_plan'] = [];
             }
 
@@ -387,15 +386,19 @@ class HomeController extends Controller
         }
 
         switch ($number % 10) {
-            case 1:return $number . 'st';
-            case 2:return $number . 'nd';
-            case 3:return $number . 'rd';
-            default:return $number . 'th';
+            case 1:
+                return $number . 'st';
+            case 2:
+                return $number . 'nd';
+            case 3:
+                return $number . 'rd';
+            default:
+                return $number . 'th';
         }
     }
     public function my_profile()
     {
-        $user = Auth::user();
+        $user = Auth::guard('sanctum')->user();
         $data['name'] = $user->name;
         $data['user_type'] = $user->role;
         $data['phone'] = $user->phone;
@@ -411,7 +414,7 @@ class HomeController extends Controller
         $data['postal_code'] = $user->postal_code;
         $data['country_id'] = $user->country_id;
         $data['country_name'] = $user->country->name ?? '';
-        $data['image'] = $user->image ? aws_asset_path($user->image) : asset('').'front-assets/images/avatar/profile-icon.png';
+        $data['image'] = $user->image ? aws_asset_path($user->image) : asset('') . 'front-assets/images/avatar/profile-icon.png';
 
         // Add agency information for agents (role 3)
         if ($user->role == 3 && $user->agency_id) {
@@ -427,8 +430,8 @@ class HomeController extends Controller
     }
     public function countries()
     {
-        $countries = Country::orderBy('name', 'asc')->select('name','name_ar', 'code_iso')->get();
-        $data = $countries->map(function($country) {
+        $countries = Country::orderBy('name', 'asc')->select('name', 'name_ar', 'code_iso')->get();
+        $data = $countries->map(function ($country) {
             return [
                 'name' => $country->name,
                 'id' => $country->code_iso,
@@ -443,17 +446,17 @@ class HomeController extends Controller
 
     public function update_profile(Request $request)
     {
-        $user_id = Auth::user()->id;
-        $user_type = Auth::user()->role;
+        $user_id = Auth::guard('sanctum')->user()->id;
+        $user_type = Auth::guard('sanctum')->user()->role;
         $rules = [
             'name' => 'required',
             'email' => 'required|email',
             'phone' => 'required',
             'address' => 'required',
             'city' => 'required',
-            'state'=>'required',
-            'postal_code'=>'required',
-            'country_id'=>'required',
+            'state' => 'required',
+            'postal_code' => 'required',
+            'country_id' => 'required',
         ];
         $messages = [
             'phone.required' => __('messages.phone_required'),
@@ -476,9 +479,9 @@ class HomeController extends Controller
             ], 403);
         }
 
-        if (User::where('email', $request->email)->where('id', '!=', $user_id)->first() != null) {
+        if (\App\Models\MobileUser::where('email', $request->email)->where('id', '!=', $user_id)->first() != null) {
             return response()->json([
-                'message' => $request->email . " ".__('messages.already_added'),
+                'message' => $request->email . " " . __('messages.already_added'),
             ], 401);
         }
 
@@ -536,7 +539,7 @@ class HomeController extends Controller
             $ins['password'] = bcrypt($request->password);
         }
 
-        if (User::where('id', $user_id)->update($ins)) {
+        if (\App\Models\MobileUser::where('id', $user_id)->update($ins)) {
             return response()->json([
                 'message' => __('messages.successfully_updated'),
                 'data' => convert_all_elements_to_string([]),
@@ -551,7 +554,7 @@ class HomeController extends Controller
     }
     public function fav_unfav_property(Request $request)
     {
-        if ($fav = FavouriteProperty::where(['user_id' => Auth::user()->id, 'property_id' => $request->prop_id])->first()) {
+        if ($fav = FavouriteProperty::where(['user_id' => Auth::guard('sanctum')->user()->id, 'property_id' => $request->prop_id])->first()) {
             $fav->delete();
             return response()->json([
                 'message' => __('messages.removed_from_favourites'),
@@ -559,7 +562,7 @@ class HomeController extends Controller
                 'data' => convert_all_elements_to_string([]),
             ], 200);
         } else {
-            $ins['user_id'] = Auth::user()->id;
+            $ins['user_id'] = Auth::guard('sanctum')->user()->id;
             $ins['property_id'] = $request->prop_id;
             $ins['created_at'] = gmdate('Y-m-d H:i:s');
             FavouriteProperty::create($ins);
@@ -572,8 +575,8 @@ class HomeController extends Controller
     }
     public function favorite()
     {
-        $properties = Properties::select('properties.*')->where(['properties.active' => '1', 'properties.deleted' => 0, 'favourite_properties.user_id' => Auth::user()->id])->rightjoin('favourite_properties', 'favourite_properties.property_id', 'properties.id')->orderBy('favourite_properties.created_at', 'desc')->get();
-        $data = $properties->map(function($val) {
+        $properties = Properties::select('properties.*')->where(['properties.active' => '1', 'properties.deleted' => 0, 'favourite_properties.user_id' => Auth::guard('sanctum')->user()->id])->rightjoin('favourite_properties', 'favourite_properties.property_id', 'properties.id')->orderBy('favourite_properties.created_at', 'desc')->get();
+        $data = $properties->map(function ($val) {
             return [
                 'name' => $val->name,
                 'id' => $val->id,
@@ -589,57 +592,58 @@ class HomeController extends Controller
 
     public function my_bookings()
     {
-        $bookings = Properties::with('project')->select('properties.*','bookings.created_at as booking_date')->where(['bookings.user_id' => Auth::user()->id,'type'=>'Down Payment'])->rightjoin('bookings', 'bookings.property_id', 'properties.id')->orderBy('bookings.created_at', 'desc')->get();
+        $bookings = Properties::with('project')->select('properties.*', 'bookings.created_at as booking_date')->where(['bookings.user_id' => Auth::guard('sanctum')->user()->id, 'type' => 'Down Payment'])->rightjoin('bookings', 'bookings.property_id', 'properties.id')->orderBy('bookings.created_at', 'desc')->get();
         $settings = Settings::find(1);
         $cur_month = Carbon::now();
         $cur_month->startOfMonth();
         $data = [];
-        foreach($bookings as $key=>$val){
+        foreach ($bookings as $key => $val) {
             $ser_amt = ($settings->service_charge_perc / 100) * $val->price;
             $total = $val->price + $ser_amt;
 
-            $data[$key]['id']  = $val->id;
-            $data[$key]['name']  = $val->name;
-            $data[$key]['price']  = moneyFormat($val->price);
-            $data[$key]['floor_number']  = $val->floor_no;
-            $data[$key]['is_featured']  = $val->is_featured;
+            $data[$key]['id'] = $val->id;
+            $data[$key]['name'] = $val->name;
+            $data[$key]['price'] = moneyFormat($val->price);
+            $data[$key]['floor_number'] = $val->floor_no;
+            $data[$key]['is_featured'] = $val->is_featured;
 
-            $data[$key]['gross_area']  = $val->gross_area ? $val->gross_area.'m2' : '';
-            $data[$key]['net_area']  = $val->area.'m2';
-            $data[$key]['balcony_size']  = $val->balcony_size;
+            $data[$key]['gross_area'] = $val->gross_area ? $val->gross_area . 'm2' : '';
+            $data[$key]['net_area'] = $val->area . 'm2';
+            $data[$key]['balcony_size'] = $val->balcony_size;
 
-            $data[$key]['unit_layout']  = $val->unit_layout;
-            $data[$key]['floor_plan']  = $val->floor_plan ? aws_asset_path($val->floor_plan) : '';
+            $data[$key]['unit_layout'] = $val->unit_layout;
+            $data[$key]['floor_plan'] = $val->floor_plan ? aws_asset_path($val->floor_plan) : '';
 
             $data[$key]['image'] = $val->images->first() ? aws_asset_path($val->images->first()->image) : '';
-            $data[$key]['area']  = $val->area.'m2';
-            $data[$key]['property_type']  = $val->property_type->name;
+            $data[$key]['area'] = $val->area . 'm2';
+            $data[$key]['property_type'] = $val->property_type->name;
 
-            if($val->sale_type == 1 || $val->sale_type == 3){
-                $data[$key]['sale_type']  = __('messages.buy');
+            if ($val->sale_type == 1 || $val->sale_type == 3) {
+                $data[$key]['sale_type'] = __('messages.buy');
             }
-            if($val->sale_type == 2 || $val->sale_type == 3){
-                $data[$key]['sale_type']  = __('messages.rent');
+            if ($val->sale_type == 2 || $val->sale_type == 3) {
+                $data[$key]['sale_type'] = __('messages.rent');
             }
 
 
-            $data[$key]['unit_number']  = $val->apartment_no;
-            $data[$key]['management_fees']  = moneyFormat($ser_amt);
-            $data[$key]['total']  = moneyFormat($total);
+            $data[$key]['unit_number'] = $val->apartment_no;
+            $data[$key]['management_fees'] = moneyFormat($ser_amt);
+            $data[$key]['total'] = moneyFormat($total);
 
 
-            $paid_mount = Booking::where(['bookings.user_id' => Auth::user()->id,'property_id'=>$val->id])->sum('amount');
+            $paid_mount = Booking::where(['bookings.user_id' => Auth::guard('sanctum')->user()->id, 'property_id' => $val->id])->sum('amount');
 
             $data[$key]['paid_mount'] = moneyFormat($paid_mount);
-            $data[$key]['remaining_mount'] = moneyFormat($total-$paid_mount);
+            $data[$key]['remaining_mount'] = moneyFormat($total - $paid_mount);
 
             $down_payment = ($settings->advance_perc / 100) * $total;
             $pending_amt = $total - $down_payment;
-            if($val->sale_type == 1){
-                if(isset($val->project->end_date) && $val->project->end_date){
-                    $targetDate = Carbon::createFromFormat('Y-m', $val->project->end_date)->endOfMonth();;
+            if ($val->sale_type == 1) {
+                if (isset($val->project->end_date) && $val->project->end_date) {
+                    $targetDate = Carbon::createFromFormat('Y-m', $val->project->end_date)->endOfMonth();
+                    ;
                     $monthsDifference = $cur_month->diffInMonths($targetDate);
-                }else{
+                } else {
                     $monthsDifference = $settings->month_count;
                 }
 
@@ -655,18 +659,18 @@ class HomeController extends Controller
                 $months[0]['month'] = date('M-y');
                 $months[0]['type'] = __('messages.down_payment');
                 $months[0]['payment'] = moneyFormat($down_payment);
-                $months[0]['total_percentage'] = $settings->advance_perc.'%';
+                $months[0]['total_percentage'] = $settings->advance_perc . '%';
                 for ($i = 1; $i <= $monthCount; $i++) {
                     $remainingAmount -= $monthlyPayment;
                     $totalPercentage += $percentageRate;
                     $month = $cur_month->addMonth()->format('M-y');
                     $months[$i]['month'] = $month;
-                    $months[$i]['type'] = $this->getOrdinalSuffix($i + 1). ' '.__('messages.installment');
+                    $months[$i]['type'] = $this->getOrdinalSuffix($i + 1) . ' ' . __('messages.installment');
                     $months[$i]['payment'] = moneyFormat($monthlyPayment);
-                    $months[$i]['total_percentage'] = round($totalPercentage, 2).'%';
+                    $months[$i]['total_percentage'] = round($totalPercentage, 2) . '%';
                 }
                 $data[$key]['payment_plan'] = $months;
-            }else{
+            } else {
                 $data[$key]['payment_plan'] = [];
             }
 
@@ -677,8 +681,8 @@ class HomeController extends Controller
     }
     public function project_countries()
     {
-        $countries = ProjectCountry::select('id', 'name','name_ar')->where(['active' => '1', 'deleted' => 0])->orderBy('created_at', 'desc')->get();
-        $data = $countries->map(function($country) {
+        $countries = ProjectCountry::select('id', 'name', 'name_ar')->where(['active' => '1', 'deleted' => 0])->orderBy('created_at', 'desc')->get();
+        $data = $countries->map(function ($country) {
             return [
                 'name' => $country->name,
                 'id' => $country->id,
@@ -693,7 +697,7 @@ class HomeController extends Controller
     public function property_types()
     {
         $property_types = Categories::where(['deleted' => 0])->orderBy('name', 'asc')->get();
-        $data = $property_types->map(function($prop) {
+        $data = $property_types->map(function ($prop) {
             return [
                 'name' => $prop->name,
                 'id' => $prop->id,
@@ -749,19 +753,19 @@ class HomeController extends Controller
             ], 401);
         }
     }
-    public function book_now(Properties $property,Request $request)
+    public function book_now(Properties $property, Request $request)
     {
-        if($request->type=="book"){
+        if ($request->type == "book") {
             $property = Properties::find($request->prop_id);
             $with_management_fee = $request->with_management_fee;
             $settings = Settings::find(1);
 
             $ser_amt = ($settings->service_charge_perc / 100) * $property->price;
             $total = $property->price + $ser_amt;
-            if($with_management_fee){
-                $down_payment = (($settings->advance_perc+$settings->service_charge_perc) / 100) * $property->price;
-            }else{
-                $down_payment = ($settings->advance_perc/100) * $property->price;
+            if ($with_management_fee) {
+                $down_payment = (($settings->advance_perc + $settings->service_charge_perc) / 100) * $property->price;
+            } else {
+                $down_payment = ($settings->advance_perc / 100) * $property->price;
             }
 
             $amount_to_pay = $down_payment;
@@ -776,7 +780,7 @@ class HomeController extends Controller
             $signature = base64_encode(hash_hmac('sha256', $hashable_string, $secretKey, true));
             $returnUrl = url('api/v1/qib_payment_status');
 
-            $temp['user_id'] = Auth::user()->id;
+            $temp['user_id'] = Auth::guard('sanctum')->user()->id;
             $temp['property_id'] = $property->id;
             $temp['payment_ref_id'] = $referenceId;
             $temp['amount'] = $amount_to_pay;
@@ -799,22 +803,22 @@ class HomeController extends Controller
             $data['redirect'] = $redirect;
             $data['type'] = "book";
 
-            $uid                    = $this->uniqidReal();
-            $paymentData            = new PaymentData();
-            $paymentData->id        = $uid;
-            $paymentData->user_id   = Auth::user()->id;
+            $uid = $this->uniqidReal();
+            $paymentData = new PaymentData();
+            $paymentData->id = $uid;
+            $paymentData->user_id = Auth::guard('sanctum')->user()->id;
             $paymentData->payment_mode = "QIB";
-            $paymentData->data      = json_encode($data);
+            $paymentData->data = json_encode($data);
             $paymentData->save();
 
 
             $status = 200;
             $message = 'Redirecting to payment page';
-            return response()->json(['message' => $message,'data'=>[], 'redirect' => url('api/v1/qib-init/'. $uid)], $status);
+            return response()->json(['message' => $message, 'data' => [], 'redirect' => url('api/v1/qib-init/' . $uid)], $status);
 
-        }else{
+        } else {
             $page_heading = "Reserve Now";
-            $amount_to_pay =  10000;
+            $amount_to_pay = 10000;
             $gatewayId = "015995941";
             $secretKey = "LRhchdhRxSGUxzt5";
             $amount = number_format((float) $amount_to_pay, 2, '.', '');
@@ -823,7 +827,7 @@ class HomeController extends Controller
             $signature = base64_encode(hash_hmac('sha256', $hashable_string, $secretKey, true));
             $returnUrl = url('qib_reserve_payment_status');
 
-            $temp['user_id'] = Auth::user()->id;
+            $temp['user_id'] = Auth::guard('sanctum')->user()->id;
             $temp['property_id'] = $property->id;
             $temp['payment_ref_id'] = $referenceId;
             $temp['amount'] = $amount_to_pay;
@@ -838,15 +842,15 @@ class HomeController extends Controller
         $pd = PaymentData::where('id', $uid)->first();
         $data = json_decode($pd->data);
         $user_id = $pd->user_id;
-        $user = User::find($user_id);
+        $user = \App\Models\MobileUser::find($user_id);
         $signature = $data->signature;
         $gatewayId = $data->gatewayId;
         $referenceId = $data->referenceId;
         $amount = $data->amount;
         $returnUrl = $data->returnUrl;
-        $country = Country::where("code_iso",$user->country_id)->first();
-        $country_id = $country->code??"QA";
-        return view('front_end.qib_app', compact('signature', 'gatewayId', 'referenceId', 'amount', 'returnUrl', 'user','country_id'));
+        $country = Country::where("code_iso", $user->country_id)->first();
+        $country_id = $country->code ?? "QA";
+        return view('front_end.qib_app', compact('signature', 'gatewayId', 'referenceId', 'amount', 'returnUrl', 'user', 'country_id'));
     }
     public function qib_payment_status(Request $request)
     {
@@ -873,7 +877,7 @@ class HomeController extends Controller
             $booking->booking_no = 'PROP-' . date(date('Ymd', strtotime($booking->created_at))) . $booking->id;
             $booking->save();
             $temp_booking->delete();
-            return response()->json(['message' => __('messages.booking_successfully_completed'),'data'=>[]], 200);
+            return response()->json(['message' => __('messages.booking_successfully_completed'), 'data' => []], 200);
         } else {
             return response()->json(['error' => $request->reason], 401);
         }
@@ -924,7 +928,7 @@ class HomeController extends Controller
             'postal_code' => $user->postal_code,
             'country_id' => $user->country_id,
             'country_name' => $user->country->name ?? '',
-            'image' => $user->image ? aws_asset_path($user->image) : asset('').'front-assets/images/avatar/profile-icon.png',
+            'image' => $user->image ? aws_asset_path($user->image) : asset('') . 'front-assets/images/avatar/profile-icon.png',
             'license' => $user->license ? aws_asset_path($user->license) : '',
             'id_card' => $user->id_card ? aws_asset_path($user->id_card) : '',
             'cr' => $user->cr ? aws_asset_path($user->cr) : '',
@@ -940,13 +944,13 @@ class HomeController extends Controller
             ->select('id', 'name', 'email', 'phone', 'image', 'license', 'id_card', 'created_at', 'active')
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function($agent) {
+            ->map(function ($agent) {
                 return [
                     'id' => $agent->id,
                     'name' => $agent->name,
                     'email' => $agent->email,
                     'phone' => $agent->phone,
-                    'image' => $agent->image ? aws_asset_path($agent->image) : asset('').'front-assets/images/avatar/profile-icon.png',
+                    'image' => $agent->image ? aws_asset_path($agent->image) : asset('') . 'front-assets/images/avatar/profile-icon.png',
                     'license' => $agent->license ? aws_asset_path($agent->license) : '',
                     'id_card' => $agent->id_card ? aws_asset_path($agent->id_card) : '',
                     'created_at' => $agent->created_at ? $agent->created_at->toISOString() : '',
@@ -962,13 +966,13 @@ class HomeController extends Controller
             ->whereIn('agent_id', $agentIds)
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function($visit) {
+            ->map(function ($visit) {
                 return [
                     'id' => $visit->id,
                     'client_name' => $visit->client_name,
                     'client_email_address' => $visit->client_email_address,
                     'client_phone_number' => $visit->client_phone_number,
-                    'client_id' =>  $visit->client_id ? aws_asset_path($visit->client_id) : '',
+                    'client_id' => $visit->client_id ? aws_asset_path($visit->client_id) : '',
                     'visit_time' => $visit->visit_time ? $visit->visit_time->toISOString() : '',
                     'notes' => $visit->notes,
                     'visit_purpose' => $visit->visit_purpose,
@@ -991,7 +995,7 @@ class HomeController extends Controller
             ->whereIn('agent_id', $agentIds)
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function($reservation) {
+            ->map(function ($reservation) {
                 return [
                     'id' => $reservation->id,
                     'status' => $reservation->status,
@@ -1123,7 +1127,7 @@ class HomeController extends Controller
                     'name' => $reservation->agent->name,
                     'email' => $reservation->agent->email,
                     'phone' => $reservation->agent->phone,
-                    'image' => $reservation->agent->image ? aws_asset_path($reservation->agent->image) : asset('').'front-assets/images/avatar/profile-icon.png',
+                    'image' => $reservation->agent->image ? aws_asset_path($reservation->agent->image) : asset('') . 'front-assets/images/avatar/profile-icon.png',
                 ],
                 'property' => [
                     'id' => $reservation->property->id,
@@ -1146,7 +1150,7 @@ class HomeController extends Controller
                     'balcony_size' => $reservation->property->balcony_size,
                     'sale_type' => $reservation->property->sale_type,
                     'is_featured' => $reservation->property->is_featured,
-                    'images' => $reservation->property->images->map(function($image) {
+                    'images' => $reservation->property->images->map(function ($image) {
                         return [
                             'id' => $image->id,
                             'image' => aws_asset_path($image->image),
@@ -1169,10 +1173,10 @@ class HomeController extends Controller
             ];
 
             // Add sale type label
-            if($reservation->property->sale_type == 1 || $reservation->property->sale_type == 3){
+            if ($reservation->property->sale_type == 1 || $reservation->property->sale_type == 3) {
                 $reservationData['property']['sale_type_label'] = __('messages.buy');
             }
-            if($reservation->property->sale_type == 2 || $reservation->property->sale_type == 3){
+            if ($reservation->property->sale_type == 2 || $reservation->property->sale_type == 3) {
                 $reservationData['property']['sale_type_label'] = __('messages.rent');
             }
 
@@ -1208,8 +1212,8 @@ class HomeController extends Controller
             }
 
             // Pagination parameters
-            $limit = isset($request->limit) ? (int)$request->limit : 10;
-            $page = isset($request->page) ? (int)$request->page : 1;
+            $limit = isset($request->limit) ? (int) $request->limit : 10;
+            $page = isset($request->page) ? (int) $request->page : 1;
             $offset = ($page - 1) * $limit;
 
             // Status filter
@@ -1257,11 +1261,11 @@ class HomeController extends Controller
                 ->limit($limit)
                 ->skip($offset)
                 ->get()
-                ->filter(function($reservation) {
+                ->filter(function ($reservation) {
                     // Only include reservations with valid relationships
                     return $reservation->property && $reservation->agent;
                 })
-                ->map(function($reservation) {
+                ->map(function ($reservation) {
                     return [
                         'id' => $reservation->id,
                         'status' => $reservation->status,
@@ -1273,7 +1277,7 @@ class HomeController extends Controller
                             'name' => $reservation->agent->name ?? '',
                             'email' => $reservation->agent->email ?? '',
                             'phone' => $reservation->agent->phone ?? '',
-                            'image' => $reservation->agent->image ? aws_asset_path($reservation->agent->image) : asset('').'front-assets/images/avatar/profile-icon.png',
+                            'image' => $reservation->agent->image ? aws_asset_path($reservation->agent->image) : asset('') . 'front-assets/images/avatar/profile-icon.png',
                         ],
                         'property' => [
                             'id' => $reservation->property->id ?? '',
@@ -1302,12 +1306,12 @@ class HomeController extends Controller
                 });
 
             // Add sale type labels
-            $reservations = $reservations->map(function($reservation) {
-                if(isset($reservation['property']['sale_type'])) {
-                    if($reservation['property']['sale_type'] == 1 || $reservation['property']['sale_type'] == 3){
+            $reservations = $reservations->map(function ($reservation) {
+                if (isset($reservation['property']['sale_type'])) {
+                    if ($reservation['property']['sale_type'] == 1 || $reservation['property']['sale_type'] == 3) {
                         $reservation['property']['sale_type_label'] = __('messages.buy');
                     }
-                    if($reservation['property']['sale_type'] == 2 || $reservation['property']['sale_type'] == 3){
+                    if ($reservation['property']['sale_type'] == 2 || $reservation['property']['sale_type'] == 3) {
                         $reservation['property']['sale_type_label'] = __('messages.rent');
                     }
                 }
@@ -1381,8 +1385,8 @@ class HomeController extends Controller
             }
 
             // Pagination parameters
-            $limit = isset($request->limit) ? (int)$request->limit : 10;
-            $page = isset($request->page) ? (int)$request->page : 1;
+            $limit = isset($request->limit) ? (int) $request->limit : 10;
+            $page = isset($request->page) ? (int) $request->page : 1;
             $offset = ($page - 1) * $limit;
 
             // Build query based on user role
@@ -1420,11 +1424,11 @@ class HomeController extends Controller
                 ->limit($limit)
                 ->skip($offset)
                 ->get()
-                ->filter(function($visitSchedule) {
+                ->filter(function ($visitSchedule) {
                     // Only include visit schedules with valid relationships
                     return $visitSchedule->project && $visitSchedule->agent;
                 })
-                ->map(function($visitSchedule) {
+                ->map(function ($visitSchedule) {
                     return [
                         'id' => $visitSchedule->id,
                         'client_name' => $visitSchedule->client_name ?? '',
@@ -1442,7 +1446,7 @@ class HomeController extends Controller
                             'name' => $visitSchedule->agent->name ?? '',
                             'email' => $visitSchedule->agent->email ?? '',
                             'phone' => $visitSchedule->agent->phone ?? '',
-                            'image' => $visitSchedule->agent->image ? aws_asset_path($visitSchedule->agent->image) : asset('').'front-assets/images/avatar/profile-icon.png',
+                            'image' => $visitSchedule->agent->image ? aws_asset_path($visitSchedule->agent->image) : asset('') . 'front-assets/images/avatar/profile-icon.png',
                         ],
                         'project' => [
                             'id' => $visitSchedule->project->id ?? '',
@@ -1583,7 +1587,7 @@ class HomeController extends Controller
                     'name' => $visitSchedule->agent->name,
                     'email' => $visitSchedule->agent->email,
                     'phone' => $visitSchedule->agent->phone,
-                    'image' => $visitSchedule->agent->image ? aws_asset_path($visitSchedule->agent->image) : asset('').'front-assets/images/avatar/profile-icon.png',
+                    'image' => $visitSchedule->agent->image ? aws_asset_path($visitSchedule->agent->image) : asset('') . 'front-assets/images/avatar/profile-icon.png',
                 ],
                 'project' => [
                     'id' => $visitSchedule->project ? $visitSchedule->project->id : null,
@@ -1628,8 +1632,8 @@ class HomeController extends Controller
             }
 
             // Pagination parameters
-            $limit = isset($request->limit) ? (int)$request->limit : 10;
-            $page = isset($request->page) ? (int)$request->page : 1;
+            $limit = isset($request->limit) ? (int) $request->limit : 10;
+            $page = isset($request->page) ? (int) $request->page : 1;
             $offset = ($page - 1) * $limit;
 
             // Status filter
@@ -1671,13 +1675,13 @@ class HomeController extends Controller
                 ->limit($limit)
                 ->skip($offset)
                 ->get()
-                ->map(function($agent) {
+                ->map(function ($agent) {
                     return [
                         'id' => $agent->id,
                         'name' => $agent->name,
                         'email' => $agent->email,
                         'phone' => $agent->phone,
-                        'image' => $agent->image ? aws_asset_path($agent->image) : asset('').'front-assets/images/avatar/profile-icon.png',
+                        'image' => $agent->image ? aws_asset_path($agent->image) : asset('') . 'front-assets/images/avatar/profile-icon.png',
                         'license' => $agent->license ? aws_asset_path($agent->license) : '',
                         'id_card' => $agent->id_card ? aws_asset_path($agent->id_card) : '',
                         'active' => $agent->active,
@@ -1700,7 +1704,7 @@ class HomeController extends Controller
                     'name' => $agency->name,
                     'email' => $agency->email,
                     'phone' => $agency->phone,
-                    'image' => $agency->image ? aws_asset_path($agency->image) : asset('').'front-assets/images/avatar/profile-icon.png',
+                    'image' => $agency->image ? aws_asset_path($agency->image) : asset('') . 'front-assets/images/avatar/profile-icon.png',
                     'address' => $agency->address,
                     'city' => $agency->city,
                     'state' => $agency->state,
@@ -1809,7 +1813,7 @@ class HomeController extends Controller
 
             // Determine which agent ID to use
             $agentId = $user->id; // Default to current user
-            
+
             // If agent_id is provided, validate permissions
             if ($request->agent_id) {
                 if ($user->role == 4) {
@@ -1818,13 +1822,13 @@ class HomeController extends Controller
                         ->where('role', 3)
                         ->where('agency_id', $user->id)
                         ->first();
-                    
+
                     if (!$agent) {
                         return response()->json([
                             'message' => 'Selected agent does not belong to your agency or does not exist',
                         ], 403);
                     }
-                    
+
                     $agentId = $request->agent_id;
                 } else {
                     // Agents cannot assign to other agents
