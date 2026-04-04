@@ -54,6 +54,105 @@
     margin-bottom: 1rem;
 }
 
+/* Collapsible: advance + installment end + handover (default closed) */
+.pc-wrap .pc-custom-emi-details {
+    border: 1px solid hsla(38, 30%, 78%, 0.55);
+    border-radius: 0.85rem;
+    background: hsla(36, 35%, 98%, 0.6);
+    padding: 0.35rem 0.65rem 0.5rem;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.pc-wrap .pc-custom-emi-details > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    padding: 0.45rem 0.35rem;
+    user-select: none;
+    color: hsl(38 45% 32%);
+    font-weight: 600;
+    font-size: 0.9rem;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.pc-wrap .pc-custom-emi-details > summary::-webkit-details-marker {
+    display: none;
+}
+
+.pc-wrap .pc-custom-emi-summary:focus-visible {
+    outline: 2px solid hsl(38 45% 45%);
+    outline-offset: 2px;
+    border-radius: 0.35rem;
+}
+
+.pc-wrap .pc-custom-emi-chevron {
+    display: inline-block;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-right: 2px solid hsl(38 42% 42%);
+    border-bottom: 2px solid hsl(38 42% 42%);
+    transform: rotate(-45deg);
+    margin-right: 0.15rem;
+    transition: transform 0.2s ease;
+    position: relative;
+    top: -0.05rem;
+}
+
+.pc-wrap .pc-custom-emi-details[open] .pc-custom-emi-chevron {
+    transform: rotate(45deg);
+    top: 0.05rem;
+}
+
+.pc-wrap .pc-custom-emi-summary-hint {
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: hsl(220 14% 46%);
+}
+
+.pc-wrap .pc-custom-emi-body.pc-section-light {
+    margin-bottom: 0.35rem;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.pc-wrap .pc-custom-emi-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem 1rem;
+    width: 100%;
+    min-width: 0;
+}
+
+@media (min-width: 768px) {
+    .pc-wrap .pc-custom-emi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.pc-wrap .pc-custom-emi-field {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.pc-wrap .pc-custom-emi-field .form-control,
+.pc-wrap .pc-custom-emi-field .form-select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.pc-wrap .pc-custom-emi-actions-inner {
+    min-width: 0;
+}
+
 /* Duration badge: bg-muted/30 */
 .pc-wrap .pc-badge {
     text-align: center;

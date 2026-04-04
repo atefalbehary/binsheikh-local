@@ -209,51 +209,52 @@
 
                 <hr class="pc-divider">
 
-                {{-- ── 5. Custom EMI Inputs — Row 1: Advance + Duration ─────── --}}
-                <div class="d-flex flex-wrap align-items-end gap-3 pc-section-light mb-3">
-
-                    <div class="flex-fill" style="min-width:160px;">
-                        <label class="pc-label-gold" for="AdvAmount">Advance Amount</label>
-                        <input type="number" id="AdvAmount" class="form-control pc-input-gold w-100" placeholder="0"
-                            min="0" />
+                {{-- ── 5–6. Advance, installment end, handover — collapsible (closed by default) ── --}}
+                <details class="pc-custom-emi-details mb-3">
+                    <summary class="pc-custom-emi-summary">
+                        <span class="pc-custom-emi-chevron" aria-hidden="true"></span>
+                        <span class="pc-custom-emi-summary-label">Installment &amp; advance options</span>
+                        <span class="pc-custom-emi-summary-hint">(advance, installment end &amp; handover)</span>
+                    </summary>
+                    <div class="pc-section-light mt-2 pt-1 pc-custom-emi-body">
+                        <div class="pc-custom-emi-grid">
+                            <div class="pc-custom-emi-field">
+                                <label class="pc-label-gold" for="AdvAmount">Advance Amount</label>
+                                <input type="number" id="AdvAmount" class="form-control pc-input-gold w-100" placeholder="0"
+                                    min="0" />
+                            </div>
+                            <div class="pc-custom-emi-field">
+                                <label class="pc-label-gold" for="userDuration">Installment End Date</label>
+                                <select id="userDuration" class="form-select pc-input-gold w-100">
+                                    <option value="">Select month</option>
+                                    @foreach ($monthOpts as $opt)
+                                        <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="pc-custom-emi-field">
+                                <label class="pc-label-gold" for="HandAmount">Handover Payment</label>
+                                <input type="number" id="HandAmount" class="form-control pc-input-gold w-100" placeholder="0"
+                                    min="0" />
+                            </div>
+                            <div class="pc-custom-emi-field">
+                                <label class="pc-label-gold" for="userHandoverDate">Handover Date</label>
+                                <select id="userHandoverDate" class="form-select pc-input-gold w-100">
+                                    <option value="">Select month</option>
+                                    @foreach ($monthOpts as $opt)
+                                        <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 align-items-center mt-3 pt-2 pc-custom-emi-actions-inner">
+                            <button id="btnCalculateUser" type="button" class="btn pc-btn-outline-gold flex-grow-1 flex-sm-grow-0">
+                                Calculate EMI
+                            </button>
+                            <button type="button" class="btn pc-btn-gold flex-grow-1 flex-sm-grow-0">Book NOW</button>
+                        </div>
                     </div>
-
-                    <div class="flex-fill" style="min-width:160px;">
-                        <label class="pc-label-gold" for="userDuration">Installment End Date</label>
-                        <select id="userDuration" class="form-select pc-input-gold w-100">
-                            <option value="">Select month</option>
-                            @foreach ($monthOpts as $opt)
-                                <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <button id="btnCalculateUser" class="btn pc-btn-outline-gold">
-                        Calculate EMI
-                    </button>
-
-                    <button class="btn pc-btn-gold">Book NOW</button>
-                </div>
-
-                {{-- ── 6. Custom EMI Inputs — Row 2: Handover ──────────────── --}}
-                <div class="d-flex flex-wrap align-items-end gap-3 pc-section-light mb-3">
-
-                    <div class="flex-fill" style="min-width:160px;">
-                        <label class="pc-label-gold" for="HandAmount">Handover Payment</label>
-                        <input type="number" id="HandAmount" class="form-control pc-input-gold w-100" placeholder="0"
-                            min="0" />
-                    </div>
-
-                    <div class="flex-fill" style="min-width:160px;">
-                        <label class="pc-label-gold" for="userHandoverDate">Handover Date</label>
-                        <select id="userHandoverDate" class="form-select pc-input-gold w-100">
-                            <option value="">Select month</option>
-                            @foreach ($monthOpts as $opt)
-                                <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+                </details>
 
                 {{-- ── 7. Payment Schedule Table (populated by displaySchedule() in payment-calculator.js) ── --}}
                 <div id="scheduleTableContainer" style="display:none; margin-top:1.5rem;">
