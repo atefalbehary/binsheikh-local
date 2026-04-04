@@ -32,11 +32,21 @@
                     $monthOpts[] = ['value' => $i, 'label' => $d->format('M-y')];
                 }
 
-                /* Always list both towers so dropdowns never look empty; JS defaults selection via calculator type. */
-                $planModelOptions = [
-                    ['value' => 'marina', 'label' => 'Marina Tower'],
-                    ['value' => 'skyline', 'label' => 'Skyline Tower'],
-                ];
+                /*
+                 * Dedicated routes: marina-payment-calculator → only Marina; skyline-payment-calculator → only Skyline.
+                 * Property / generic calculator (no type): both towers so user can compare.
+                 */
+                $ct = $calculatorType ?? '';
+                if ($ct === 'skyline') {
+                    $planModelOptions = [['value' => 'skyline', 'label' => 'Skyline Tower']];
+                } elseif ($ct === 'marina') {
+                    $planModelOptions = [['value' => 'marina', 'label' => 'Marina Tower']];
+                } else {
+                    $planModelOptions = [
+                        ['value' => 'marina', 'label' => 'Marina Tower'],
+                        ['value' => 'skyline', 'label' => 'Skyline Tower'],
+                    ];
+                }
             @endphp
 
 
@@ -56,9 +66,9 @@
 
                         <div class="pc-toolbar-field pc-toolbar-field-amount">
                             <label class="pc-label-muted" for="fullPriceInput">Amount (QAR)</label>
-                            <input type="number" id="fullPriceInput" class="form-control pc-input"
-                                placeholder="Unit price"
-                                min="0" step="1"
+                            <input type="text" id="fullPriceInput" class="form-control pc-input"
+                                placeholder="e.g. 1,790,000"
+                                inputmode="numeric" autocomplete="off"
                                 value="{{ isset($property) && $property->price ? $property->price : '' }}" />
                         </div>
 
@@ -349,10 +359,79 @@
             <script src="{{ asset('front-assets/js/payment-calculator.js') }}"></script>
             <script>
                 $(document).ready(function () {
-                    function getFullPrice() {
-                        var v = parseFloat($('#fullPriceInput').val());
-                        return (isNaN(v) || v <= 0) ? 0 : v;
+                    /** Strip non-digits; used for amount field that displays thousand separators. */
+                    function parseAmountDigits(str) {
+                        var digits = String(str || '').replace(/\D/g, '');
+                        if (digits === '') {
+                            return 0;
+                        }
+                        var n = parseInt(digits, 10);
+                        return isNaN(n) ? 0 : n;
                     }
+
+                    function formatAmountWithCommas(str) {
+                        var digits = String(str || '').replace(/\D/g, '');
+                        if (digits === '') {
+                            return '';
+                        }
+                        var n = parseInt(digits, 10);
+                        if (isNaN(n)) {
+                            return '';
+                        }
+                        return n.toLocaleString('en-US');
+                    }
+
+                    function getFullPrice() {
+                        var n = parseAmountDigits($('#fullPriceInput').val());
+                        return n > 0 ? n : 0;
+                    }
+
+                    function formatFullPriceInputPreserveCaret() {
+                        var el = document.getElementById('fullPriceInput');
+                        if (!el) {
+                            return;
+                        }
+                        var raw = el.value;
+                        var caret = el.selectionStart != null ? el.selectionStart : raw.length;
+                        var digitsBeforeCaret = raw.slice(0, caret).replace(/\D/g, '').length;
+                        var formatted = formatAmountWithCommas(raw);
+                        if (formatted === raw) {
+                            return;
+                        }
+                        el.value = formatted;
+                        var pos = 0;
+                        var count = 0;
+                        var i;
+                        for (i = 0; i < formatted.length; i++) {
+                            if (/\d/.test(formatted[i])) {
+                                count++;
+                                if (count === digitsBeforeCaret) {
+                                    pos = i + 1;
+                                    break;
+                                }
+                            }
+                        }
+                        if (digitsBeforeCaret === 0) {
+                            pos = 0;
+                        } else if (count < digitsBeforeCaret) {
+                            pos = formatted.length;
+                        }
+                        if (el.setSelectionRange) {
+                            el.setSelectionRange(pos, pos);
+                        }
+                    }
+
+                    $('#fullPriceInput').on('input', function () {
+                        formatFullPriceInputPreserveCaret();
+                    });
+
+                    (function formatInitialAmountField() {
+                        var $el = $('#fullPriceInput');
+                        var v = $el.val();
+                        if (v) {
+                            $el.val(formatAmountWithCommas(v));
+                        }
+                    })();
 
                     var fullPrice = getFullPrice();
                     var managementFeeRate = {{ $settings->service_charge_perc / 100 }};
