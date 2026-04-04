@@ -15,6 +15,7 @@
             <!-- main-content -->
            
             @php
+                $monthCount = max(1, (int) ($monthCount ?? 1));
                 $mgmtFeeRate = $settings->service_charge_perc / 100;
                 $mgmtFees = 0;
                 $totalPrice = 0;
@@ -30,6 +31,12 @@
                     $d = $start->copy()->addMonths($i);
                     $monthOpts[] = ['value' => $i, 'label' => $d->format('M-y')];
                 }
+
+                /* Always list both towers so dropdowns never look empty; JS defaults selection via calculator type. */
+                $planModelOptions = [
+                    ['value' => 'marina', 'label' => 'Marina Tower'],
+                    ['value' => 'skyline', 'label' => 'Skyline Tower'],
+                ];
             @endphp
 
 
@@ -42,46 +49,55 @@
                     <span class="pc-badge-val">{{ $monthCount }} Months</span>
                 </div>
 
-                {{-- ── 3. Scenario Selector ──────────────────────────────────── --}}
-                <div class="d-flex flex-wrap align-items-end gap-3 pc-section mb-3">
+                {{-- ── 3. Scenario toolbar: amount + plan + scenario + discount + action (one row) ── --}}
+                <div class="pc-section pc-scenario-toolbar mb-3">
 
-                    <div id="projectPlanSelectorWrap">
-                        <label class="pc-label-muted" for="projectPlanSelector">
-                            Project Plan
-                        </label>
-                        <select id="projectPlanSelector" class="form-select pc-select" style="width:220px;">
-                            <option value="marina">Marina Tower</option>
-                            <option value="skyline">Skyline Tower</option>
-                        </select>
+                    <div class="pc-scenario-toolbar-inner">
+
+                        <div class="pc-toolbar-field pc-toolbar-field-amount">
+                            <label class="pc-label-muted" for="fullPriceInput">Amount (QAR)</label>
+                            <input type="number" id="fullPriceInput" class="form-control pc-input"
+                                placeholder="Unit price"
+                                min="0" step="1"
+                                value="{{ isset($property) && $property->price ? $property->price : '' }}" />
+                        </div>
+
+                        <div id="projectPlanSelectorWrap" class="pc-toolbar-field">
+                            <label class="pc-label-muted" for="projectPlanSelector">Project Plan</label>
+                            <select id="projectPlanSelector" class="form-select pc-select pc-toolbar-select">
+                                @foreach ($planModelOptions as $opt)
+                                    <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="pc-toolbar-field pc-toolbar-field-scenario">
+                            <label class="pc-label-muted" for="scenarioSelector">Payment Plan Scenario</label>
+                            <select id="scenarioSelector" class="form-select pc-select pc-toolbar-select">
+                                <option value="1">1 — Equal Installments</option>
+                                <option value="2">2 — Custom Schedule</option>
+                                <option value="3">3 — Down + Equal</option>
+                                <option value="4">4 — 5% Down + Handover</option>
+                                <option value="balloon">5 — Balloon + Monthly</option>
+                            </select>
+                        </div>
+
+                        <div class="pc-toolbar-field pc-toolbar-field-discount">
+                            <label class="pc-label-muted" for="discountSelector">Discount %</label>
+                            <select id="discountSelector" class="form-select pc-select pc-toolbar-select-sm">
+                                @for ($i = 0; $i <= 30; $i++)
+                                    <option value="{{ $i }}">{{ $i }}%</option>
+                                @endfor
+                            </select>
+                        </div>
+
+                        <div class="pc-toolbar-actions">
+                            <button id="btnCalculateScenario" type="button" class="btn pc-btn-gold pc-toolbar-btn-calc">
+                                Calculate Scenario
+                            </button>
+                        </div>
+
                     </div>
-
-                    <div>
-                        <label class="pc-label-muted" for="scenarioSelector">
-                            Payment Plan Scenario
-                        </label>
-                        <select id="scenarioSelector" class="form-select pc-select" style="width:220px;">
-                            <option value="1">1 — Equal Installments</option>
-                            <option value="2">2 — Custom Schedule</option>
-                            <option value="3">3 — Down + Equal</option>
-                            <option value="4">4 — 5% Down + Handover</option>
-                            <option value="balloon">5 — Balloon + Monthly</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="pc-label-muted" for="discountSelector">
-                            Discount %
-                        </label>
-                        <select id="discountSelector" class="form-select pc-select" style="width:110px;">
-                            @for ($i = 0; $i <= 30; $i++)
-                                <option value="{{ $i }}">{{ $i }}%</option>
-                            @endfor
-                        </select>
-                    </div>
-
-                    <button id="btnCalculateScenario" class="btn pc-btn-gold">
-                        Calculate Scenario
-                    </button>
                 </div>
 
                 {{-- ── 4. Balloon Configurator (shown by JS when scenario 5 selected) ── --}}
@@ -238,14 +254,16 @@
                             <span class="pc-schedule-title">Payment Schedule</span>
                             <span id="discountTitleLabel" class="pc-discount-badge" style="display:none;"></span>
                         </div>
-                        <button id="downloadCalculationPdfNew"
-                            class="btn pc-btn-outline-gold d-flex align-items-center gap-2">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            Download PDF
-                        </button>
+                        <div class="pc-schedule-download-wrap">
+                            <button id="downloadCalculationPdfNew" type="button"
+                                class="btn pc-btn-outline-gold d-flex align-items-center gap-2">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Download PDF
+                            </button>
+                        </div>
                     </div>
 
                     <div class="pc-table-wrap">
@@ -258,12 +276,60 @@
                                     <th class="text-center">Total Payment</th>
                                     <th class="text-center">Due Amount</th>
                                     <th class="text-center">Total %</th>
+                                    <th class="text-center pc-th-actions">Edit</th>
                                 </tr>
                             </thead>
                             <tbody id="calculate_em_tbody_new">
                                 {{-- Rows are injected by displaySchedule() in payment-calculator.js --}}
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- Edit row — Bootstrap modal (all fields editable) --}}
+                    <div class="modal fade" id="scheduleRowEditModal" tabindex="-1"
+                        aria-labelledby="scheduleRowEditModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content pc-schedule-edit-modal">
+                                <div class="modal-header border-secondary border-opacity-25">
+                                    <h5 class="modal-title fw-bold" id="scheduleRowEditModalLabel">Edit schedule row</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" id="scheduleEditRowIndex" value="" />
+                                    <p class="small text-muted mb-3" id="scheduleRowEditTypeHint"></p>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="scheduleEditLabel">Label / title</label>
+                                            <input type="text" class="form-control" id="scheduleEditLabel"
+                                                autocomplete="off" placeholder="e.g. Down Payment, 1st Installment" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="scheduleEditMonth">Month / timeline</label>
+                                            <input type="text" class="form-control" id="scheduleEditMonth"
+                                                autocomplete="off" placeholder="e.g. May-26" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="scheduleEditPayment">Payment (QAR)</label>
+                                            <input type="number" class="form-control" id="scheduleEditPayment" min="0"
+                                                step="1" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="scheduleEditPercentage">Percentage (%)</label>
+                                            <input type="number" class="form-control" id="scheduleEditPercentage" min="0"
+                                                step="0.01" />
+                                        </div>
+                                    </div>
+                                    <p class="small text-muted mt-3 mb-0">
+                                        Payment and % stay in sync with the unit amount above. Saving recalculates total payment, due amount, and total % for all rows.
+                                    </p>
+                                </div>
+                                <div class="modal-footer border-secondary border-opacity-25">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn pc-btn-gold" id="scheduleRowEditSave">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -283,7 +349,12 @@
             <script src="{{ asset('front-assets/js/payment-calculator.js') }}"></script>
             <script>
                 $(document).ready(function () {
-                    var fullPrice = 0;
+                    function getFullPrice() {
+                        var v = parseFloat($('#fullPriceInput').val());
+                        return (isNaN(v) || v <= 0) ? 0 : v;
+                    }
+
+                    var fullPrice = getFullPrice();
                     var managementFeeRate = {{ $settings->service_charge_perc / 100 }};
                     var durationMonths = {{ $monthCount }};
                     var projectName = "";
@@ -301,6 +372,9 @@
                     } else {
                         $('#projectPlanSelector').val('marina');
                     }
+
+                    /** Tracks whether the table was produced by scenario or custom EMI. */
+                    window.lastPaymentCalcSource = null;
 
                     function getYearlyCashbackMonths(duration) {
                         var months = [];
@@ -465,6 +539,17 @@
                         renderPlanInfoTables();
                     }
 
+                    function escapeHtml(str) {
+                        if (str === null || str === undefined) {
+                            return '';
+                        }
+                        return String(str)
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;');
+                    }
+
                     function displaySchedule(scheduleRows) {
                         var tbody = $('#calculate_em_tbody_new');
                         tbody.empty();
@@ -491,19 +576,25 @@
                             else if (i % 2 === 0) { trClass = "pc-row-even"; }
                             else { trClass = "pc-row-odd"; }
 
-                            var labelCol = (isMgmt || isHighlight || isDiscount || isCashback) ? row.label : row.month;
+                            var labelCol = (isMgmt || isHighlight || isDiscount || isCashback)
+                                ? (row.label || row.month || '—')
+                                : (row.month || row.label || '—');
+                            var labelColSafe = escapeHtml(labelCol);
                             var paymentStr = (isDiscount || isCashback) ? "- " + formatCurrency(row.payment) : formatCurrency(row.payment);
                             var totalPaymentStr = isMgmt ? "-" : formatCurrency(row.totalPayment);
                             var dueAmountStr = isMgmt ? "-" : formatCurrency(row.dueAmount);
                             var totalPercentageStr = (isMgmt || isDiscount) ? "-" : formatPercent(row.totalPercentage);
 
-                            var tr = `<tr class="${trClass}">
-                                                                                                        <td class="fw-medium">${labelCol}</td>
+                            var tr = `<tr class="${trClass}" data-row-index="${i}">
+                                                                                                        <td class="fw-medium">${labelColSafe}</td>
                                                                                                         <td class="text-center">${formatPercent(row.percentage)}</td>
                                                                                                         <td class="text-center fw-bold">${paymentStr}</td>
                                                                                                         <td class="text-center">${totalPaymentStr}</td>
                                                                                                         <td class="text-center">${dueAmountStr}</td>
                                                                                                         <td class="text-center">${totalPercentageStr}</td>
+                                                                                                        <td class="text-center pc-td-actions">
+                                                                                                            <button type="button" class="btn btn-sm pc-schedule-edit-btn" data-row-index="${i}" title="Edit payment for this row">Edit</button>
+                                                                                                        </td>
                                                                                                       </tr>`;
                             tbody.append(tr);
                         });
@@ -545,6 +636,14 @@
                     });
 
                     $('#btnCalculateScenario').click(function () {
+                        fullPrice = getFullPrice();
+                        if (fullPrice <= 0) {
+                            alert("Please enter a valid amount greater than zero.");
+                            return;
+                        }
+
+                        window.lastPaymentCalcSource = 'scenario';
+
                         var selectedScenario = $('#scenarioSelector').val();
                         var scenarioId = selectedScenario;
                         var manualDiscountRate = parseInt($('#discountSelector').val(), 10) || 0;
@@ -624,6 +723,14 @@
 
                     // User calculation logic
                     $('#btnCalculateUser').click(function () {
+                        fullPrice = getFullPrice();
+                        if (fullPrice <= 0) {
+                            alert("Please enter a valid amount greater than zero.");
+                            return;
+                        }
+
+                        window.lastPaymentCalcSource = 'emi';
+
                         var adv = parseFloat($('#AdvAmount').val()) || 0;
                         var hand = parseFloat($('#HandAmount').val()) || 0;
                         var durationVal = $('#userDuration').val(); // Just single integer
@@ -687,6 +794,128 @@
                         renderPlanInfoTables();
                     });
 
+                    var scheduleEditSync = false;
+
+                    function openScheduleRowEditModal(idx) {
+                        fullPrice = getFullPrice();
+                        if (fullPrice <= 0) {
+                            alert("Please enter a valid amount greater than zero.");
+                            return;
+                        }
+                        var rows = window.calculatedScheduleData;
+                        if (!rows || !rows.length || idx < 0 || idx >= rows.length) {
+                            return;
+                        }
+                        var row = rows[idx];
+                        $('#scheduleEditRowIndex').val(String(idx));
+
+                        var hint = 'Regular installment';
+                        if (row.isMgmtFee) {
+                            hint = 'Management fee (shown separately from running totals)';
+                        } else if (row.isDiscountRow) {
+                            hint = 'Discount row';
+                        } else if (row.isCashbackRow) {
+                            hint = 'Cashback row';
+                        } else if (row.isHighlight) {
+                            hint = 'Highlighted milestone (e.g. down payment / handover)';
+                        }
+                        $('#scheduleRowEditTypeHint').text(hint);
+
+                        $('#scheduleEditLabel').val(row.label != null ? row.label : '');
+                        $('#scheduleEditMonth').val(row.month != null ? row.month : '');
+                        var payVal = row.payment;
+                        if (typeof payVal !== 'number' || isNaN(payVal)) {
+                            payVal = 0;
+                        }
+                        $('#scheduleEditPayment').val(Math.round(payVal * 100) / 100);
+                        var pctVal = row.percentage;
+                        if (typeof pctVal !== 'number' || isNaN(pctVal)) {
+                            pctVal = 0;
+                        }
+                        $('#scheduleEditPercentage').val((Math.round(pctVal * 100) / 100).toFixed(2));
+
+                        var modalEl = document.getElementById('scheduleRowEditModal');
+                        if (modalEl && typeof bootstrap !== 'undefined') {
+                            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                        }
+                    }
+
+                    $('#scheduleEditPayment').on('input', function () {
+                        if (scheduleEditSync) {
+                            return;
+                        }
+                        fullPrice = getFullPrice();
+                        if (fullPrice <= 0) {
+                            return;
+                        }
+                        var pay = parseFloat($(this).val());
+                        if (isNaN(pay)) {
+                            return;
+                        }
+                        scheduleEditSync = true;
+                        $('#scheduleEditPercentage').val((pay / fullPrice * 100).toFixed(2));
+                        scheduleEditSync = false;
+                    });
+
+                    $('#scheduleEditPercentage').on('input', function () {
+                        if (scheduleEditSync) {
+                            return;
+                        }
+                        fullPrice = getFullPrice();
+                        if (fullPrice <= 0) {
+                            return;
+                        }
+                        var pct = parseFloat($(this).val());
+                        if (isNaN(pct)) {
+                            return;
+                        }
+                        scheduleEditSync = true;
+                        $('#scheduleEditPayment').val(Math.round(fullPrice * (pct / 100) * 100) / 100);
+                        scheduleEditSync = false;
+                    });
+
+                    $('#scheduleRowEditSave').on('click', function () {
+                        fullPrice = getFullPrice();
+                        if (fullPrice <= 0) {
+                            alert("Please enter a valid unit amount (QAR) above.");
+                            return;
+                        }
+                        var idx = parseInt($('#scheduleEditRowIndex').val(), 10);
+                        var rows = window.calculatedScheduleData;
+                        if (isNaN(idx) || idx < 0 || !rows || idx >= rows.length) {
+                            return;
+                        }
+                        var row = rows[idx];
+
+                        row.label = ($('#scheduleEditLabel').val() || '').trim();
+                        row.month = ($('#scheduleEditMonth').val() || '').trim();
+
+                        var newPay = parseFloat($('#scheduleEditPayment').val());
+                        if (isNaN(newPay) || newPay < 0) {
+                            alert('Please enter a valid payment amount.');
+                            return;
+                        }
+                        row.payment = newPay;
+                        row.percentage = (newPay / fullPrice) * 100;
+
+                        window.calculatedScheduleData = recomputeRunningTotals(rows);
+                        displaySchedule(window.calculatedScheduleData);
+
+                        var modalEl = document.getElementById('scheduleRowEditModal');
+                        if (modalEl && typeof bootstrap !== 'undefined') {
+                            bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                        }
+                    });
+
+                    $(document).on('click', '.pc-schedule-edit-btn', function (e) {
+                        e.preventDefault();
+                        var idx = parseInt($(this).data('row-index'), 10);
+                        if (isNaN(idx)) {
+                            return;
+                        }
+                        openScheduleRowEditModal(idx);
+                    });
+
                     renderPlanInfoTables();
 
                     // Handle download calculator PDF button click
@@ -716,12 +945,13 @@
                             exportUnitNumber = skylineModeForPdf ? "Skyline Unit" : "Marina Tower Unit";
                         }
 
+                        var exportFullPrice = getFullPrice();
                         var propData = {
                             unitNumber: exportUnitNumber,
                             grossArea: "",
-                            fullPrice: 0,
+                            fullPrice: exportFullPrice,
                             managementFees: currentMgmtFees,
-                            total: 0 + currentMgmtFees,
+                            total: exportFullPrice + currentMgmtFees,
                             handoverAmount: parseFloat($('#HandAmount').val()) || 0,
                             installmentCount: {{ $monthCount ?? 0 }},
                             project: exportProjectName,

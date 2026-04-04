@@ -512,11 +512,10 @@ class HomeController extends Controller
         $cur_month->startOfMonth();
     
             
-            $monthCount = $settings->month_count;
+            $monthCount = max(1, (int) ($settings->month_count ?? 60));
         $calculatorType = $type;
-        $viewName = $type === 'skyline'
-            ? 'front_end.skyline_payment_calculator'
-            : 'front_end.payment_calculator';
+        // Single Blade view for both towers (avoids empty child view that can fail to render sections).
+        $viewName = 'front_end.payment_calculator';
 
         return view($viewName, compact('page_heading', 'settings', 'monthCount', 'calculatorType'));
     }
@@ -544,9 +543,9 @@ class HomeController extends Controller
             $monthCount = $settings->month_count;
         }
 
-        $viewName = $calculatorType === 'skyline'
-            ? 'front_end.skyline_payment_calculator'
-            : 'front_end.payment_calculator';
+        $monthCount = max(1, (int) $monthCount);
+
+        $viewName = 'front_end.payment_calculator';
 
         return view($viewName, compact('page_heading', 'property', 'settings', 'monthCount', 'calculatorType'));
     }

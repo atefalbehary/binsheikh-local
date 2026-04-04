@@ -24,6 +24,12 @@
     /* Warm ivory page background — matches React bg-background */
     background: hsl(36 30% 97%);
     padding: 2rem 0;
+    /*
+     * Native <select> needs background-image for the chevron. Never use `background:` shorthand
+     * on selects — it strips Bootstrap’s SVG arrow and the control looks like a plain text field.
+     */
+    --pc-select-chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2322364a' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.75' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    --pc-select-chevron-gold: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238a6a2e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.75' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -68,6 +74,73 @@
     font-size: 0.875rem;
     font-weight: 700;
     color: hsl(220 45% 13%);
+}
+
+/* Scenario toolbar — amount + selects + CTA on one line */
+.pc-wrap .pc-scenario-toolbar .pc-scenario-toolbar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 1rem;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-field {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    min-width: 0;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-field-amount {
+    flex: 0 0 auto;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-field-amount .pc-input {
+    width: 11rem;
+    min-width: 9rem;
+    max-width: 100%;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-select {
+    width: 13.75rem;
+    min-width: 11rem;
+    max-width: 100%;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-field-scenario .pc-toolbar-select {
+    width: min(17rem, 100%);
+    min-width: 12rem;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-select-sm {
+    width: 6.875rem;
+    min-width: 5.5rem;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-actions {
+    display: flex;
+    align-items: flex-end;
+    flex: 1 1 auto;
+    justify-content: flex-end;
+    min-width: min(100%, 12rem);
+    padding-bottom: 0.02rem;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-btn-calc {
+    white-space: nowrap;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
+
+@media (max-width: 991px) {
+    .pc-wrap .pc-scenario-toolbar .pc-toolbar-actions {
+        flex-basis: 100%;
+        justify-content: stretch;
+    }
+
+    .pc-wrap .pc-scenario-toolbar .pc-toolbar-btn-calc {
+        width: 100%;
+    }
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -141,10 +214,10 @@
    INPUTS & SELECTS
    ───────────────────────────────────────────────────────────────── */
 
-/* Default (scenario/balloon selects) */
-.pc-wrap .pc-select,
-.pc-wrap .pc-input {
-    background: hsl(36 40% 99%) !important;
+/* Text inputs — `background-color` only (never `background:` shorthand here). */
+.pc-wrap input.pc-input,
+.pc-wrap textarea.pc-input {
+    background-color: hsl(36 40% 99%) !important;
     border: 1px solid hsl(38 30% 82%) !important;
     border-radius: 0.75rem !important;
     color: hsl(220 45% 13%) !important;
@@ -155,23 +228,73 @@
     box-shadow: none !important;
 }
 
-.pc-wrap .pc-select:focus,
-.pc-wrap .pc-input:focus {
+.pc-wrap input.pc-input:focus,
+.pc-wrap textarea.pc-input:focus {
     border-color: hsl(38 45% 50%) !important;
     box-shadow: 0 0 0 3px hsla(38, 45%, 50%, 0.15) !important;
 }
 
+/* Native selects — keep chevron via background-image (must not use `background:` shorthand). */
+.pc-wrap select.pc-select,
+.pc-wrap select.form-select {
+    background-color: hsl(36 40% 99%) !important;
+    background-image: var(--pc-select-chevron) !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.65rem center !important;
+    background-size: 12px 12px !important;
+    border: 1px solid hsl(38 30% 82%) !important;
+    border-radius: 0.75rem !important;
+    color: hsl(220 45% 13%) !important;
+    font-size: 0.875rem;
+    padding: 0.45rem 2.15rem 0.45rem 0.75rem !important;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none !important;
+    box-shadow: none !important;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.pc-wrap select.pc-select:focus,
+.pc-wrap select.form-select:focus {
+    border-color: hsl(38 45% 50%) !important;
+    box-shadow: 0 0 0 3px hsla(38, 45%, 50%, 0.15) !important;
+    background-color: hsl(36 40% 99%) !important;
+    background-image: var(--pc-select-chevron) !important;
+}
+
 /* Gold inputs — advance / handover / duration */
-.pc-wrap .pc-input-gold,
-.pc-wrap select.pc-input-gold {
-    background: hsl(36 40% 99%) !important;
+.pc-wrap input.pc-input-gold {
+    background-color: hsl(36 40% 99%) !important;
     border: 1px solid hsl(38 45% 50%) !important;
     border-radius: 0.75rem !important;
     color: hsl(25 75% 31%) !important;
-    /* text-gold / warm amber-brown */
     font-weight: 700 !important;
     font-size: 0.875rem;
     transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pc-wrap select.pc-input-gold {
+    background-color: hsl(36 40% 99%) !important;
+    background-image: var(--pc-select-chevron-gold) !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.65rem center !important;
+    background-size: 12px 12px !important;
+    border: 1px solid hsl(38 45% 50%) !important;
+    border-radius: 0.75rem !important;
+    color: hsl(25 75% 31%) !important;
+    font-weight: 700 !important;
+    font-size: 0.875rem;
+    padding: 0.45rem 2.15rem 0.45rem 0.75rem !important;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.pc-wrap select.pc-input-gold:focus {
+    background-color: hsl(36 40% 99%) !important;
+    background-image: var(--pc-select-chevron-gold) !important;
 }
 
 .pc-wrap .pc-input-gold::placeholder {
@@ -201,6 +324,16 @@
     border-color: hsl(38 30% 82%) !important;
     border-radius: 0.75rem !important;
     color: hsl(220 45% 13%) !important;
+}
+
+/* Native <option> styling — some browsers inherit invisible text without explicit option colors */
+.pc-wrap select.form-select option {
+    color: hsl(220 45% 13%);
+    background-color: hsl(36 40% 99%);
+}
+
+.pc-wrap select.form-select {
+    min-height: 2.5rem;
 }
 
 .pc-wrap .form-select:focus,
@@ -293,11 +426,10 @@
    ───────────────────────────────────────────────────────────────── */
 
 .pc-wrap .pc-schedule-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 0.75rem 1rem;
     margin-bottom: 0.75rem;
 }
 
@@ -305,6 +437,72 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.pc-wrap .pc-schedule-download-wrap {
+    flex-shrink: 0;
+    justify-self: end;
+}
+
+.pc-wrap .pc-th-actions,
+.pc-wrap .pc-td-actions {
+    white-space: nowrap;
+    width: 1%;
+}
+
+.pc-wrap .pc-schedule-edit-btn {
+    font-size: 0.75rem !important;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem !important;
+    line-height: 1.2;
+    border-radius: 0.5rem !important;
+    border: 1.5px solid hsl(38 45% 50%) !important;
+    color: hsl(38 45% 50%) !important;
+    background: transparent !important;
+}
+
+.pc-wrap .pc-schedule-edit-btn:hover {
+    background: linear-gradient(135deg, hsl(38 45% 50%), hsl(38 58% 66%)) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+
+/* Schedule row edit — Bootstrap modal */
+.pc-wrap .pc-schedule-edit-modal .modal-content {
+    border-radius: 1rem;
+    border: 1px solid hsla(38, 30%, 82%, 0.55);
+    box-shadow: 0 24px 48px hsla(220, 45%, 18%, 0.12);
+}
+
+.pc-wrap .pc-schedule-edit-modal .modal-title {
+    color: hsl(220 45% 13%);
+    font-size: 1.125rem;
+}
+
+.pc-wrap .pc-schedule-edit-modal .form-label {
+    color: hsl(220 35% 28%);
+    font-size: 0.875rem;
+}
+
+.pc-wrap .pc-schedule-edit-modal .form-control {
+    border-radius: 0.65rem;
+}
+
+@media (max-width: 767px) {
+    .pc-wrap .pc-schedule-header {
+        grid-template-columns: 1fr;
+    }
+
+    .pc-wrap .pc-schedule-download-wrap {
+        justify-self: stretch;
+    }
+
+    .pc-wrap .pc-schedule-download-wrap .btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* Thin gold bar before "Payment Schedule" — matches the h-1 w-6 gold-gradient in React */
@@ -725,6 +923,9 @@
 
     /* ── 4. Hide interactive controls ─────────────────────────── */
     #downloadCalculationPdfNew,
+    .pc-th-actions,
+    .pc-td-actions,
+    .pc-schedule-edit-btn,
     #btnCalculateScenario,
     #btnCalculateUser,
     .btn.pc-btn-gold:not(#downloadCalculationPdfNew),
