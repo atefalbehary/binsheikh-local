@@ -441,7 +441,12 @@
     min-width: 0;
 }
 
-.pc-wrap .pc-schedule-download-wrap {
+.pc-wrap .pc-schedule-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem 0.75rem;
     flex-shrink: 0;
     justify-self: end;
 }
@@ -495,11 +500,12 @@
         grid-template-columns: 1fr;
     }
 
-    .pc-wrap .pc-schedule-download-wrap {
+    .pc-wrap .pc-schedule-actions {
         justify-self: stretch;
+        flex-direction: column;
     }
 
-    .pc-wrap .pc-schedule-download-wrap .btn {
+    .pc-wrap .pc-schedule-actions .btn {
         width: 100%;
         justify-content: center;
     }
@@ -612,6 +618,20 @@
 .pc-wrap .pc-table tbody tr.pc-row-discount td {
     color: #047857 !important;
     /* text-emerald-700 */
+}
+
+/* User-added custom rows (after discount): soft indigo tint */
+.pc-wrap .pc-table tbody tr.pc-row-added {
+    background-color: #eef2ff !important;
+}
+
+.pc-wrap .pc-table tbody tr.pc-row-added td {
+    color: #3730a3 !important;
+}
+
+.pc-wrap .pc-table tbody tr.pc-row-added:hover {
+    background-color: #e0e7ff !important;
+    transition: background-color 0.12s;
 }
 
 /* Down payment / Handover row: bg-rose-50 */
@@ -923,6 +943,7 @@
 
     /* ── 4. Hide interactive controls ─────────────────────────── */
     #downloadCalculationPdfNew,
+    #btnAddScheduleRow,
     .pc-th-actions,
     .pc-td-actions,
     .pc-schedule-edit-btn,
@@ -1125,6 +1146,18 @@
 
     .pc-wrap .pc-table tbody tr.pc-row-discount td {
         color: #047857 !important;
+        font-weight: 600;
+    }
+
+    /* User-added rows */
+    .pc-wrap .pc-table tbody tr.pc-row-added {
+        background-color: #eef2ff !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .pc-wrap .pc-table tbody tr.pc-row-added td {
+        color: #3730a3 !important;
         font-weight: 600;
     }
 

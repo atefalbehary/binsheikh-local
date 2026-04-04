@@ -264,7 +264,15 @@
                             <span class="pc-schedule-title">Payment Schedule</span>
                             <span id="discountTitleLabel" class="pc-discount-badge" style="display:none;"></span>
                         </div>
-                        <div class="pc-schedule-download-wrap">
+                        <div class="pc-schedule-actions">
+                            <button id="btnAddScheduleRow" type="button"
+                                class="btn pc-btn-outline-gold d-flex align-items-center gap-2">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Add row
+                            </button>
                             <button id="downloadCalculationPdfNew" type="button"
                                 class="btn pc-btn-outline-gold d-flex align-items-center gap-2">
                                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -321,8 +329,8 @@
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label fw-semibold" for="scheduleEditPayment">Payment (QAR)</label>
-                                            <input type="number" class="form-control" id="scheduleEditPayment" min="0"
-                                                step="1" />
+                                            <input type="text" class="form-control" id="scheduleEditPayment"
+                                                inputmode="decimal" autocomplete="off" placeholder="e.g. 1,917.86" />
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label fw-semibold" for="scheduleEditPercentage">Percentage (%)</label>
@@ -337,6 +345,50 @@
                                 <div class="modal-footer border-secondary border-opacity-25">
                                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                                     <button type="button" class="btn pc-btn-gold" id="scheduleRowEditSave">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Add row — open from "Add row", append to schedule after save --}}
+                    <div class="modal fade" id="scheduleAddRowModal" tabindex="-1"
+                        aria-labelledby="scheduleAddRowModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content pc-schedule-edit-modal">
+                                <div class="modal-header border-secondary border-opacity-25">
+                                    <h5 class="modal-title fw-bold" id="scheduleAddRowModalLabel">Add payment row</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="small text-muted mb-3">Enter details below. The row is added to the end of the schedule; totals update automatically.</p>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="scheduleAddLabel">Label / title</label>
+                                            <input type="text" class="form-control" id="scheduleAddLabel"
+                                                autocomplete="off" placeholder="e.g. Extra installment" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="scheduleAddMonth">Month / timeline</label>
+                                            <input type="text" class="form-control" id="scheduleAddMonth"
+                                                autocomplete="off" placeholder="e.g. May-26" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="scheduleAddPayment">Payment (QAR)</label>
+                                            <input type="text" class="form-control" id="scheduleAddPayment"
+                                                inputmode="decimal" autocomplete="off" placeholder="e.g. 10,000" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold" for="scheduleAddPercentage">Percentage (%)</label>
+                                            <input type="number" class="form-control" id="scheduleAddPercentage" min="0"
+                                                step="0.01" />
+                                        </div>
+                                    </div>
+                                    <p class="small text-muted mt-3 mb-0">Payment and % stay in sync with the unit amount above.</p>
+                                </div>
+                                <div class="modal-footer border-secondary border-opacity-25">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn pc-btn-gold" id="scheduleAddRowSave">Add to schedule</button>
                                 </div>
                             </div>
                         </div>
@@ -432,6 +484,97 @@
                             $el.val(formatAmountWithCommas(v));
                         }
                     })();
+
+                    /** Modal payment: thousands separators + optional decimals (e.g. 1,917.86). */
+                    function parseMoneyInputToNumber(str) {
+                        var s = String(str || '').replace(/,/g, '').trim();
+                        if (s === '' || s === '.') {
+                            return NaN;
+                        }
+                        var n = parseFloat(s);
+                        return isNaN(n) ? NaN : n;
+                    }
+
+                    function formatMoneyFromNumber(n) {
+                        if (typeof n !== 'number' || isNaN(n)) {
+                            return '';
+                        }
+                        return n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+                    }
+
+                    function formatMoneyInputWithCommas(str) {
+                        var s = String(str || '').replace(/,/g, '');
+                        if (s === '') {
+                            return '';
+                        }
+                        if (s === '.') {
+                            return '0.';
+                        }
+                        var dot = s.indexOf('.');
+                        var intPart = dot === -1 ? s : s.slice(0, dot);
+                        var decPart = dot === -1 ? null : s.slice(dot + 1).replace(/\D/g, '').slice(0, 2);
+                        intPart = intPart.replace(/\D/g, '');
+                        if (intPart === '' && decPart !== null && decPart !== '') {
+                            intPart = '0';
+                        }
+                        if (intPart === '' && dot === -1) {
+                            return '';
+                        }
+                        if (intPart === '') {
+                            intPart = '0';
+                        }
+                        var intNum = parseInt(intPart, 10);
+                        if (isNaN(intNum)) {
+                            intNum = 0;
+                        }
+                        var intFormatted = intNum.toLocaleString('en-US');
+                        if (dot !== -1) {
+                            return intFormatted + '.' + (decPart !== undefined && decPart !== null ? decPart : '');
+                        }
+                        return intFormatted;
+                    }
+
+                    function formatModalPaymentPreserveCaret(inputId) {
+                        var el = document.getElementById(inputId || 'scheduleEditPayment');
+                        if (!el) {
+                            return;
+                        }
+                        var raw = el.value;
+                        var caret = el.selectionStart != null ? el.selectionStart : raw.length;
+                        var digitsBeforeCaret = raw.slice(0, caret).replace(/\D/g, '').length;
+                        var rawClean = raw.replace(/,/g, '');
+                        var endsWithDot = rawClean.endsWith('.') && rawClean.indexOf('.') === rawClean.length - 1;
+                        var formatted = formatMoneyInputWithCommas(raw);
+                        if (formatted === raw) {
+                            return;
+                        }
+                        el.value = formatted;
+                        var pos;
+                        if (endsWithDot && formatted.endsWith('.')) {
+                            pos = formatted.length;
+                        } else {
+                            pos = 0;
+                            var count = 0;
+                            var i;
+                            for (i = 0; i < formatted.length; i++) {
+                                if (/\d/.test(formatted[i])) {
+                                    count++;
+                                    if (count === digitsBeforeCaret) {
+                                        pos = i + 1;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (digitsBeforeCaret === 0) {
+                                pos = 0;
+                            } else if (count < digitsBeforeCaret) {
+                                pos = formatted.length;
+                            }
+                        }
+                        if (el.setSelectionRange) {
+                            el.setSelectionRange(pos, pos);
+                        }
+                    }
 
                     var fullPrice = getFullPrice();
                     var managementFeeRate = {{ $settings->service_charge_perc / 100 }};
@@ -566,7 +709,10 @@
                                 return Object.assign({}, row, {
                                     totalPayment: 0,
                                     totalPercentage: 0,
-                                    dueAmount: fullPrice
+                                    dueAmount: fullPrice,
+                                    label: row.label,
+                                    month: row.month,
+                                    isAddedRow: row.isAddedRow
                                 });
                             }
 
@@ -579,9 +725,37 @@
                             return Object.assign({}, row, {
                                 totalPayment: cumulative,
                                 totalPercentage: (cumulative / fullPrice) * 100,
-                                dueAmount: fullPrice - cumulative
+                                dueAmount: fullPrice - cumulative,
+                                label: row.label,
+                                month: row.month,
+                                isAddedRow: row.isAddedRow
                             });
                         });
+                    }
+
+                    /** Insert user-added rows right after discount (or after mgmt if no discount), not at table end. */
+                    function findInsertIndexForAddedRow(rows) {
+                        var base = 0;
+                        var d;
+                        for (d = 0; d < rows.length; d++) {
+                            if (rows[d].isDiscountRow) {
+                                base = d + 1;
+                                break;
+                            }
+                        }
+                        if (d >= rows.length) {
+                            for (var m = 0; m < rows.length; m++) {
+                                if (rows[m].isMgmtFee) {
+                                    base = m + 1;
+                                    break;
+                                }
+                            }
+                        }
+                        var k = base;
+                        while (k < rows.length && rows[k].isAddedRow) {
+                            k++;
+                        }
+                        return k;
                     }
 
                     function updateSkylineControls() {
@@ -629,6 +803,25 @@
                             .replace(/"/g, '&quot;');
                     }
 
+                    /** First table column: show both label and month when present so modal edits always appear. */
+                    function buildScheduleFirstColumnText(row) {
+                        var l = row.label != null ? String(row.label).trim() : '';
+                        var m = row.month != null ? String(row.month).trim() : '';
+                        if (m === '-') {
+                            m = '';
+                        }
+                        if (l && m) {
+                            return l + ' — ' + m;
+                        }
+                        if (l) {
+                            return l;
+                        }
+                        if (m) {
+                            return m;
+                        }
+                        return '—';
+                    }
+
                     function displaySchedule(scheduleRows) {
                         var tbody = $('#calculate_em_tbody_new');
                         tbody.empty();
@@ -645,19 +838,19 @@
                             var isDiscount = row.isDiscountRow;
                             var isCashback = row.isCashbackRow;
                             var isHighlight = row.isHighlight;
+                            var isAdded = row.isAddedRow;
 
                             var trClass = "";
 
                             if (isMgmt) { trClass = "pc-row-mgmt"; }
                             else if (isDiscount) { trClass = "pc-row-discount"; }
                             else if (isCashback) { trClass = "pc-row-discount"; }
+                            else if (isAdded) { trClass = "pc-row-added"; }
                             else if (isHighlight) { trClass = "pc-row-highlight"; }
                             else if (i % 2 === 0) { trClass = "pc-row-even"; }
                             else { trClass = "pc-row-odd"; }
 
-                            var labelCol = (isMgmt || isHighlight || isDiscount || isCashback)
-                                ? (row.label || row.month || '—')
-                                : (row.month || row.label || '—');
+                            var labelCol = buildScheduleFirstColumnText(row);
                             var labelColSafe = escapeHtml(labelCol);
                             var paymentStr = (isDiscount || isCashback) ? "- " + formatCurrency(row.payment) : formatCurrency(row.payment);
                             var totalPaymentStr = isMgmt ? "-" : formatCurrency(row.totalPayment);
@@ -874,6 +1067,32 @@
                     });
 
                     var scheduleEditSync = false;
+                    var scheduleAddSync = false;
+
+                    function resetScheduleAddRowForm() {
+                        $('#scheduleAddLabel').val('');
+                        $('#scheduleAddMonth').val('');
+                        $('#scheduleAddPayment').val('');
+                        $('#scheduleAddPercentage').val('');
+                    }
+
+                    function openScheduleAddRowModal() {
+                        fullPrice = getFullPrice();
+                        if (fullPrice <= 0) {
+                            alert("Please enter a valid unit amount (QAR) above.");
+                            return;
+                        }
+                        if (!window.calculatedScheduleData || window.calculatedScheduleData.length === 0) {
+                            alert("Calculate a payment schedule first.");
+                            return;
+                        }
+                        resetScheduleAddRowForm();
+                        $('#scheduleAddLabel').val('Additional payment');
+                        var modalEl = document.getElementById('scheduleAddRowModal');
+                        if (modalEl && typeof bootstrap !== 'undefined') {
+                            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                        }
+                    }
 
                     function openScheduleRowEditModal(idx) {
                         fullPrice = getFullPrice();
@@ -906,7 +1125,7 @@
                         if (typeof payVal !== 'number' || isNaN(payVal)) {
                             payVal = 0;
                         }
-                        $('#scheduleEditPayment').val(Math.round(payVal * 100) / 100);
+                        $('#scheduleEditPayment').val(formatMoneyFromNumber(Math.round(payVal * 100) / 100));
                         var pctVal = row.percentage;
                         if (typeof pctVal !== 'number' || isNaN(pctVal)) {
                             pctVal = 0;
@@ -923,11 +1142,12 @@
                         if (scheduleEditSync) {
                             return;
                         }
+                        formatModalPaymentPreserveCaret('scheduleEditPayment');
                         fullPrice = getFullPrice();
                         if (fullPrice <= 0) {
                             return;
                         }
-                        var pay = parseFloat($(this).val());
+                        var pay = parseMoneyInputToNumber($('#scheduleEditPayment').val());
                         if (isNaN(pay)) {
                             return;
                         }
@@ -949,7 +1169,8 @@
                             return;
                         }
                         scheduleEditSync = true;
-                        $('#scheduleEditPayment').val(Math.round(fullPrice * (pct / 100) * 100) / 100);
+                        var payRounded = Math.round(fullPrice * (pct / 100) * 100) / 100;
+                        $('#scheduleEditPayment').val(formatMoneyFromNumber(payRounded));
                         scheduleEditSync = false;
                     });
 
@@ -969,7 +1190,7 @@
                         row.label = ($('#scheduleEditLabel').val() || '').trim();
                         row.month = ($('#scheduleEditMonth').val() || '').trim();
 
-                        var newPay = parseFloat($('#scheduleEditPayment').val());
+                        var newPay = parseMoneyInputToNumber($('#scheduleEditPayment').val());
                         if (isNaN(newPay) || newPay < 0) {
                             alert('Please enter a valid payment amount.');
                             return;
@@ -993,6 +1214,88 @@
                             return;
                         }
                         openScheduleRowEditModal(idx);
+                    });
+
+                    $('#scheduleAddPayment').on('input', function () {
+                        if (scheduleAddSync) {
+                            return;
+                        }
+                        formatModalPaymentPreserveCaret('scheduleAddPayment');
+                        fullPrice = getFullPrice();
+                        if (fullPrice <= 0) {
+                            return;
+                        }
+                        var pay = parseMoneyInputToNumber($('#scheduleAddPayment').val());
+                        if (isNaN(pay)) {
+                            return;
+                        }
+                        scheduleAddSync = true;
+                        $('#scheduleAddPercentage').val((pay / fullPrice * 100).toFixed(2));
+                        scheduleAddSync = false;
+                    });
+
+                    $('#scheduleAddPercentage').on('input', function () {
+                        if (scheduleAddSync) {
+                            return;
+                        }
+                        fullPrice = getFullPrice();
+                        if (fullPrice <= 0) {
+                            return;
+                        }
+                        var pct = parseFloat($(this).val());
+                        if (isNaN(pct)) {
+                            return;
+                        }
+                        scheduleAddSync = true;
+                        var payRounded = Math.round(fullPrice * (pct / 100) * 100) / 100;
+                        $('#scheduleAddPayment').val(formatMoneyFromNumber(payRounded));
+                        scheduleAddSync = false;
+                    });
+
+                    $('#scheduleAddRowSave').on('click', function () {
+                        fullPrice = getFullPrice();
+                        if (fullPrice <= 0) {
+                            alert("Please enter a valid unit amount (QAR) above.");
+                            return;
+                        }
+                        var rows = window.calculatedScheduleData;
+                        if (!rows || rows.length === 0) {
+                            alert("Calculate a payment schedule first.");
+                            return;
+                        }
+                        var newPay = parseMoneyInputToNumber($('#scheduleAddPayment').val());
+                        if (isNaN(newPay) || newPay < 0) {
+                            alert('Please enter a valid payment amount (QAR).');
+                            return;
+                        }
+                        var newRow = {
+                            label: ($('#scheduleAddLabel').val() || '').trim() || 'Additional payment',
+                            month: ($('#scheduleAddMonth').val() || '').trim(),
+                            payment: newPay,
+                            percentage: (newPay / fullPrice) * 100,
+                            isHighlight: false,
+                            isMgmtFee: false,
+                            isDiscountRow: false,
+                            isCashbackRow: false,
+                            isAddedRow: true
+                        };
+                        rows.splice(findInsertIndexForAddedRow(rows), 0, newRow);
+                        window.calculatedScheduleData = recomputeRunningTotals(rows);
+                        displaySchedule(window.calculatedScheduleData);
+                        var addModalEl = document.getElementById('scheduleAddRowModal');
+                        if (addModalEl && typeof bootstrap !== 'undefined') {
+                            bootstrap.Modal.getOrCreateInstance(addModalEl).hide();
+                        }
+                        resetScheduleAddRowForm();
+                    });
+
+                    $('#scheduleAddRowModal').on('hidden.bs.modal', function () {
+                        resetScheduleAddRowForm();
+                    });
+
+                    $('#btnAddScheduleRow').on('click', function (e) {
+                        e.preventDefault();
+                        openScheduleAddRowModal();
                     });
 
                     renderPlanInfoTables();
