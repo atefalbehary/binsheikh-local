@@ -24,6 +24,12 @@
     /* Warm ivory page background — matches React bg-background */
     background: hsl(36 30% 97%);
     padding: 2rem 0;
+    /*
+     * Native <select> needs background-image for the chevron. Never use `background:` shorthand
+     * on selects — it strips Bootstrap’s SVG arrow and the control looks like a plain text field.
+     */
+    --pc-select-chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2322364a' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.75' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    --pc-select-chevron-gold: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%238a6a2e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.75' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -48,6 +54,105 @@
     margin-bottom: 1rem;
 }
 
+/* Collapsible: advance + installment end + handover (default closed) */
+.pc-wrap .pc-custom-emi-details {
+    border: 1px solid hsla(38, 30%, 78%, 0.55);
+    border-radius: 0.85rem;
+    background: hsla(36, 35%, 98%, 0.6);
+    padding: 0.35rem 0.65rem 0.5rem;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.pc-wrap .pc-custom-emi-details > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    padding: 0.45rem 0.35rem;
+    user-select: none;
+    color: hsl(38 45% 32%);
+    font-weight: 600;
+    font-size: 0.9rem;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.pc-wrap .pc-custom-emi-details > summary::-webkit-details-marker {
+    display: none;
+}
+
+.pc-wrap .pc-custom-emi-summary:focus-visible {
+    outline: 2px solid hsl(38 45% 45%);
+    outline-offset: 2px;
+    border-radius: 0.35rem;
+}
+
+.pc-wrap .pc-custom-emi-chevron {
+    display: inline-block;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-right: 2px solid hsl(38 42% 42%);
+    border-bottom: 2px solid hsl(38 42% 42%);
+    transform: rotate(-45deg);
+    margin-right: 0.15rem;
+    transition: transform 0.2s ease;
+    position: relative;
+    top: -0.05rem;
+}
+
+.pc-wrap .pc-custom-emi-details[open] .pc-custom-emi-chevron {
+    transform: rotate(45deg);
+    top: 0.05rem;
+}
+
+.pc-wrap .pc-custom-emi-summary-hint {
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: hsl(220 14% 46%);
+}
+
+.pc-wrap .pc-custom-emi-body.pc-section-light {
+    margin-bottom: 0.35rem;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.pc-wrap .pc-custom-emi-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem 1rem;
+    width: 100%;
+    min-width: 0;
+}
+
+@media (min-width: 768px) {
+    .pc-wrap .pc-custom-emi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.pc-wrap .pc-custom-emi-field {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.pc-wrap .pc-custom-emi-field .form-control,
+.pc-wrap .pc-custom-emi-field .form-select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.pc-wrap .pc-custom-emi-actions-inner {
+    min-width: 0;
+}
+
 /* Duration badge: bg-muted/30 */
 .pc-wrap .pc-badge {
     text-align: center;
@@ -68,6 +173,73 @@
     font-size: 0.875rem;
     font-weight: 700;
     color: hsl(220 45% 13%);
+}
+
+/* Scenario toolbar — amount + selects + CTA on one line */
+.pc-wrap .pc-scenario-toolbar .pc-scenario-toolbar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 1rem;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-field {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    min-width: 0;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-field-amount {
+    flex: 0 0 auto;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-field-amount .pc-input {
+    width: 11rem;
+    min-width: 9rem;
+    max-width: 100%;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-select {
+    width: 13.75rem;
+    min-width: 11rem;
+    max-width: 100%;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-field-scenario .pc-toolbar-select {
+    width: min(17rem, 100%);
+    min-width: 12rem;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-select-sm {
+    width: 6.875rem;
+    min-width: 5.5rem;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-actions {
+    display: flex;
+    align-items: flex-end;
+    flex: 1 1 auto;
+    justify-content: flex-end;
+    min-width: min(100%, 12rem);
+    padding-bottom: 0.02rem;
+}
+
+.pc-wrap .pc-scenario-toolbar .pc-toolbar-btn-calc {
+    white-space: nowrap;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
+
+@media (max-width: 991px) {
+    .pc-wrap .pc-scenario-toolbar .pc-toolbar-actions {
+        flex-basis: 100%;
+        justify-content: stretch;
+    }
+
+    .pc-wrap .pc-scenario-toolbar .pc-toolbar-btn-calc {
+        width: 100%;
+    }
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -141,10 +313,10 @@
    INPUTS & SELECTS
    ───────────────────────────────────────────────────────────────── */
 
-/* Default (scenario/balloon selects) */
-.pc-wrap .pc-select,
-.pc-wrap .pc-input {
-    background: hsl(36 40% 99%) !important;
+/* Text inputs — `background-color` only (never `background:` shorthand here). */
+.pc-wrap input.pc-input,
+.pc-wrap textarea.pc-input {
+    background-color: hsl(36 40% 99%) !important;
     border: 1px solid hsl(38 30% 82%) !important;
     border-radius: 0.75rem !important;
     color: hsl(220 45% 13%) !important;
@@ -155,23 +327,73 @@
     box-shadow: none !important;
 }
 
-.pc-wrap .pc-select:focus,
-.pc-wrap .pc-input:focus {
+.pc-wrap input.pc-input:focus,
+.pc-wrap textarea.pc-input:focus {
     border-color: hsl(38 45% 50%) !important;
     box-shadow: 0 0 0 3px hsla(38, 45%, 50%, 0.15) !important;
 }
 
+/* Native selects — keep chevron via background-image (must not use `background:` shorthand). */
+.pc-wrap select.pc-select,
+.pc-wrap select.form-select {
+    background-color: hsl(36 40% 99%) !important;
+    background-image: var(--pc-select-chevron) !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.65rem center !important;
+    background-size: 12px 12px !important;
+    border: 1px solid hsl(38 30% 82%) !important;
+    border-radius: 0.75rem !important;
+    color: hsl(220 45% 13%) !important;
+    font-size: 0.875rem;
+    padding: 0.45rem 2.15rem 0.45rem 0.75rem !important;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none !important;
+    box-shadow: none !important;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.pc-wrap select.pc-select:focus,
+.pc-wrap select.form-select:focus {
+    border-color: hsl(38 45% 50%) !important;
+    box-shadow: 0 0 0 3px hsla(38, 45%, 50%, 0.15) !important;
+    background-color: hsl(36 40% 99%) !important;
+    background-image: var(--pc-select-chevron) !important;
+}
+
 /* Gold inputs — advance / handover / duration */
-.pc-wrap .pc-input-gold,
-.pc-wrap select.pc-input-gold {
-    background: hsl(36 40% 99%) !important;
+.pc-wrap input.pc-input-gold {
+    background-color: hsl(36 40% 99%) !important;
     border: 1px solid hsl(38 45% 50%) !important;
     border-radius: 0.75rem !important;
     color: hsl(25 75% 31%) !important;
-    /* text-gold / warm amber-brown */
     font-weight: 700 !important;
     font-size: 0.875rem;
     transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pc-wrap select.pc-input-gold {
+    background-color: hsl(36 40% 99%) !important;
+    background-image: var(--pc-select-chevron-gold) !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.65rem center !important;
+    background-size: 12px 12px !important;
+    border: 1px solid hsl(38 45% 50%) !important;
+    border-radius: 0.75rem !important;
+    color: hsl(25 75% 31%) !important;
+    font-weight: 700 !important;
+    font-size: 0.875rem;
+    padding: 0.45rem 2.15rem 0.45rem 0.75rem !important;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.pc-wrap select.pc-input-gold:focus {
+    background-color: hsl(36 40% 99%) !important;
+    background-image: var(--pc-select-chevron-gold) !important;
 }
 
 .pc-wrap .pc-input-gold::placeholder {
@@ -201,6 +423,16 @@
     border-color: hsl(38 30% 82%) !important;
     border-radius: 0.75rem !important;
     color: hsl(220 45% 13%) !important;
+}
+
+/* Native <option> styling — some browsers inherit invisible text without explicit option colors */
+.pc-wrap select.form-select option {
+    color: hsl(220 45% 13%);
+    background-color: hsl(36 40% 99%);
+}
+
+.pc-wrap select.form-select {
+    min-height: 2.5rem;
 }
 
 .pc-wrap .form-select:focus,
@@ -293,11 +525,10 @@
    ───────────────────────────────────────────────────────────────── */
 
 .pc-wrap .pc-schedule-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 0.75rem 1rem;
     margin-bottom: 0.75rem;
 }
 
@@ -305,6 +536,78 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.pc-wrap .pc-schedule-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem 0.75rem;
+    flex-shrink: 0;
+    justify-self: end;
+}
+
+.pc-wrap .pc-th-actions,
+.pc-wrap .pc-td-actions {
+    white-space: nowrap;
+    width: 1%;
+}
+
+.pc-wrap .pc-schedule-edit-btn {
+    font-size: 0.75rem !important;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem !important;
+    line-height: 1.2;
+    border-radius: 0.5rem !important;
+    border: 1.5px solid hsl(38 45% 50%) !important;
+    color: hsl(38 45% 50%) !important;
+    background: transparent !important;
+}
+
+.pc-wrap .pc-schedule-edit-btn:hover {
+    background: linear-gradient(135deg, hsl(38 45% 50%), hsl(38 58% 66%)) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+
+/* Schedule row edit — Bootstrap modal */
+.pc-wrap .pc-schedule-edit-modal .modal-content {
+    border-radius: 1rem;
+    border: 1px solid hsla(38, 30%, 82%, 0.55);
+    box-shadow: 0 24px 48px hsla(220, 45%, 18%, 0.12);
+}
+
+.pc-wrap .pc-schedule-edit-modal .modal-title {
+    color: hsl(220 45% 13%);
+    font-size: 1.125rem;
+}
+
+.pc-wrap .pc-schedule-edit-modal .form-label {
+    color: hsl(220 35% 28%);
+    font-size: 0.875rem;
+}
+
+.pc-wrap .pc-schedule-edit-modal .form-control {
+    border-radius: 0.65rem;
+}
+
+@media (max-width: 767px) {
+    .pc-wrap .pc-schedule-header {
+        grid-template-columns: 1fr;
+    }
+
+    .pc-wrap .pc-schedule-actions {
+        justify-self: stretch;
+        flex-direction: column;
+    }
+
+    .pc-wrap .pc-schedule-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* Thin gold bar before "Payment Schedule" — matches the h-1 w-6 gold-gradient in React */
@@ -416,6 +719,20 @@
     /* text-emerald-700 */
 }
 
+/* User-added custom rows (after discount): soft indigo tint */
+.pc-wrap .pc-table tbody tr.pc-row-added {
+    background-color: #eef2ff !important;
+}
+
+.pc-wrap .pc-table tbody tr.pc-row-added td {
+    color: #3730a3 !important;
+}
+
+.pc-wrap .pc-table tbody tr.pc-row-added:hover {
+    background-color: #e0e7ff !important;
+    transition: background-color 0.12s;
+}
+
 /* Down payment / Handover row: bg-rose-50 */
 .pc-wrap .pc-table tbody tr.pc-row-highlight {
     background-color: #fff1f2 !important;
@@ -442,6 +759,98 @@
 .pc-wrap .pc-table tbody tr.pc-row-odd:hover {
     background-color: hsla(38, 45%, 50%, 0.06) !important;
     transition: background-color 0.12s;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+  SKYLINE INFO MINI TABLES
+  ───────────────────────────────────────────────────────────────── */
+.pc-wrap .pc-mini-card {
+    background: hsla(36, 22%, 94%, 0.28);
+    border: 1px solid hsla(38, 30%, 82%, 0.35);
+    border-radius: 0.85rem;
+    padding: 0.55rem;
+}
+
+.pc-wrap .pc-mini-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: hsl(220 35% 24%);
+    margin-bottom: 0.45rem;
+}
+
+.pc-wrap .pc-mini-table-wrap {
+    border-radius: 0.7rem;
+    box-shadow: none;
+}
+
+.pc-wrap .pc-mini-table {
+    font-size: 0.8rem;
+    white-space: normal;
+}
+
+.pc-wrap .pc-mini-table tbody td {
+    padding: 0.45rem 0.6rem;
+    vertical-align: top;
+    line-height: 1.35;
+}
+
+.pc-wrap .pc-mini-table tbody td:first-child {
+    width: 43%;
+    color: hsl(220 22% 35%);
+    font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+    .pc-wrap .pc-mini-table tbody td:first-child {
+        width: 40%;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pc-wrap .pc-section {
+        padding: 0.8rem;
+    }
+
+    .pc-wrap .pc-mini-card {
+        padding: 0.5rem;
+    }
+
+    .pc-wrap .pc-mini-title {
+        font-size: 0.78rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .pc-wrap .pc-mini-table {
+        font-size: 0.76rem;
+    }
+
+    .pc-wrap .pc-mini-table tbody td {
+        padding: 0.38rem 0.5rem;
+    }
+
+    .pc-wrap #projectPlanSelector,
+    .pc-wrap #scenarioSelector,
+    .pc-wrap #discountSelector,
+    .pc-wrap #btnCalculateScenario,
+    .pc-wrap #btnCalculateUser {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .pc-wrap #downloadCalculationPdfNew {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pc-wrap .pc-table {
+        font-size: 0.78rem;
+    }
+
+    .pc-wrap .pc-table thead th,
+    .pc-wrap .pc-table tbody td {
+        padding-left: 0.55rem;
+        padding-right: 0.55rem;
+    }
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -633,6 +1042,10 @@
 
     /* ── 4. Hide interactive controls ─────────────────────────── */
     #downloadCalculationPdfNew,
+    #btnAddScheduleRow,
+    .pc-th-actions,
+    .pc-td-actions,
+    .pc-schedule-edit-btn,
     #btnCalculateScenario,
     #btnCalculateUser,
     .btn.pc-btn-gold:not(#downloadCalculationPdfNew),
@@ -832,6 +1245,18 @@
 
     .pc-wrap .pc-table tbody tr.pc-row-discount td {
         color: #047857 !important;
+        font-weight: 600;
+    }
+
+    /* User-added rows */
+    .pc-wrap .pc-table tbody tr.pc-row-added {
+        background-color: #eef2ff !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .pc-wrap .pc-table tbody tr.pc-row-added td {
+        color: #3730a3 !important;
         font-weight: 600;
     }
 

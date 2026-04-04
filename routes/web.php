@@ -40,6 +40,11 @@ Route::get('/google41802e3e0f5e94ab.html', function () {
 });
 Route::get('/property-details/{slug}', 'App\Http\Controllers\front\HomeController@property_details');
 Route::get('/property-details/{slug}/calculator', 'App\Http\Controllers\front\HomeController@payment_calculator')->name('property.calculator');
+Route::get('/property-details/{slug}/calculator/{type}', 'App\Http\Controllers\front\HomeController@payment_calculator_by_type')
+    ->where('type', 'marina|skyline')
+    ->name('property.calculator.type');
+Route::get('/marina-payment-calculator', 'App\Http\Controllers\front\HomeController@marina_payment_calculator')->name('calculator.marina');
+Route::get('/skyline-payment-calculator', 'App\Http\Controllers\front\HomeController@skyline_payment_calculator')->name('calculator.skyline');
 Route::get('/property-listing', 'App\Http\Controllers\front\HomeController@property_listing');
 Route::post('/get-projects', 'App\Http\Controllers\front\HomeController@getProjects');
 Route::post('/calculate_emi', 'App\Http\Controllers\front\HomeController@calculate_emi');

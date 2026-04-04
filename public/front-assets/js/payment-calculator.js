@@ -46,8 +46,11 @@ function buildRows(entries, fullPrice) {
 
 function prependMgmtFeeRow(rows, fullPrice, managementFeeRate, startDate) {
     var managementFees = fullPrice * managementFeeRate;
+    var feeLabel = managementFeeRate > 0
+        ? ("Management Fees (" + (managementFeeRate * 100).toFixed(1) + "%)")
+        : "Management Fees (Waived)";
     var mgmtRow = {
-        label: "Management Fees (2.5%)", // Can be localized later when mapping to blade
+        label: feeLabel, // Can be localized later when mapping to blade
         month: formatMonth(startDate),
         payment: managementFees,
         percentage: (managementFees / fullPrice) * 100,
@@ -367,7 +370,7 @@ function computeUserSchedule(params) {
     });
 
     var mgmtRow = {
-        label: "Management Fees (2.5%)",
+        label: managementFees > 0 ? "Management Fees (2.5%)" : "Management Fees (Waived)",
         month: formatMonth(startDate),
         payment: managementFees,
         percentage: (managementFees / fullPrice) * 100,

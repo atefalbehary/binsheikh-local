@@ -39,20 +39,19 @@ class PaymentCalculatorController extends Controller
             $monthCount = $settings->month_count;
         }
 
+        $monthCount = max(1, (int) $monthCount);
+
         return view('front_end.payment_calculator', compact('page_heading', 'property', 'settings', 'monthCount'));
     }
 
     public function index()
     {
-        // Example property — replace with your actual DB query
-        $property = [
-            'unit_number' => 'A-101',
-            'gross_area' => '85.5 m²',
-            'full_price' => 1500000,
-            'available_installment_duration_months' => 71,
-        ];
+        $page_heading = 'Payment Calculator';
+        $settings = Settings::find(1);
+        $monthCount = max(1, (int) ($settings->month_count ?? 60));
+        $calculatorType = null;
 
-        return view('payment-calculator', compact('property'));
+        return view('front_end.payment_calculator', compact('page_heading', 'settings', 'monthCount', 'calculatorType'));
     }
 
     /**
