@@ -319,6 +319,8 @@ if (!$locale) {
                                         <li><a
                                                 href="{{url('property-listing?sale_type=1')}}">{{ __("messages.buy") }}</a>
                                         </li>
+                                        <li><a href="{{ route('calculator.marina') }}">Marina Payment Calculator</a></li>
+                                        <li><a href="{{ route('calculator.skyline') }}">Skyline Payment Calculator</a></li>
                                     </ul>
                                     <!--second level end-->
                                 </li>
@@ -394,6 +396,10 @@ if (!$locale) {
                                         </li>
                                         <li><a class="dropdown-item"
                                                 href="{{url('property-listing?sale_type=1')}}">{{ __("messages.buy") }}</a>
+                                        </li>
+                                        <li><a class="dropdown-item" href="{{ route('calculator.marina') }}">Marina Payment Calculator</a>
+                                        </li>
+                                        <li><a class="dropdown-item" href="{{ route('calculator.skyline') }}">Skyline Payment Calculator</a>
                                         </li>
 
                                     </ul>

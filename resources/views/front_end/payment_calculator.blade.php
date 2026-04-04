@@ -9,64 +9,15 @@
         <!-- content -->
         <div class="content">
             <!--  section  -->
-            <div class="section hero-section inner-head">
-                <div class="hero-section-wrap">
-                    <div class="hero-section-wrap-item">
-                        <div class="container">
-                            <div class="hero-section-container">
-                                <div class="hero-section-title_container">
-                                    <div class="hero-section-title">
-                                        <h2>Payment Calculator: {{$property->name}}</h2>
-                                        <h4>Calculate customized payment planes easily</h4>
-                                    </div>
-                                </div>
-                                <div class="hs-scroll-down-wrap">
-                                    <div class="scroll-down-item">
-                                        <div class="mousey">
-                                            <div class="scroller"></div>
-                                        </div>
-                                        <span>{{ __('messages.scroll_down_to_discover') }}</span>
-                                    </div>
-                                    <div class="svg-corner svg-corner_white" style="bottom:0;left:-40px;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-wrap bg-hero bg-parallax-wrap-gradien fs-wrapper" data-scrollax-parent="true">
-                            @if(isset($property->images) && count($property->images) > 0)
-                                <div class="bg par-elem" data-bg="{{aws_asset_path($property->images[0]->image)}}"
-                                    data-scrollax="properties: { translateY: '30%' }"></div>
-                            @else
-                                <div class="bg par-elem" data-bg="{{asset('front-assets/images/bg/1.jpg')}}"
-                                    data-scrollax="properties: { translateY: '30%' }"></div>
-                            @endif
-                        </div>
-                        <div class="svg-corner svg-corner_white" style="bottom:64px;right: 0;z-index: 100"></div>
-                    </div>
-                </div>
-            </div>
+           
             <!--  section  end-->
 
             <!-- main-content -->
-            {{--
-            Payment Calculator — main-content section
-            ──────────────────────────────────────────
-            Paste everything between <!-- main-content --> and <!-- main-content end -->.
-
-            Uses:
-            • Bootstrap 5 (already in your project)
-            • jQuery (already in your project)
-            • front-assets/js/payment-calculator.js (already loaded in @section('script'))
-
-            Variables expected from the controller:
-            $property – Eloquent model (->price, ->name, ->reference_no, ->size, etc.)
-            $settings – settings model (->service_charge_perc, e.g. 2.5 for 2.5%)
-            $monthCount – integer, available installment duration in months
-            --}}
-
+           
             @php
                 $mgmtFeeRate = $settings->service_charge_perc / 100;
-                $mgmtFees = $property->price * $mgmtFeeRate;
-                $totalPrice = $property->price + $mgmtFees;
+                $mgmtFees = 0;
+                $totalPrice = 0;
 
                 /*
                  * Month option list
@@ -84,31 +35,7 @@
 
 
             <div class="container py-4 pc-wrap">
-
-                {{-- ── 1. Property Info Header ───────────────────────────────── --}}
-                <div class="pc-info-grid pc-section mb-3">
-                    <div class="pc-info-cell">
-                        <p class="pc-info-key mb-1">Unit Number</p>
-                        <p class="pc-info-val mb-0">{{ $property->reference_no ?? ($property->name ?? '—') }}</p>
-                    </div>
-                    <div class="pc-info-cell">
-                        <p class="pc-info-key mb-1">Gross Area</p>
-                        <p class="pc-info-val mb-0">{{ isset($property->size) ? $property->size . ' m²' : '—' }}</p>
-                    </div>
-                    <div class="pc-info-cell">
-                        <p class="pc-info-key mb-1">Full Price</p>
-                        <p class="pc-info-val mb-0">QAR {{ number_format($property->price, 0) }}</p>
-                    </div>
-                    <div class="pc-info-cell">
-                        <p class="pc-info-key mb-1">Management Fees</p>
-                        <p class="pc-info-val mb-0">QAR {{ number_format($mgmtFees, 0) }}</p>
-                    </div>
-                    <div class="pc-info-cell">
-                        <p class="pc-info-key mb-1">Total</p>
-                        <p class="pc-info-val mb-0">QAR {{ number_format($totalPrice, 0) }}</p>
-                    </div>
-                </div>
-
+ 
                 {{-- ── 2. Duration Badge ─────────────────────────────────────── --}}
                 <div class="pc-badge mb-3">
                     <span class="pc-badge-label">Available Installment Duration: </span>
@@ -117,6 +44,16 @@
 
                 {{-- ── 3. Scenario Selector ──────────────────────────────────── --}}
                 <div class="d-flex flex-wrap align-items-end gap-3 pc-section mb-3">
+
+                    <div id="projectPlanSelectorWrap">
+                        <label class="pc-label-muted" for="projectPlanSelector">
+                            Project Plan
+                        </label>
+                        <select id="projectPlanSelector" class="form-select pc-select" style="width:220px;">
+                            <option value="marina">Marina Tower</option>
+                            <option value="skyline">Skyline Tower</option>
+                        </select>
+                    </div>
 
                     <div>
                         <label class="pc-label-muted" for="scenarioSelector">
@@ -346,9 +283,187 @@
             <script src="{{ asset('front-assets/js/payment-calculator.js') }}"></script>
             <script>
                 $(document).ready(function () {
-                    var fullPrice = {{ $property->price }};
+                    var fullPrice = 0;
                     var managementFeeRate = {{ $settings->service_charge_perc / 100 }};
                     var durationMonths = {{ $monthCount }};
+                    var projectName = "";
+                    var isSkylineProject = projectName.indexOf('skyline') !== -1;
+                    var forcedProjectPlan = "{{ $calculatorType ?? '' }}";
+                    var defaultScenarioOptionsHtml = $('#scenarioSelector').html();
+                    var skylineTier3Threshold = 3000000;
+                    var skylineTier5Threshold = 5000000;
+                    var skylineMaxPlanMonths = 120;
+
+                    if (forcedProjectPlan === 'skyline' || forcedProjectPlan === 'marina') {
+                        $('#projectPlanSelector').val(forcedProjectPlan);
+                    } else if (isSkylineProject) {
+                        $('#projectPlanSelector').val('skyline');
+                    } else {
+                        $('#projectPlanSelector').val('marina');
+                    }
+
+                    function getYearlyCashbackMonths(duration) {
+                        var months = [];
+                        for (var m = 12; m <= duration; m += 12) {
+                            months.push(m);
+                        }
+                        if (months.length === 0 && duration > 0) {
+                            months.push(duration);
+                        } else if (months.length > 0 && months[months.length - 1] !== duration) {
+                            months.push(duration);
+                        }
+                        return months;
+                    }
+
+                    function getSkylinePlanMonths() {
+                        return Math.min(Math.max(durationMonths, 1), skylineMaxPlanMonths);
+                    }
+
+                    function getPlanStartDate() {
+                        var startDate = addMonths(new Date(), 1);
+                        startDate.setDate(1);
+                        return startDate;
+                    }
+
+                    function renderPlanInfoTables() {
+                        return;
+                    }
+
+                    function getSkylineBenefits() {
+                        var selectedScenario = $('#scenarioSelector').val();
+                        var selectedProjectPlan = $('#projectPlanSelector').val() || 'marina';
+                        var benefits = {
+                            isSkyline: false,
+                            discountRate: 0,
+                            managementFeeRate: managementFeeRate,
+                            cashbackRate: 0,
+                            cashbackMonths: []
+                        };
+
+                        if (!(isSkylineProject || selectedProjectPlan === 'skyline')) {
+                            return benefits;
+                        }
+
+                        benefits.isSkyline = true;
+
+                        switch (selectedScenario) {
+                            case 'skyline_under_3m':
+                                benefits.discountRate = 0.05;
+                                benefits.managementFeeRate = 0;
+                                break;
+                            case 'skyline_3m_5m':
+                                benefits.discountRate = 0.05;
+                                benefits.managementFeeRate = managementFeeRate;
+                                // Tier 2 cashback is until handover, bounded by Skyline max plan.
+                                benefits.cashbackRate = 0.08;
+                                benefits.cashbackMonths = getYearlyCashbackMonths(getSkylinePlanMonths());
+                                break;
+                            case 'skyline_5_opt2':
+                                benefits.discountRate = 0;
+                                benefits.managementFeeRate = managementFeeRate;
+                                benefits.cashbackRate = 0.15;
+                                benefits.cashbackMonths = getYearlyCashbackMonths(getSkylinePlanMonths());
+                                break;
+                            case 'skyline_5_opt1':
+                            default:
+                                benefits.discountRate = 0.10;
+                                benefits.managementFeeRate = 0;
+                                break;
+                        }
+
+                        return benefits;
+                    }
+
+                    function insertCashbackRows(rows, cashbackRate, cashbackMonths) {
+                        if (!cashbackRate || !cashbackMonths || cashbackMonths.length === 0) {
+                            return rows;
+                        }
+
+                        var cashbackTotal = fullPrice * cashbackRate;
+                        var eachCashback = cashbackTotal / cashbackMonths.length;
+                        var output = rows.slice();
+                        var mgmtOffset = (output[0] && output[0].isMgmtFee) ? 1 : 0;
+
+                        for (var i = 0; i < cashbackMonths.length; i++) {
+                            var monthIndex = cashbackMonths[i];
+                            var insertAt = Math.min(mgmtOffset + monthIndex, output.length);
+                            var cashbackAmount = (i === cashbackMonths.length - 1)
+                                ? (cashbackTotal - eachCashback * (cashbackMonths.length - 1))
+                                : eachCashback;
+
+                            output.splice(insertAt, 0, {
+                                label: "Year " + (i + 1) + " Cashback",
+                                month: "-",
+                                payment: cashbackAmount,
+                                percentage: (cashbackAmount / fullPrice) * 100,
+                                totalPayment: 0,
+                                totalPercentage: 0,
+                                dueAmount: 0,
+                                isCashbackRow: true
+                            });
+                        }
+
+                        return output;
+                    }
+
+                    function recomputeRunningTotals(rows) {
+                        var cumulative = 0;
+                        return rows.map(function (row) {
+                            if (row.isMgmtFee) {
+                                return Object.assign({}, row, {
+                                    totalPayment: 0,
+                                    totalPercentage: 0,
+                                    dueAmount: fullPrice
+                                });
+                            }
+
+                            if (row.isCashbackRow) {
+                                cumulative -= row.payment;
+                            } else {
+                                cumulative += row.payment;
+                            }
+
+                            return Object.assign({}, row, {
+                                totalPayment: cumulative,
+                                totalPercentage: (cumulative / fullPrice) * 100,
+                                dueAmount: fullPrice - cumulative
+                            });
+                        });
+                    }
+
+                    function updateSkylineControls() {
+                        var selectedProjectPlan = $('#projectPlanSelector').val() || 'marina';
+                        var skylineMode = isSkylineProject || selectedProjectPlan === 'skyline';
+
+                        if (!skylineMode) {
+                            $('#scenarioSelector').html(defaultScenarioOptionsHtml);
+                            $('#balloonConfigurator').hide();
+                            return;
+                        }
+                        var skylineOptions = [
+                            '<option value="skyline_under_3m">Under QAR 3M</option>',
+                            '<option value="skyline_3m_5m">QAR 3M–5M</option>',
+                            '<option value="skyline_5_opt1">QAR 5M+ Option 1</option>',
+                            '<option value="skyline_5_opt2">QAR 5M+ Option 2</option>'
+                        ];
+                        $('#scenarioSelector').html(skylineOptions.join(''));
+                        $('#balloonConfigurator').hide();
+                        renderPlanInfoTables();
+                    }
+
+                    function syncDiscountSelectorForSkyline() {
+                        var selectedProjectPlan = $('#projectPlanSelector').val() || 'marina';
+                        var skylineMode = isSkylineProject || selectedProjectPlan === 'skyline';
+                        if (!skylineMode) {
+                            $('#discountSelector').prop('disabled', false);
+                            return;
+                        }
+                        var benefits = getSkylineBenefits();
+                        var discountPct = Math.round((benefits.discountRate || 0) * 100);
+                        $('#discountSelector').val(discountPct);
+                        $('#discountSelector').prop('disabled', true);
+                        renderPlanInfoTables();
+                    }
 
                     function displaySchedule(scheduleRows) {
                         var tbody = $('#calculate_em_tbody_new');
@@ -364,18 +479,20 @@
                         $.each(scheduleRows, function (i, row) {
                             var isMgmt = row.isMgmtFee;
                             var isDiscount = row.isDiscountRow;
+                            var isCashback = row.isCashbackRow;
                             var isHighlight = row.isHighlight;
 
                             var trClass = "";
 
                             if (isMgmt) { trClass = "pc-row-mgmt"; }
                             else if (isDiscount) { trClass = "pc-row-discount"; }
+                            else if (isCashback) { trClass = "pc-row-discount"; }
                             else if (isHighlight) { trClass = "pc-row-highlight"; }
                             else if (i % 2 === 0) { trClass = "pc-row-even"; }
                             else { trClass = "pc-row-odd"; }
 
-                            var labelCol = (isMgmt || isHighlight || isDiscount) ? row.label : row.month;
-                            var paymentStr = isDiscount ? "- " + formatCurrency(row.payment) : formatCurrency(row.payment);
+                            var labelCol = (isMgmt || isHighlight || isDiscount || isCashback) ? row.label : row.month;
+                            var paymentStr = (isDiscount || isCashback) ? "- " + formatCurrency(row.payment) : formatCurrency(row.payment);
                             var totalPaymentStr = isMgmt ? "-" : formatCurrency(row.totalPayment);
                             var dueAmountStr = isMgmt ? "-" : formatCurrency(row.dueAmount);
                             var totalPercentageStr = (isMgmt || isDiscount) ? "-" : formatPercent(row.totalPercentage);
@@ -395,6 +512,13 @@
                     // Scenario Calculation logic
                     $('#scenarioSelector').change(function () {
                         var val = $(this).val();
+                        var skylineMode = isSkylineProject || ($('#projectPlanSelector').val() === 'skyline');
+                        if (skylineMode) {
+                            $('#balloonConfigurator').hide();
+                            syncDiscountSelectorForSkyline();
+                            renderPlanInfoTables();
+                            return;
+                        }
                         if (val === 'balloon') {
                             $('#balloonConfigurator').slideDown();
                         } else {
@@ -421,8 +545,20 @@
                     });
 
                     $('#btnCalculateScenario').click(function () {
-                        var scenarioId = $('#scenarioSelector').val();
-                        var discountRate = parseInt($('#discountSelector').val(), 10) || 0;
+                        var selectedScenario = $('#scenarioSelector').val();
+                        var scenarioId = selectedScenario;
+                        var manualDiscountRate = parseInt($('#discountSelector').val(), 10) || 0;
+                        var skylineBenefits = getSkylineBenefits();
+                        var discountRate = skylineBenefits.isSkyline
+                            ? Math.round((skylineBenefits.discountRate || 0) * 100)
+                            : manualDiscountRate;
+                        var effectiveDurationMonths = skylineBenefits.isSkyline
+                            ? getSkylinePlanMonths()
+                            : durationMonths;
+
+                        if (skylineBenefits.isSkyline) {
+                            scenarioId = "1";
+                        }
 
                         var startDate = addMonths(new Date(), 1);
                         startDate.setDate(1);
@@ -451,11 +587,15 @@
                             scenarioId: scenarioId,
                             fullPrice: fullPrice,
                             discountRate: discountRate / 100,
-                            managementFeeRate: managementFeeRate,
-                            totalDurationMonths: durationMonths,
+                            managementFeeRate: skylineBenefits.isSkyline ? skylineBenefits.managementFeeRate : managementFeeRate,
+                            totalDurationMonths: effectiveDurationMonths,
                             startDate: startDate,
                             balloonConfig: balloonCfg
                         });
+
+                        if (skylineBenefits.isSkyline && skylineBenefits.cashbackRate > 0) {
+                            rows = insertCashbackRows(rows, skylineBenefits.cashbackRate, skylineBenefits.cashbackMonths);
+                        }
 
                         if (discountRate > 0) {
                             var discountAmount = fullPrice * (discountRate / 100);
@@ -477,6 +617,7 @@
                             $('#discountTitleLabel').hide();
                         }
 
+                        rows = recomputeRunningTotals(rows);
                         window.calculatedScheduleData = rows;
                         displaySchedule(rows);
                     });
@@ -488,7 +629,9 @@
                         var durationVal = $('#userDuration').val(); // Just single integer
                         var handoverDateVal = $('#userHandoverDate').val(); // Just single integer
 
-                        var managementFees = fullPrice * managementFeeRate;
+                        var skylineBenefits = getSkylineBenefits();
+                        var resolvedMgmtRate = skylineBenefits.isSkyline ? skylineBenefits.managementFeeRate : managementFeeRate;
+                        var managementFees = fullPrice * resolvedMgmtRate;
                         var totalAmount = fullPrice + managementFees;
 
                         // Basic Validation match
@@ -507,6 +650,9 @@
                         }
 
                         var calcDurationMonths = parseInt(durationVal, 10);
+                        if (skylineBenefits.isSkyline) {
+                            calcDurationMonths = Math.min(Math.max(calcDurationMonths, 1), skylineMaxPlanMonths);
+                        }
                         var startDate = addMonths(new Date(), 1);
                         startDate.setDate(1);
 
@@ -519,7 +665,7 @@
 
                         var rows = computeUserSchedule({
                             fullPrice: fullPrice,
-                            managementFeeRate: managementFeeRate,
+                            managementFeeRate: resolvedMgmtRate,
                             managementFees: managementFees,
                             advanceAmount: adv,
                             handoverPaymentAmount: hand,
@@ -533,6 +679,16 @@
                         displaySchedule(rows);
                     });
 
+                    updateSkylineControls();
+                    syncDiscountSelectorForSkyline();
+                    $('#projectPlanSelector').on('change', function () {
+                        updateSkylineControls();
+                        syncDiscountSelectorForSkyline();
+                        renderPlanInfoTables();
+                    });
+
+                    renderPlanInfoTables();
+
                     // Handle download calculator PDF button click
                     $('#downloadCalculationPdfNew').click(function () {
                         if (!window.calculatedScheduleData) {
@@ -545,15 +701,43 @@
                         btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...');
                         btn.prop('disabled', true);
 
+                        var currentMgmtFees = 0;
+                        if (window.calculatedScheduleData && window.calculatedScheduleData[0] && window.calculatedScheduleData[0].isMgmtFee) {
+                            currentMgmtFees = window.calculatedScheduleData[0].payment || 0;
+                        }
+
+                        var selectedProjectPlan = $('#projectPlanSelector').val() || 'marina';
+                        var skylineModeForPdf = isSkylineProject || selectedProjectPlan === 'skyline';
+                        var exportProjectName = skylineModeForPdf
+                            ? "Skyline Tower"
+                            : "Bin Al Sheikh Marina Tower";
+                        var exportUnitNumber = " ";
+                        if (!exportUnitNumber) {
+                            exportUnitNumber = skylineModeForPdf ? "Skyline Unit" : "Marina Tower Unit";
+                        }
+
                         var propData = {
-                            unitNumber: "{{ $property->reference_no ?? ($property->name ?? '—') }}",
-                            grossArea: "{{ isset($property->size) ? $property->size . ' m²' : '—' }}",
-                            fullPrice: {{ $property->price ?? 0 }},
-                            managementFees: {{ $mgmtFees ?? 0 }},
-                            total: {{ $totalPrice ?? 0 }},
+                            unitNumber: exportUnitNumber,
+                            grossArea: "",
+                            fullPrice: 0,
+                            managementFees: currentMgmtFees,
+                            total: 0 + currentMgmtFees,
                             handoverAmount: parseFloat($('#HandAmount').val()) || 0,
                             installmentCount: {{ $monthCount ?? 0 }},
-                            project: "{{ $property->project->name ?? 'Bin Al Sheikh Marina Tower' }}"
+                            project: exportProjectName,
+                            selectedProjectPlan: selectedProjectPlan,
+                            selectedScenario: $('#scenarioSelector').val() || '',
+                            selectedScenarioLabel: $('#scenarioSelector option:selected').text() || '',
+                            isSkyline: !!getSkylineBenefits().isSkyline,
+                            skylineDiscountRate: getSkylineBenefits().discountRate || 0,
+                            skylineCashbackRate: getSkylineBenefits().cashbackRate || 0,
+                            skylineManagementFeeRate: getSkylineBenefits().managementFeeRate || 0,
+                            skylinePlanMonths: getSkylinePlanMonths(),
+                            skylineCashbackMonths: getSkylineBenefits().cashbackMonths || [],
+                            skylinePaymentPlanText: "Up to 10 years",
+                            date: new Date().toLocaleDateString("en-GB", {
+                                day: "2-digit", month: "short", year: "numeric"
+                            })
                         };
 
                         var logoUrl = "{{ asset('front-assets/images/logo.png') }}";

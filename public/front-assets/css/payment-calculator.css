@@ -445,6 +445,98 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────
+  SKYLINE INFO MINI TABLES
+  ───────────────────────────────────────────────────────────────── */
+.pc-wrap .pc-mini-card {
+    background: hsla(36, 22%, 94%, 0.28);
+    border: 1px solid hsla(38, 30%, 82%, 0.35);
+    border-radius: 0.85rem;
+    padding: 0.55rem;
+}
+
+.pc-wrap .pc-mini-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: hsl(220 35% 24%);
+    margin-bottom: 0.45rem;
+}
+
+.pc-wrap .pc-mini-table-wrap {
+    border-radius: 0.7rem;
+    box-shadow: none;
+}
+
+.pc-wrap .pc-mini-table {
+    font-size: 0.8rem;
+    white-space: normal;
+}
+
+.pc-wrap .pc-mini-table tbody td {
+    padding: 0.45rem 0.6rem;
+    vertical-align: top;
+    line-height: 1.35;
+}
+
+.pc-wrap .pc-mini-table tbody td:first-child {
+    width: 43%;
+    color: hsl(220 22% 35%);
+    font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+    .pc-wrap .pc-mini-table tbody td:first-child {
+        width: 40%;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pc-wrap .pc-section {
+        padding: 0.8rem;
+    }
+
+    .pc-wrap .pc-mini-card {
+        padding: 0.5rem;
+    }
+
+    .pc-wrap .pc-mini-title {
+        font-size: 0.78rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .pc-wrap .pc-mini-table {
+        font-size: 0.76rem;
+    }
+
+    .pc-wrap .pc-mini-table tbody td {
+        padding: 0.38rem 0.5rem;
+    }
+
+    .pc-wrap #projectPlanSelector,
+    .pc-wrap #scenarioSelector,
+    .pc-wrap #discountSelector,
+    .pc-wrap #btnCalculateScenario,
+    .pc-wrap #btnCalculateUser {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .pc-wrap #downloadCalculationPdfNew {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pc-wrap .pc-table {
+        font-size: 0.78rem;
+    }
+
+    .pc-wrap .pc-table thead th,
+    .pc-wrap .pc-table tbody td {
+        padding-left: 0.55rem;
+        padding-right: 0.55rem;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────
    BOOTSTRAP CLASS OVERRIDES (inside .pc-wrap only)
    ───────────────────────────────────────────────────────────────── */
 

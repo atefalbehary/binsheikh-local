@@ -114,6 +114,51 @@ function drawTitleBox(doc, startY) {
     return startY + BOX_H;
 }
 
+function formatSkylinePercent(value) {
+    return (value * 100).toFixed(0) + "%";
+}
+
+function buildSkylineBenefitText(property) {
+    var discount = property.skylineDiscountRate || 0;
+    var cashback = property.skylineCashbackRate || 0;
+    if (discount > 0 && cashback > 0) {
+        return formatSkylinePercent(discount) + " discount + " + formatSkylinePercent(cashback) + " cashback";
+    }
+    if (discount > 0) {
+        return formatSkylinePercent(discount) + " discount";
+    }
+    if (cashback > 0) {
+        return formatSkylinePercent(cashback) + " cashback";
+    }
+    return "—";
+}
+
+function buildSkylineCashbackScope(property) {
+    if (!(property.skylineCashbackRate > 0)) {
+        return "—";
+    }
+    if (property.selectedScenario === "skyline_3m_5m") {
+        return "Until handover (paid yearly)";
+    }
+    return "Across full payment period (paid yearly)";
+}
+
+function buildSkylineUnitValueText(property) {
+    if (property.selectedScenario === "skyline_under_3m") {
+        return "Under QAR 3M";
+    }
+    if (property.selectedScenario === "skyline_3m_5m") {
+        return "QAR 3M - 5M";
+    }
+    if (property.selectedScenario === "skyline_5_opt1") {
+        return "QAR 5M+ (Option 1)";
+    }
+    if (property.selectedScenario === "skyline_5_opt2") {
+        return "QAR 5M+ (Option 2)";
+    }
+    return "Skyline";
+}
+
 // Ensure the function is accessible globally
 window.generatePDFFromData = function (property, schedule, logoUrl, bgUrl) {
     if (!window.jspdf || !window.jspdf.jsPDF) {
@@ -229,6 +274,60 @@ function buildAndSaveJsPdf(property, schedule, logoImgElem, bgImgElem) {
         styles: { cellPadding: 4, lineColor: [220, 215, 200], lineWidth: 0.3 },
     });
     curY = doc.lastAutoTable.finalY + 8;
+
+    if (property.isSkyline) {
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor.apply(doc, GOLD_DARK);
+        doc.text("Skyline Offer Details", MARGIN_SIDE, curY + 3);
+        doc.setDrawColor.apply(doc, GOLD);
+        doc.setLineWidth(0.4);
+        doc.line(MARGIN_SIDE, curY + 5, PAGE_W - MARGIN_SIDE, curY + 5);
+        curY += 8;
+
+        var skylineMgmtText = (property.skylineManagementFeeRate > 0)
+            ? (property.skylineManagementFeeRate * 100).toFixed(1) + "%"
+            : "Waived";
+        var skylineCashbackDatesText = (property.skylineCashbackMonths || []).length
+            ? property.skylineCashbackMonths.map(function (m) { return "M" + m; }).join(", ")
+            : "—";
+
+        doc.autoTable({
+            startY: curY,
+            head: [["Unit Value", "Discount / Benefit", "Management Fee", "Payment Plan", "Cashback Scope", "Scenario"]],
+            body: [[
+                buildSkylineUnitValueText(property),
+                buildSkylineBenefitText(property),
+                skylineMgmtText,
+                property.skylinePaymentPlanText || "Up to 10 years",
+                buildSkylineCashbackScope(property),
+                property.selectedScenarioLabel || "Skyline"
+            ]],
+            headStyles: { fillColor: NAVY, textColor: WHITE, fontStyle: "bold", fontSize: 8.5 },
+            bodyStyles: { fontSize: 8.5, textColor: CHARCOAL, fillColor: WHITE },
+            alternateRowStyles: { fillColor: LIGHT_GRAY },
+            margin: { top: 45, left: MARGIN_SIDE, right: MARGIN_SIDE, bottom: FOOTER_HEIGHT },
+            theme: "grid",
+            styles: { cellPadding: 3, lineColor: [220, 215, 200], lineWidth: 0.3 },
+        });
+        curY = doc.lastAutoTable.finalY + 2;
+
+        doc.autoTable({
+            startY: curY,
+            head: [["Plan Duration", "Cashback Dates (Month Offset)"]],
+            body: [[
+                (property.skylinePlanMonths || "—") + " months",
+                skylineCashbackDatesText
+            ]],
+            headStyles: { fillColor: GOLD, textColor: WHITE, fontStyle: "bold", fontSize: 8.5 },
+            bodyStyles: { fontSize: 8.5, textColor: CHARCOAL, fillColor: WHITE },
+            alternateRowStyles: { fillColor: LIGHT_GRAY },
+            margin: { top: 45, left: MARGIN_SIDE, right: MARGIN_SIDE, bottom: FOOTER_HEIGHT },
+            theme: "grid",
+            styles: { cellPadding: 3, lineColor: [220, 215, 200], lineWidth: 0.3 },
+        });
+        curY = doc.lastAutoTable.finalY + 7;
+    }
 
     var SCHEDULE_HEADING_H = 12;
     var MIN_ROWS_HEIGHT = 30;

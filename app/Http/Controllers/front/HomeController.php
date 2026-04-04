@@ -484,6 +484,45 @@ class HomeController extends Controller
 
     public function payment_calculator($slug)
     {
+        return $this->renderPaymentCalculator($slug, null);
+    }
+
+    public function payment_calculator_by_type($slug, $type)
+    {
+        return $this->renderPaymentCalculator($slug, $type);
+    }
+
+    public function marina_payment_calculator()
+    {
+        return $this->renderGenericPaymentCalculator('marina');
+    }
+
+    public function skyline_payment_calculator()
+    {
+        return $this->renderGenericPaymentCalculator('skyline');
+    }
+
+    private function renderGenericPaymentCalculator($type)
+    {    
+
+        $page_heading = ucfirst($type) . ' Payment Calculator';
+        $settings = Settings::find(1);
+
+        $cur_month = Carbon::now();
+        $cur_month->startOfMonth();
+    
+            
+            $monthCount = $settings->month_count;
+        $calculatorType = $type;
+        $viewName = $type === 'skyline'
+            ? 'front_end.skyline_payment_calculator'
+            : 'front_end.payment_calculator';
+
+        return view($viewName, compact('page_heading', 'settings', 'monthCount', 'calculatorType'));
+    }
+
+    private function renderPaymentCalculator($slug, $calculatorType = null)
+    {
         $property = Properties::with(['property_type', 'images', 'amenities'])->where(['slug' => $slug, 'active' => '1', 'deleted' => 0])->first();
         if (!$property) {
             abort(404);
@@ -505,7 +544,11 @@ class HomeController extends Controller
             $monthCount = $settings->month_count;
         }
 
-        return view('front_end.payment_calculator', compact('page_heading', 'property', 'settings', 'monthCount'));
+        $viewName = $calculatorType === 'skyline'
+            ? 'front_end.skyline_payment_calculator'
+            : 'front_end.payment_calculator';
+
+        return view($viewName, compact('page_heading', 'property', 'settings', 'monthCount', 'calculatorType'));
     }
     public function getOrdinalSuffix($number)
     {
