@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\front;
+namespace App\Http\Controllers\Front;
 
 use App\Models\Blog;
 use App\Models\Folder;
