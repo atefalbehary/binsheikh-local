@@ -292,6 +292,7 @@
                                     <th>Month</th>
                                     <th class="text-center">Percentage</th>
                                     <th class="text-center">Payment</th>
+                                    <th class="text-center">Cashback</th>
                                     <th class="text-center">Total Payment</th>
                                     <th class="text-center">Due Amount</th>
                                     <th class="text-center">Total %</th>
@@ -586,7 +587,9 @@
                     var defaultScenarioOptionsHtml = $('#scenarioSelector').html();
                     var skylineTier3Threshold = 3000000;
                     var skylineTier5Threshold = 5000000;
-                    var skylineMaxPlanMonths = 120;
+                    /** Marina scenarios 2 & 4: yearly cashback (% of unit price), shown in Cashback column. */
+                    var marinaOffer2CashbackRate = 0.08;
+                    var marinaOffer4CashbackRate = 0.08;
 
                     if (forcedProjectPlan === 'skyline' || forcedProjectPlan === 'marina') {
                         $('#projectPlanSelector').val(forcedProjectPlan);
@@ -612,14 +615,29 @@
                         return months;
                     }
 
-                    function getSkylinePlanMonths() {
-                        return Math.min(Math.max(durationMonths, 1), skylineMaxPlanMonths);
-                    }
-
                     function getPlanStartDate() {
                         var startDate = addMonths(new Date(), 1);
                         startDate.setDate(1);
                         return startDate;
+                    }
+
+                    /** Skyline payment plan runs through December 2035 (inclusive of last due month). */
+                    function getSkylineMaxPlanMonths() {
+                        var start = getPlanStartDate();
+                        var endYM = 2035 * 12 + 11;
+                        var startYM = start.getFullYear() * 12 + start.getMonth();
+                        var span = endYM - startYM + 1;
+                        return Math.max(1, span);
+                    }
+
+                    function getSkylinePlanMonths() {
+                        var cap = getSkylineMaxPlanMonths();
+                        var selectedProjectPlan = $('#projectPlanSelector').val() || 'marina';
+                        var skylineMode = isSkylineProject || selectedProjectPlan === 'skyline';
+                        if (skylineMode) {
+                            return cap;
+                        }
+                        return Math.min(Math.max(durationMonths, 1), cap);
                     }
 
                     function renderPlanInfoTables() {
@@ -701,6 +719,43 @@
                         }
 
                         return output;
+                    }
+
+                    /** Marina scenarios 2 & 4: set per-row cashbackAmount for PDF/table column (yearly payouts). */
+                    function enrichMarinaOfferCashbackColumn(rows, scenarioId, fullPrice, planDurationMonths) {
+                        rows.forEach(function (r) {
+                            r.cashbackAmount = null;
+                        });
+                        if (scenarioId !== '2' && scenarioId !== '4') {
+                            return;
+                        }
+                        var rate = scenarioId === '2' ? marinaOffer2CashbackRate : marinaOffer4CashbackRate;
+                        if (!rate || fullPrice <= 0 || !planDurationMonths) {
+                            return;
+                        }
+                        var cashbackMonths = getYearlyCashbackMonths(planDurationMonths);
+                        if (!cashbackMonths.length) {
+                            return;
+                        }
+                        var totalCashback = fullPrice * rate;
+                        var n = cashbackMonths.length;
+                        var each = totalCashback / n;
+                        rows.forEach(function (row, rIdx) {
+                            if (row.isMgmtFee || row.isDiscountRow || row.isCashbackRow) {
+                                return;
+                            }
+                            var monthIndex = rIdx - 1;
+                            if (monthIndex < 1) {
+                                return;
+                            }
+                            var pos = cashbackMonths.indexOf(monthIndex);
+                            if (pos === -1) {
+                                return;
+                            }
+                            row.cashbackAmount = (pos === n - 1)
+                                ? (totalCashback - each * (n - 1))
+                                : each;
+                        });
                     }
 
                     function recomputeRunningTotals(rows) {
@@ -857,11 +912,16 @@
                             var totalPaymentStr = isMgmt ? "-" : formatCurrency(row.totalPayment);
                             var dueAmountStr = isMgmt ? "-" : formatCurrency(row.dueAmount);
                             var totalPercentageStr = (isMgmt || isDiscount) ? "-" : formatPercent(row.totalPercentage);
+                            var cashbackStr = "—";
+                            if (typeof row.cashbackAmount === "number" && !isNaN(row.cashbackAmount) && row.cashbackAmount > 0) {
+                                cashbackStr = formatCurrency(row.cashbackAmount);
+                            }
 
                             var tr = `<tr class="${trClass}" data-row-index="${i}">
                                                                                                         <td class="fw-medium">${labelColSafe}</td>
                                                                                                         <td class="text-center">${formatPercent(row.percentage)}</td>
                                                                                                         <td class="text-center fw-bold">${paymentStr}</td>
+                                                                                                        <td class="text-center">${cashbackStr}</td>
                                                                                                         <td class="text-center">${totalPaymentStr}</td>
                                                                                                         <td class="text-center">${dueAmountStr}</td>
                                                                                                         <td class="text-center">${totalPercentageStr}</td>
@@ -955,15 +1015,30 @@
                             };
                         }
 
+                        var resolvedScenarioMgmtRate = skylineBenefits.isSkyline
+                            ? skylineBenefits.managementFeeRate
+                            : (function () {
+                                var sc = String(selectedScenario);
+                                if (sc === '1' || sc === '3') {
+                                    return 0;
+                                }
+                                return managementFeeRate;
+                            })();
+
                         var rows = computeSchedule({
                             scenarioId: scenarioId,
                             fullPrice: fullPrice,
                             discountRate: discountRate / 100,
-                            managementFeeRate: skylineBenefits.isSkyline ? skylineBenefits.managementFeeRate : managementFeeRate,
+                            managementFeeRate: resolvedScenarioMgmtRate,
                             totalDurationMonths: effectiveDurationMonths,
                             startDate: startDate,
                             balloonConfig: balloonCfg
                         });
+
+                        if (!skylineBenefits.isSkyline) {
+                            var marinaPlanDuration = String(scenarioId) === '2' ? 70 : effectiveDurationMonths;
+                            enrichMarinaOfferCashbackColumn(rows, String(scenarioId), fullPrice, marinaPlanDuration);
+                        }
 
                         if (skylineBenefits.isSkyline && skylineBenefits.cashbackRate > 0) {
                             rows = insertCashbackRows(rows, skylineBenefits.cashbackRate, skylineBenefits.cashbackMonths);
@@ -1031,7 +1106,7 @@
 
                         var calcDurationMonths = parseInt(durationVal, 10);
                         if (skylineBenefits.isSkyline) {
-                            calcDurationMonths = Math.min(Math.max(calcDurationMonths, 1), skylineMaxPlanMonths);
+                            calcDurationMonths = Math.min(Math.max(calcDurationMonths, 1), getSkylineMaxPlanMonths());
                         }
                         var startDate = addMonths(new Date(), 1);
                         startDate.setDate(1);
@@ -1278,7 +1353,8 @@
                             isMgmtFee: false,
                             isDiscountRow: false,
                             isCashbackRow: false,
-                            isAddedRow: true
+                            isAddedRow: true,
+                            cashbackAmount: null
                         };
                         rows.splice(findInsertIndexForAddedRow(rows), 0, newRow);
                         window.calculatedScheduleData = recomputeRunningTotals(rows);
@@ -1347,7 +1423,7 @@
                             skylineManagementFeeRate: getSkylineBenefits().managementFeeRate || 0,
                             skylinePlanMonths: getSkylinePlanMonths(),
                             skylineCashbackMonths: getSkylineBenefits().cashbackMonths || [],
-                            skylinePaymentPlanText: "Up to 10 years",
+                            skylinePaymentPlanText: "Through December 2035 (up to " + getSkylineMaxPlanMonths() + " months)",
                             date: new Date().toLocaleDateString("en-GB", {
                                 day: "2-digit", month: "short", year: "numeric"
                             })

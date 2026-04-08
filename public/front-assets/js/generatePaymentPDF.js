@@ -299,7 +299,7 @@ function buildAndSaveJsPdf(property, schedule, logoImgElem, bgImgElem) {
                 buildSkylineUnitValueText(property),
                 buildSkylineBenefitText(property),
                 skylineMgmtText,
-                property.skylinePaymentPlanText || "Up to 10 years",
+                property.skylinePaymentPlanText || "Through December 2035",
                 buildSkylineCashbackScope(property),
                 property.selectedScenarioLabel || "Skyline"
             ]],
@@ -364,10 +364,15 @@ function buildAndSaveJsPdf(property, schedule, logoImgElem, bgImgElem) {
     }
 
     var tableBody = schedule.map(function (row) {
+        var cashbackCell = "—";
+        if (typeof row.cashbackAmount === "number" && !isNaN(row.cashbackAmount) && row.cashbackAmount > 0) {
+            cashbackCell = window.formatCurrency(row.cashbackAmount);
+        }
         return [
             row.isMgmtFee || row.isHighlight ? row.label : row.month,
             window.formatPercent(row.percentage),
             window.formatCurrency(row.payment),
+            cashbackCell,
             row.isMgmtFee ? "—" : window.formatCurrency(row.totalPayment),
             row.isMgmtFee ? "—" : window.formatCurrency(row.dueAmount),
             row.isMgmtFee ? "—" : window.formatPercent(row.totalPercentage),
@@ -378,7 +383,7 @@ function buildAndSaveJsPdf(property, schedule, logoImgElem, bgImgElem) {
 
     doc.autoTable({
         startY: scheduleStartY,
-        head: [["Timeline", "Monthly %", "Payment", "Total Accumulated", "Due Amount", "Total %"]],
+        head: [["Timeline", "Monthly %", "Payment", "Cashback", "Total Accumulated", "Due Amount", "Total %"]],
         body: tableBody,
         headStyles: { fillColor: GOLD, textColor: WHITE, fontStyle: "bold", fontSize: 8.5 },
         bodyStyles: { fontSize: 8, textColor: CHARCOAL, fillColor: WHITE },

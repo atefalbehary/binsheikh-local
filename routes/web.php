@@ -42,9 +42,14 @@ Route::get('/property-details/{slug}', 'App\Http\Controllers\Front\HomeControlle
 Route::get('/property-details/{slug}/calculator', 'App\Http\Controllers\Front\HomeController@payment_calculator')->name('property.calculator');
 Route::get('/property-details/{slug}/calculator/{type}', 'App\Http\Controllers\Front\HomeController@payment_calculator_by_type')
     ->where('type', 'marina|skyline')
+    ->middleware('frontend.login')
     ->name('property.calculator.type');
-Route::get('/marina-payment-calculator', 'App\Http\Controllers\Front\HomeController@marina_payment_calculator')->name('calculator.marina');
-Route::get('/skyline-payment-calculator', 'App\Http\Controllers\Front\HomeController@skyline_payment_calculator')->name('calculator.skyline');
+Route::get('/marina-payment-calculator', 'App\Http\Controllers\Front\HomeController@marina_payment_calculator')
+    ->middleware('frontend.login')
+    ->name('calculator.marina');
+Route::get('/skyline-payment-calculator', 'App\Http\Controllers\Front\HomeController@skyline_payment_calculator')
+    ->middleware('frontend.login')
+    ->name('calculator.skyline');
 Route::get('/property-listing', 'App\Http\Controllers\Front\HomeController@property_listing');
 Route::post('/get-projects', 'App\Http\Controllers\Front\HomeController@getProjects');
 Route::post('/calculate_emi', 'App\Http\Controllers\Front\HomeController@calculate_emi');
