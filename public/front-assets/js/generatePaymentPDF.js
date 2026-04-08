@@ -365,7 +365,9 @@ function buildAndSaveJsPdf(property, schedule, logoImgElem, bgImgElem) {
 
     var tableBody = schedule.map(function (row) {
         var cashbackCell = "—";
-        if (typeof row.cashbackAmount === "number" && !isNaN(row.cashbackAmount) && row.cashbackAmount > 0) {
+        if (row.isCashbackRow) {
+            cashbackCell = "Cashback";
+        } else if (typeof row.cashbackAmount === "number" && !isNaN(row.cashbackAmount) && row.cashbackAmount > 0) {
             cashbackCell = window.formatCurrency(row.cashbackAmount);
         }
         return [

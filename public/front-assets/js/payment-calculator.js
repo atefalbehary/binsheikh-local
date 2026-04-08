@@ -265,7 +265,8 @@ function scenarioBalloon(p, priceAfterDisc) {
 
 function computeSchedule(params) {
     var discountRate = params.discountRate || 0;
-    var managementFeeRate = params.managementFeeRate || 0.025;
+    // Use typeof so 0% fee is preserved (0 || 0.025 incorrectly became 2.5%).
+    var managementFeeRate = typeof params.managementFeeRate === "number" ? params.managementFeeRate : 0.025;
     var priceAfterDisc = params.fullPrice - params.fullPrice * discountRate;
 
     var rows = [];

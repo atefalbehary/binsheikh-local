@@ -339,6 +339,20 @@
                                             <input type="number" class="form-control" id="scheduleEditPercentage" min="0"
                                                 step="0.01" />
                                         </div>
+                                        <div class="col-12" id="scheduleEditRowKindWrap">
+                                            <label class="form-label fw-semibold d-block">Row type</label>
+                                            <div class="d-flex flex-wrap gap-3 align-items-center">
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input" type="radio" name="scheduleEditRowKind" id="scheduleEditKindRegular" value="regular" checked />
+                                                    <label class="form-check-label" for="scheduleEditKindRegular">Regular payment</label>
+                                                </div>
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input" type="radio" name="scheduleEditRowKind" id="scheduleEditKindCashback" value="cashback" />
+                                                    <label class="form-check-label" for="scheduleEditKindCashback">Cashback</label>
+                                                </div>
+                                            </div>
+                                            <p class="small text-muted mb-0 mt-2">Cashback rows reduce net paid in running totals.</p>
+                                        </div>
                                     </div>
                                     <p class="small text-muted mt-3 mb-0">
                                         Payment and % stay in sync with the unit amount above. Saving recalculates total payment, due amount, and total % for all rows.
@@ -384,6 +398,20 @@
                                             <label class="form-label fw-semibold" for="scheduleAddPercentage">Percentage (%)</label>
                                             <input type="number" class="form-control" id="scheduleAddPercentage" min="0"
                                                 step="0.01" />
+                                        </div>
+                                        <div class="col-12" id="scheduleAddRowKindWrap">
+                                            <label class="form-label fw-semibold d-block">Row type</label>
+                                            <div class="d-flex flex-wrap gap-3 align-items-center">
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input" type="radio" name="scheduleAddRowKind" id="scheduleAddKindRegular" value="regular" checked />
+                                                    <label class="form-check-label" for="scheduleAddKindRegular">Regular payment</label>
+                                                </div>
+                                                <div class="form-check mb-0">
+                                                    <input class="form-check-input" type="radio" name="scheduleAddRowKind" id="scheduleAddKindCashback" value="cashback" />
+                                                    <label class="form-check-label" for="scheduleAddKindCashback">Cashback</label>
+                                                </div>
+                                            </div>
+                                            <p class="small text-muted mb-0 mt-2">Cashback rows reduce net paid in running totals.</p>
                                         </div>
                                     </div>
                                     <p class="small text-muted mt-3 mb-0">Payment and % stay in sync with the unit amount above.</p>
@@ -768,7 +796,8 @@
                                     dueAmount: fullPrice,
                                     label: row.label,
                                     month: row.month,
-                                    isAddedRow: row.isAddedRow
+                                    isAddedRow: row.isAddedRow,
+                                    isCashbackRow: row.isCashbackRow
                                 });
                             }
 
@@ -784,7 +813,8 @@
                                 dueAmount: fullPrice - cumulative,
                                 label: row.label,
                                 month: row.month,
-                                isAddedRow: row.isAddedRow
+                                isAddedRow: row.isAddedRow,
+                                isCashbackRow: row.isCashbackRow
                             });
                         });
                     }
@@ -913,7 +943,9 @@
                             var dueAmountStr = isMgmt ? "-" : formatCurrency(row.dueAmount);
                             var totalPercentageStr = (isMgmt || isDiscount) ? "-" : formatPercent(row.totalPercentage);
                             var cashbackStr = "—";
-                            if (typeof row.cashbackAmount === "number" && !isNaN(row.cashbackAmount) && row.cashbackAmount > 0) {
+                            if (row.isCashbackRow) {
+                                cashbackStr = "Cashback";
+                            } else if (typeof row.cashbackAmount === "number" && !isNaN(row.cashbackAmount) && row.cashbackAmount > 0) {
                                 cashbackStr = formatCurrency(row.cashbackAmount);
                             }
 
@@ -1150,6 +1182,7 @@
                         $('#scheduleAddMonth').val('');
                         $('#scheduleAddPayment').val('');
                         $('#scheduleAddPercentage').val('');
+                        $('#scheduleAddKindRegular').prop('checked', true);
                     }
 
                     function openScheduleAddRowModal() {
@@ -1189,11 +1222,20 @@
                         } else if (row.isDiscountRow) {
                             hint = 'Discount row';
                         } else if (row.isCashbackRow) {
-                            hint = 'Cashback row';
+                            hint = 'Cashback (reduces net paid)';
                         } else if (row.isHighlight) {
                             hint = 'Highlighted milestone (e.g. down payment / handover)';
                         }
                         $('#scheduleRowEditTypeHint').text(hint);
+
+                        var hideKind = row.isMgmtFee || row.isDiscountRow;
+                        $('#scheduleEditRowKindWrap').toggle(!hideKind);
+                        $('input[name="scheduleEditRowKind"]').prop('checked', false);
+                        if (row.isCashbackRow) {
+                            $('#scheduleEditKindCashback').prop('checked', true);
+                        } else {
+                            $('#scheduleEditKindRegular').prop('checked', true);
+                        }
 
                         $('#scheduleEditLabel').val(row.label != null ? row.label : '');
                         $('#scheduleEditMonth').val(row.month != null ? row.month : '');
@@ -1273,6 +1315,10 @@
                         }
                         row.payment = newPay;
                         row.percentage = (newPay / fullPrice) * 100;
+
+                        if (!row.isMgmtFee && !row.isDiscountRow) {
+                            row.isCashbackRow = ($('input[name="scheduleEditRowKind"]:checked').val() || 'regular') === 'cashback';
+                        }
 
                         window.calculatedScheduleData = recomputeRunningTotals(rows);
                         displaySchedule(window.calculatedScheduleData);
@@ -1356,6 +1402,7 @@
                             isAddedRow: true,
                             cashbackAmount: null
                         };
+                        newRow.isCashbackRow = ($('input[name="scheduleAddRowKind"]:checked').val() || 'regular') === 'cashback';
                         rows.splice(findInsertIndexForAddedRow(rows), 0, newRow);
                         window.calculatedScheduleData = recomputeRunningTotals(rows);
                         displaySchedule(window.calculatedScheduleData);
