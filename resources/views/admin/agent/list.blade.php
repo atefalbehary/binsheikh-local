@@ -779,8 +779,23 @@
         flex-shrink: 0;
     }
     
-    .schedule-info-grid .view-btn:hover {
+        .schedule-info-grid .view-btn:hover {
         background-color: #5a6268;
+    }
+
+    .th-sort {
+        text-decoration: none;
+        font-weight: 600;
+        color: inherit;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .th-sort:hover {
+        color: #007bff;
+    }
+    .sortable-header {
+        user-select: none;
     }
     
     /* Responsive */
@@ -829,6 +844,21 @@
 @stop
 
 @section('content')
+    @php
+        $agentSortQuery = function (string $col) {
+            $params = request()->except(['sort', 'direction', 'page']);
+            $currentSort = request('sort', 'created_at');
+            $currentDir = strtolower((string) request('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+            if ($currentSort === $col) {
+                $params['direction'] = $currentDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                $params['direction'] = in_array($col, ['created_at', 'id', 'active'], true) ? 'desc' : 'asc';
+            }
+            $params['sort'] = $col;
+
+            return http_build_query($params);
+        };
+    @endphp
     <div class="container-fluid">
         <div class="fade-in">
             <div class="row">
@@ -842,6 +872,8 @@
                             <div class="search-filter-section">
                                 <h6>Search By Name | Email | Phone Number</h6>
                                 <form action="{{ url('admin/agent') }}" method="get">
+                                    <input type="hidden" name="sort" value="{{ $sort }}">
+                                    <input type="hidden" name="direction" value="{{ $direction }}">
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="mb-3">
@@ -893,23 +925,66 @@
                                             <div class="table-cell checkbox">
                                                 <input type="checkbox" id="selectAll" onclick="toggleAll(this)">
                                             </div>
-                                            <div class="table-cell">#</div>
-                                            <div class="table-cell">Agent Name</div>
-                                            <div class="table-cell">Agency Name</div>
-                                            <div class="table-cell">Created On</div>
-                                            <div class="table-cell">Status</div>
+                                            <div class="table-cell sortable-header">
+                                                <a href="{{ url('admin/agent?' . $agentSortQuery('id')) }}" class="th-sort">
+                                                    ID
+                                                    @if(($sort ?? '') === 'id')
+                                                        <i class="fas fa-sort-{{ ($direction ?? 'desc') === 'asc' ? 'up' : 'down' }}"></i>
+                                                    @else
+                                                        <i class="fas fa-sort text-muted opacity-50" style="font-size:0.75em;"></i>
+                                                    @endif
+                                                </a>
+                                            </div>
+                                            <div class="table-cell sortable-header">
+                                                <a href="{{ url('admin/agent?' . $agentSortQuery('name')) }}" class="th-sort">
+                                                    Agent Name
+                                                    @if(($sort ?? '') === 'name')
+                                                        <i class="fas fa-sort-{{ ($direction ?? 'desc') === 'asc' ? 'up' : 'down' }}"></i>
+                                                    @else
+                                                        <i class="fas fa-sort text-muted opacity-50" style="font-size:0.75em;"></i>
+                                                    @endif
+                                                </a>
+                                            </div>
+                                            <div class="table-cell sortable-header">
+                                                <a href="{{ url('admin/agent?' . $agentSortQuery('agency_name')) }}" class="th-sort">
+                                                    Agency Name
+                                                    @if(($sort ?? '') === 'agency_name')
+                                                        <i class="fas fa-sort-{{ ($direction ?? 'desc') === 'asc' ? 'up' : 'down' }}"></i>
+                                                    @else
+                                                        <i class="fas fa-sort text-muted opacity-50" style="font-size:0.75em;"></i>
+                                                    @endif
+                                                </a>
+                                            </div>
+                                            <div class="table-cell sortable-header">
+                                                <a href="{{ url('admin/agent?' . $agentSortQuery('created_at')) }}" class="th-sort">
+                                                    Created On
+                                                    @if(($sort ?? '') === 'created_at')
+                                                        <i class="fas fa-sort-{{ ($direction ?? 'desc') === 'asc' ? 'up' : 'down' }}"></i>
+                                                    @else
+                                                        <i class="fas fa-sort text-muted opacity-50" style="font-size:0.75em;"></i>
+                                                    @endif
+                                                </a>
+                                            </div>
+                                            <div class="table-cell sortable-header">
+                                                <a href="{{ url('admin/agent?' . $agentSortQuery('active')) }}" class="th-sort">
+                                                    Status
+                                                    @if(($sort ?? '') === 'active')
+                                                        <i class="fas fa-sort-{{ ($direction ?? 'desc') === 'asc' ? 'up' : 'down' }}"></i>
+                                                    @else
+                                                        <i class="fas fa-sort text-muted opacity-50" style="font-size:0.75em;"></i>
+                                                    @endif
+                                                </a>
+                                            </div>
                                             <div class="table-cell actions">Actions</div>
                                         </div>
                                     </div>
                                     <div class="table-body">
-                                    <?php $i = $customers->perPage() * ($customers->currentPage() - 1); ?>
                                     @foreach ($customers as $cust)
-                                            <?php $i++; ?>
                                             <div class="table-row main-row" data-id="{{ $cust->id }}">
                                                 <div class="table-cell checkbox">
                                                     <input type="checkbox" class="box1" value="{{ $cust->id }}" onchange="updateSelectedCount()">
                                                 </div>
-                                                <div class="table-cell">{{ $i }}</div>
+                                                <div class="table-cell">{{ $cust->id }}</div>
                                                 <div class="table-cell">
                                                     <div style="display: flex; align-items: center; gap: 10px;">
                                                         <div style="position: relative;">
@@ -1709,7 +1784,7 @@
                             <td>${visit.client_phone_number || 'N/A'}</td>
                             <td>
                                 <div class="visit-section">
-                                    <span class="visit-date" data-date="${visit.visit_time}">${visitDate}</span>
+                                    <span class="visit-date" data-date="${visit.visit_time_iso || ''}">${visitDate}</span>
                                     <i class="fas fa-chevron-down expand-icon" style="margin-left: 10px; cursor: pointer;"></i>
                                 </div>
                             </td>

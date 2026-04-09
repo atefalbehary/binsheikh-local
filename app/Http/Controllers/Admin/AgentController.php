@@ -16,30 +16,71 @@ class AgentController extends Controller
      */
     public function index(Request $request)
     {
-        $search_text = $request->get('search_text')?? '';
+        $search_text = $request->get('search_text') ?? '';
         $role = $request->get('role');
         $from = $request->get('from', \Carbon\Carbon::create(2010, 1, 1)->format('Y-m-d'));
         $to = $request->get('to', \Carbon\Carbon::today()->format('Y-m-d'));
-        $page_heading = "Customer";
-        $query = User::where('deleted', 0);
-        $query->where('role', 3);
-        $page_heading = "Agents";
-        $customer = $query->orderBy('created_at', 'desc');
+        $page_heading = 'Agents';
+
+        $sortInput = $request->input('sort', 'created_at');
+        $sort = is_string($sortInput) ? trim($sortInput) : 'created_at';
+        $direction = strtolower((string) $request->get('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        $sortMap = [
+            'id' => ['column' => 'users.id', 'join_agency' => false],
+            'name' => ['column' => 'users.name', 'join_agency' => false],
+            'agency_name' => ['column' => 'agency_sort.name', 'join_agency' => true],
+            'created_at' => ['column' => 'users.created_at', 'join_agency' => false],
+            'active' => ['column' => 'users.active', 'join_agency' => false],
+        ];
+
+        if (! array_key_exists($sort, $sortMap)) {
+            $sort = 'created_at';
+            $direction = 'desc';
+        }
+
+        $query = User::query()
+            ->from('users')
+            ->where('users.deleted', 0)
+            ->where('users.role', 3)
+            ->with('agency');
+
+        if ($sortMap[$sort]['join_agency']) {
+            $query->leftJoin('users as agency_sort', 'users.agency_id', '=', 'agency_sort.id');
+        }
+
+        $query->select('users.*');
 
         // Apply date range filter
-        $customer = $customer->whereDate('created_at', '>=', $from)
-            ->whereDate('created_at', '<=', $to);
+        $query->whereDate('users.created_at', '>=', $from)
+            ->whereDate('users.created_at', '<=', $to);
 
         if ($search_text) {
-            $customer = $customer->where(function ($query) use ($search_text) {
-                $query->where('name', 'like', "%$search_text%")
-                    ->orWhere('email', 'like', "%$search_text%")
-                    ->orWhere('phone', 'like', "%$search_text%");
+            $query->where(function ($q) use ($search_text) {
+                $q->where('users.name', 'like', '%'.$search_text.'%')
+                    ->orWhere('users.email', 'like', '%'.$search_text.'%')
+                    ->orWhere('users.phone', 'like', '%'.$search_text.'%');
             });
         }
 
-        $customers = $customer->paginate(10);
-        return view('admin.agent.list', compact('page_heading', 'customers', 'search_text', 'role', 'from', 'to'));
+        $query->orderBy($sortMap[$sort]['column'], $direction);
+        // Avoid a second order on users.id when already sorting by id — it can override the chosen direction.
+        if ($sort !== 'id') {
+            $query->orderBy('users.id', 'asc');
+        }
+
+        $customers = $query->paginate(10);
+
+        return view('admin.agent.list', compact(
+            'page_heading',
+            'customers',
+            'search_text',
+            'role',
+            'from',
+            'to',
+            'sort',
+            'direction'
+        ));
     }
 
     /**
@@ -299,10 +340,11 @@ class AgentController extends Controller
             $parts = explode('/', $agent->id_card ?? '');
             $last_id_card = end($parts);
 
-            // Load visit schedules for this specific agent
+            // Load visit schedules for this specific agent (chronological by scheduled visit time)
             $visitSchedules = \App\Models\VisiteSchedule::with(['agent', 'project'])
                 ->where('agent_id', $id)
-                ->orderBy('created_at', 'desc')
+                ->orderByRaw('CASE WHEN visit_time IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('visit_time', 'asc')
                 ->get();
             
             // Load reservations for this specific agent
@@ -786,8 +828,11 @@ class AgentController extends Controller
         if (!empty($scheduleIds)) {
             $query->whereIn('id', $scheduleIds);
         }
-        
-        $schedules = $query->get();
+
+        $schedules = $query
+            ->orderByRaw('CASE WHEN visit_time IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('visit_time', 'asc')
+            ->get();
         
         $filename = 'agent_visit_schedules_export_' . date('Y-m-d_H-i-s') . '.csv';
         
@@ -1139,7 +1184,8 @@ class AgentController extends Controller
     {
         try {
             $visits = \App\Models\VisiteSchedule::with(['agent', 'project'])
-                ->orderBy('created_at', 'desc')
+                ->orderByRaw('CASE WHEN visit_time IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('visit_time', 'asc')
                 ->get()
                 ->map(function($visit) {
                     return [
@@ -1153,6 +1199,7 @@ class AgentController extends Controller
                         'project_name' => $visit->project->name ?? 'N/A',
                         'unit_type' => $visit->unit_type ?? 'N/A',
                         'visit_time' => $visit->visit_time ? $visit->visit_time->format('d-M-Y H:i') : 'N/A',
+                        'visit_time_iso' => $visit->visit_time ? $visit->visit_time->toIso8601String() : null,
                         'visit_purpose' => $visit->visit_purpose ?? 'N/A',
                         'created_at' => $visit->created_at->format('d-M-Y')
                     ];
