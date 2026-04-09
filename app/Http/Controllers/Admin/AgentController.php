@@ -22,51 +22,20 @@ class AgentController extends Controller
         $to = $request->get('to', \Carbon\Carbon::today()->format('Y-m-d'));
         $page_heading = 'Agents';
 
-        $sortInput = $request->input('sort', 'created_at');
-        $sort = is_string($sortInput) ? trim($sortInput) : 'created_at';
-        $direction = strtolower((string) $request->get('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $query = User::where('deleted', 0)
+            ->where('role', 3)
+            ->with('agency')
+            ->orderBy('created_at', 'desc');
 
-        $sortMap = [
-            'id' => ['column' => 'users.id', 'join_agency' => false],
-            'name' => ['column' => 'users.name', 'join_agency' => false],
-            'agency_name' => ['column' => 'agency_sort.name', 'join_agency' => true],
-            'created_at' => ['column' => 'users.created_at', 'join_agency' => false],
-            'active' => ['column' => 'users.active', 'join_agency' => false],
-        ];
-
-        if (! array_key_exists($sort, $sortMap)) {
-            $sort = 'created_at';
-            $direction = 'desc';
-        }
-
-        $query = User::query()
-            ->from('users')
-            ->where('users.deleted', 0)
-            ->where('users.role', 3)
-            ->with('agency');
-
-        if ($sortMap[$sort]['join_agency']) {
-            $query->leftJoin('users as agency_sort', 'users.agency_id', '=', 'agency_sort.id');
-        }
-
-        $query->select('users.*');
-
-        // Apply date range filter
-        $query->whereDate('users.created_at', '>=', $from)
-            ->whereDate('users.created_at', '<=', $to);
+        $query->whereDate('created_at', '>=', $from)
+            ->whereDate('created_at', '<=', $to);
 
         if ($search_text) {
             $query->where(function ($q) use ($search_text) {
-                $q->where('users.name', 'like', '%'.$search_text.'%')
-                    ->orWhere('users.email', 'like', '%'.$search_text.'%')
-                    ->orWhere('users.phone', 'like', '%'.$search_text.'%');
+                $q->where('name', 'like', '%'.$search_text.'%')
+                    ->orWhere('email', 'like', '%'.$search_text.'%')
+                    ->orWhere('phone', 'like', '%'.$search_text.'%');
             });
-        }
-
-        $query->orderBy($sortMap[$sort]['column'], $direction);
-        // Avoid a second order on users.id when already sorting by id — it can override the chosen direction.
-        if ($sort !== 'id') {
-            $query->orderBy('users.id', 'asc');
         }
 
         $customers = $query->paginate(10);
@@ -77,9 +46,7 @@ class AgentController extends Controller
             'search_text',
             'role',
             'from',
-            'to',
-            'sort',
-            'direction'
+            'to'
         ));
     }
 
