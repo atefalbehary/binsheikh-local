@@ -226,7 +226,7 @@ class User extends Authenticatable
             return false;
         }
 
-        $allowed = (int) config('payment_calculator.allowed_agency_id', 308);
+        $allowed = (int) config('payment_calculator.allowed_agency_id', 486);
 
         return (int) ($this->agency_id ?? 0) === $allowed || (int) $this->id === $allowed;
     }

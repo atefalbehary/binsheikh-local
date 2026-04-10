@@ -12,6 +12,6 @@ return [
     |
     */
 
-    'allowed_agency_id' => (int) env('PAYMENT_CALCULATOR_AGENCY_ID', 308),
+    'allowed_agency_id' => (int) env('PAYMENT_CALCULATOR_AGENCY_ID', 486),
 
 ];
