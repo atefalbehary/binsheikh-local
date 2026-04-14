@@ -48,7 +48,7 @@ function prependMgmtFeeRow(rows, fullPrice, managementFeeRate, startDate) {
     var managementFees = fullPrice * managementFeeRate;
     var feeLabel = managementFeeRate > 0
         ? ("Management Fees (" + (managementFeeRate * 100).toFixed(1) + "%)")
-        : "Management Fees (Waived)";
+        : "Management Fees (0%)";
     var mgmtRow = {
         label: feeLabel, // Can be localized later when mapping to blade
         month: formatMonth(startDate),
@@ -80,8 +80,8 @@ function scenario1(p, priceAfterDisc) {
 
 function scenario2(p, priceAfterDisc) {
     var downPayment = 300000;
-    var bumpMonths = [13, 25, 37, 49, 61];
-    var installmentCount = 70;
+    var installmentCount = Math.max(1, Math.min(70, p.totalDurationMonths || 70));
+    var bumpMonths = [13, 25, 37, 49, 61].filter(function (m) { return m <= installmentCount; });
     var bumpAmount = 58000;
     var regularAmount = 15000;
 
@@ -265,8 +265,15 @@ function scenarioBalloon(p, priceAfterDisc) {
 
 function computeSchedule(params) {
     var discountRate = params.discountRate || 0;
-    // Use typeof so 0% fee is preserved (0 || 0.025 incorrectly became 2.5%).
-    var managementFeeRate = typeof params.managementFeeRate === "number" ? params.managementFeeRate : 0.025;
+    // Coerce to number so 0 and "0" stay 0% (strings would otherwise fall back to 2.5%).
+    var rawMgmt = params.managementFeeRate;
+    var managementFeeRate;
+    if (rawMgmt === null || rawMgmt === undefined || rawMgmt === "") {
+        managementFeeRate = 0.025;
+    } else {
+        var n = Number(rawMgmt);
+        managementFeeRate = isFinite(n) ? n : 0.025;
+    }
     var priceAfterDisc = params.fullPrice - params.fullPrice * discountRate;
 
     var rows = [];
@@ -370,8 +377,11 @@ function computeUserSchedule(params) {
         };
     });
 
+    var pctLabel = fullPrice > 0 ? ((managementFees / fullPrice) * 100).toFixed(1) : "0.0";
     var mgmtRow = {
-        label: managementFees > 0 ? "Management Fees (2.5%)" : "Management Fees (Waived)",
+        label: managementFees > 0
+            ? ("Management Fees (" + pctLabel + "%)")
+            : "Management Fees (0%)",
         month: formatMonth(startDate),
         payment: managementFees,
         percentage: (managementFees / fullPrice) * 100,
