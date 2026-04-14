@@ -57,6 +57,13 @@
             </a>
         </li>
 
+        {{-- Notifications --}}
+        <li>
+            <a href="{{ url('my-notifications') }}" class="{{ request()->is('my-notifications') ? 'menu-active' : '' }}">
+                Notifications
+            </a>
+        </li>
+
         {{-- Favorite --}}
         <li>
             <a href="{{ url('favorite') }}" class="{{ request()->is('favorite') ? 'menu-active' : '' }}">

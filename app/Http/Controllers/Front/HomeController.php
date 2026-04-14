@@ -27,7 +27,9 @@ use App\Models\Video;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use PHPMailer\PHPMailer\PHPMailer;
 use Validator;
 use Illuminate\Support\Facades\App;
@@ -1152,6 +1154,69 @@ class HomeController extends Controller
         $countries = Country::orderBy('name', 'asc')->select('name', 'name_ar', 'code_iso', 'phone_code')->get();
         return view('front_end.my_profile', compact('page_heading', 'countries'));
     }
+
+    public function my_notifications()
+    {
+        $user = Auth::user();
+        $page_heading = "My Notifications";
+        $notifications = collect();
+        $tableReady = Schema::hasTable('mobile_admin_user_notifications');
+        $isSampleData = false;
+
+        if ($tableReady) {
+            $notifications = DB::table('mobile_admin_user_notifications')
+                ->where('user_id', $user->id)
+                ->orderByDesc('created_at')
+                ->limit(200)
+                ->get();
+        }
+        return view('front_end.my_notifications', compact('page_heading', 'notifications', 'tableReady', 'isSampleData'));
+    }
+
+    public function mark_notification_read($id)
+    {
+        $user = Auth::user();
+
+        if (!Schema::hasTable('mobile_admin_user_notifications')) {
+            return redirect()->back()->with('error', __('messages.something_went_wrong'));
+        }
+
+        $updated = DB::table('mobile_admin_user_notifications')
+            ->where('id', $id)
+            ->where('user_id', $user->id)
+            ->update([
+                'is_read' => true,
+                'read_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+
+        if (!$updated) {
+            return redirect()->back()->with('error', __('messages.something_went_wrong'));
+        }
+
+        return redirect()->back()->with('success', __('messages.success'));
+    }
+
+    public function mark_all_notifications_read()
+    {
+        $user = Auth::user();
+
+        if (!Schema::hasTable('mobile_admin_user_notifications')) {
+            return redirect()->back()->with('error', __('messages.something_went_wrong'));
+        }
+
+        DB::table('mobile_admin_user_notifications')
+            ->where('user_id', $user->id)
+            ->where('is_read', false)
+            ->update([
+                'is_read' => true,
+                'read_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+
+        return redirect()->back()->with('success', __('messages.success'));
+    }
+
     public function update_profile(Request $request)
     {
         $user_id = Auth::user()->id;

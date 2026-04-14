@@ -407,6 +407,9 @@ Route::middleware('user')->group(function () {
     Route::get('favorite', 'App\Http\Controllers\Front\HomeController@favorite')->name('frontend.favorite');
     Route::get('my-bookings', 'App\Http\Controllers\Front\HomeController@my_bookings')->name('frontend.my_bookings');
     Route::get('my-reservations', 'App\Http\Controllers\Front\HomeController@my_reservations')->name('frontend.my_reservations');
+    Route::get('my-notifications', 'App\Http\Controllers\Front\HomeController@my_notifications')->name('frontend.my_notifications');
+    Route::post('my-notifications/read/{id}', 'App\Http\Controllers\Front\HomeController@mark_notification_read')->name('frontend.notifications.read');
+    Route::post('my-notifications/read-all', 'App\Http\Controllers\Front\HomeController@mark_all_notifications_read')->name('frontend.notifications.read_all');
     Route::get('my-employees', 'App\Http\Controllers\Front\HomeController@my_employees')->name('frontend.my_employees');
     Route::post('update-employee-status', 'App\Http\Controllers\Front\HomeController@updateEmployeeStatus')->name('update_employee_status');
     Route::get('visit-schedule', 'App\Http\Controllers\Front\HomeController@visit_schedule')->name('frontend.visit_schedule');
