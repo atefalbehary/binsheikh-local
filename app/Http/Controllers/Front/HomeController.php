@@ -1173,6 +1173,42 @@ class HomeController extends Controller
         return view('front_end.my_notifications', compact('page_heading', 'notifications', 'tableReady', 'isSampleData'));
     }
 
+    public function get_notification_detail($id)
+    {
+        $user = Auth::user();
+
+        if (!Schema::hasTable('mobile_admin_user_notifications')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Notifications table not found.',
+            ], 404);
+        }
+
+        $notification = DB::table('mobile_admin_user_notifications')
+            ->where('id', $id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$notification) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Notification not found.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $notification->id,
+                'title' => $notification->title ?? '',
+                'body' => $notification->body ?? '',
+                'channel' => strtoupper($notification->channel ?? 'PUSH'),
+                'date' => $notification->created_at ? Carbon::parse($notification->created_at)->format('d M Y, h:i A') : '-',
+                'deep_link' => $notification->deep_link ?? '',
+            ],
+        ]);
+    }
+
     public function mark_notification_read($id)
     {
         $user = Auth::user();

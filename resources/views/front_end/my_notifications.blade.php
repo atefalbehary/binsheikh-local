@@ -1,5 +1,6 @@
 @extends('front_end.template.layout')
 @section('header')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
 @stop
 
 @section('content')
@@ -57,26 +58,61 @@
                                                     </div>
                                                 @else
                                                     <div class="notifications-shell">
-                                                        <div class="notification-list">
-                                                            @foreach($notifications as $notification)
-                                                                <div class="notification-item {{ (int) $notification->is_read === 0 ? 'unread' : '' }}">
-                                                                    <div class="notification-head">
-                                                                        <h6 class="mb-1">{{ $notification->title }}</h6>
-                                                                        <small class="text-muted">
-                                                                            {{ $notification->created_at ? \Carbon\Carbon::parse($notification->created_at)->format('d M Y, h:i A') : '' }}
-                                                                        </small>
+                                                        <div class="table-responsive">
+                                                            <table id="notifications-table" class="display notifications-datatable w-100">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Title</th>
+                                                                        <th>Message</th>
+                                                                        <th>Channel</th>
+                                                                        <th>Date</th>
+                                                                        <th>Link</th>
+                                                                        <th>View</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @foreach($notifications as $notification)
+                                                                        <tr class="{{ (int) $notification->is_read === 0 ? 'unread-row' : '' }}">
+                                                                            <td>{{ $notification->title }}</td>
+                                                                            <td>{{ $notification->body ?? '-' }}</td>
+                                                                            <td>{{ strtoupper($notification->channel ?? 'PUSH') }}</td>
+                                                                            <td data-order="{{ $notification->created_at ? \Carbon\Carbon::parse($notification->created_at)->timestamp : 0 }}">
+                                                                                {{ $notification->created_at ? \Carbon\Carbon::parse($notification->created_at)->format('d M Y, h:i A') : '-' }}
+                                                                            </td>
+                                                                            <td>
+                                                                                @if(!empty($notification->deep_link))
+                                                                                    <a href="{{ $notification->deep_link }}" target="_blank" rel="noopener noreferrer">Open Link</a>
+                                                                                @else
+                                                                                    -
+                                                                                @endif
+                                                                            </td>
+                                                                            <td>
+                                                                                <button type="button" class="btn btn-sm btn-outline-primary btn-view-notification" data-id="{{ $notification->id }}">View</button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    @endforeach
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        <div class="modal fade" id="notificationViewModal" tabindex="-1" aria-labelledby="notificationViewModalLabel" aria-hidden="true">
+                                                            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="notificationViewModalLabel">Notification</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                                     </div>
-                                                                    @if(!empty($notification->body))
-                                                                        <p class="mb-2">{{ $notification->body }}</p>
-                                                                    @endif
-                                                                    <div class="notification-meta">
-                                                                        <span class="badge badge-light">Channel: {{ strtoupper($notification->channel ?? 'push') }}</span>
-                                                                        @if(!empty($notification->deep_link))
-                                                                            <a href="{{ $notification->deep_link }}" target="_blank" rel="noopener noreferrer">Open Link</a>
-                                                                        @endif
+                                                                    <div class="modal-body">
+                                                                        <p class="mb-2"><strong>Title:</strong> <span id="notif-view-title"></span></p>
+                                                                        <p class="mb-2"><strong>Channel:</strong> <span id="notif-view-channel"></span></p>
+                                                                        <p class="mb-2"><strong>Date:</strong> <span id="notif-view-date"></span></p>
+                                                                        <p class="mb-2"><strong>Message:</strong></p>
+                                                                        <div class="notification-email-body mb-3" id="notif-view-body"></div>
+                                                                        <div id="notif-view-link-wrap" class="d-none">
+                                                                            <a href="#" id="notif-view-link" class="btn btn-primary" target="_blank" rel="noopener noreferrer">Open link</a>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            @endforeach
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 @endif
@@ -119,35 +155,143 @@
         margin-bottom: 20px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .notification-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+    .notifications-datatable th,
+    .notifications-datatable td {
+        vertical-align: top;
     }
-    .notification-item {
-        border: 1px solid #ececec;
-        border-radius: 10px;
-        padding: 14px 16px;
-        background: #fff;
-    }
-    .notification-item.unread {
-        border-left: 4px solid #d7bf78;
+    .notifications-datatable .unread-row {
         background: #fffdf7;
     }
-    .notification-head {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        align-items: flex-start;
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 10px;
     }
-    .notification-meta {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-    .notification-item p {
-        color: #555;
+    .notification-email-body {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 12px;
+        background: #fff;
+        min-height: 120px;
+        overflow-x: auto;
     }
 </style>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script>
+    window.showNotificationModalFallbackSafe = function () {
+        var modalEl = document.getElementById('notificationViewModal');
+        if (!modalEl) {
+            return;
+        }
+        if (window.bootstrap && window.bootstrap.Modal) {
+            window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            return;
+        }
+        if (window.jQuery && jQuery.fn && jQuery.fn.modal) {
+            jQuery('#notificationViewModal').modal('show');
+            return;
+        }
+        jQuery('#notificationViewModal')
+            .addClass('show')
+            .css('display', 'block')
+            .attr('aria-modal', 'true')
+            .removeAttr('aria-hidden');
+        jQuery('body').addClass('modal-open');
+        if (!jQuery('.modal-backdrop').length) {
+            jQuery('body').append('<div class="modal-backdrop fade show"></div>');
+        }
+    };
+
+    window.openNotificationModalFromResponse = function (p) {
+        jQuery('#notif-view-title').text((p && p.title) ? p.title : '-');
+        jQuery('#notif-view-channel').text((p && p.channel) ? p.channel : '-');
+        jQuery('#notif-view-date').text((p && p.date) ? p.date : '-');
+        jQuery('#notif-view-body').html((p && p.body) ? p.body : '-');
+        if (p && p.deep_link) {
+            jQuery('#notif-view-link').attr('href', p.deep_link);
+            jQuery('#notif-view-link-wrap').removeClass('d-none');
+        } else {
+            jQuery('#notif-view-link-wrap').addClass('d-none');
+        }
+        window.showNotificationModalFallbackSafe();
+    };
+
+    $(document).ready(function () {
+        var notificationDetailUrlTemplate = @json(route('frontend.notifications.detail', ['id' => '__ID__']));
+
+        function hideNotificationModal() {
+            if (window.bootstrap && window.bootstrap.Modal) {
+                var modalEl = document.getElementById('notificationViewModal');
+                if (modalEl) {
+                    window.bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                }
+                return;
+            }
+            if ($.fn.modal) {
+                $('#notificationViewModal').modal('hide');
+                return;
+            }
+            $('#notificationViewModal')
+                .removeClass('show')
+                .css('display', 'none')
+                .removeAttr('aria-modal')
+                .attr('aria-hidden', 'true');
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+
+        $('#notifications-table').DataTable({
+            pageLength: 10,
+            order: [[3, 'desc']],
+            columnDefs: [
+                { orderable: false, targets: [4, 5] }
+            ],
+            language: {
+                search: 'Search:',
+                lengthMenu: 'Show _MENU_ notifications',
+                info: 'Showing _START_ to _END_ of _TOTAL_ notifications',
+                emptyTable: 'No notifications found'
+            }
+        });
+
+        $(document).on('click', '.btn-view-notification', function (e) {
+            e.preventDefault();
+            var btn = $(this);
+            var notificationId = btn.data('id');
+            if (!notificationId) {
+                return;
+            }
+            var detailUrl = notificationDetailUrlTemplate.replace('__ID__', notificationId);
+            btn.prop('disabled', true).text('Loading...');
+            $.ajax({
+                url: detailUrl,
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.success && res.data) {
+                        window.openNotificationModalFromResponse(res.data);
+                    } else {
+                        alert('Notification detail not found.');
+                    }
+                },
+                error: function () {
+                    alert('Failed to fetch notification detail.');
+                },
+                complete: function () {
+                    btn.prop('disabled', false).text('View');
+                }
+            });
+        });
+
+        $(document).on('click', '#notificationViewModal .btn-close, #notificationViewModal [data-bs-dismiss="modal"]', function (e) {
+            e.preventDefault();
+            hideNotificationModal();
+        });
+
+        $(document).on('click', '#notificationViewModal', function (e) {
+            if ($(e.target).is('#notificationViewModal')) {
+                hideNotificationModal();
+            }
+        });
+    });
+</script>
 @stop
