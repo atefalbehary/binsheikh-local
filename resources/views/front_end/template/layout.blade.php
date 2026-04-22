@@ -1443,8 +1443,46 @@ if (!$locale) {
         </script>
     @endif
     <script>
+        function renderBackendValidationErrors($form, errors) {
+            if (!errors || typeof errors !== 'object') {
+                return false;
+            }
 
+            $form.find('.is-invalid').removeClass('is-invalid');
+            $form.find('.invalid-feedback').remove();
 
+            var firstErrorField = null;
+            var hasError = false;
+
+            $.each(errors, function (field, message) {
+                var $field = $form.find('[name="' + field + '"]').eq(0);
+                if (!$field.length) {
+                    return;
+                }
+
+                var errorText = Array.isArray(message) ? message[0] : message;
+                if (typeof errorText !== 'string') {
+                    errorText = String(errorText || '');
+                }
+
+                if (errorText.trim() !== '') {
+                    $field.addClass('is-invalid');
+                    $('<div class="invalid-feedback">' + errorText + '</div>').insertAfter($field);
+                    if (!firstErrorField) {
+                        firstErrorField = $field;
+                    }
+                    hasError = true;
+                }
+            });
+
+            if (firstErrorField && firstErrorField.length && firstErrorField.offset()) {
+                $('html, body').animate({
+                    scrollTop: (firstErrorField.offset().top - 100),
+                }, 500);
+            }
+
+            return hasError;
+        }
 
         $('body').off('submit', '#user-form');
         $('body').on('submit', '#user-form', function (e) {
@@ -1476,10 +1514,9 @@ if (!$locale) {
                     console.log("Invalid field:", $(this).attr('name'), $(this).val());
                 });
 
-                // TEMPORARY: Skip validation for testing
-                console.log("=== SKIPPING VALIDATION FOR TESTING ===");
-                // $form.parsley().validate();
-                // return false;
+                // Keep frontend validation active and stop submit when invalid
+                $form.parsley().validate();
+                return false;
             } else {
                 console.log("=== VALIDATION PASSED - PROCEEDING WITH SUBMISSION ===");
             }
@@ -1487,7 +1524,8 @@ if (!$locale) {
             var timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             formData.append('timezone', timeZone);
 
-            $(".invalid-feedback").remove();
+            $form.find('.is-invalid').removeClass('is-invalid');
+            $form.find(".invalid-feedback").remove();
             txt = $form.find('button[type="submit"]').text();
 
             $form.find('button[type="submit"]')
@@ -1515,28 +1553,8 @@ if (!$locale) {
 
                     if (res.status == 0 || res.status === '0') {
                         console.log("Server returned error status");
-                        if (typeof res['errors'] !== 'undefined' && res['errors']) {
-                            var error_def = $.Deferred();
-                            var error_index = 0;
-                            jQuery.each(res['errors'], function (e_field, e_message) {
-                                if (e_message != '') {
-                                    $('[name="' + e_field + '"]').eq(0).addClass('is-invalid');
-                                    $('<div class="invalid-feedback">' + e_message + '</div>')
-                                        .insertAfter($('[name="' + e_field + '"]').eq(0));
-                                    if (error_index == 0) {
-                                        error_def.resolve();
-                                    }
-                                    error_index++;
-                                }
-                            });
-                            error_def.done(function () {
-                                var error = $form.find('.is-invalid').eq(0);
-                                if (error.length > 0 && error.offset()) {
-                                    $('html, body').animate({
-                                        scrollTop: (error.offset().top - 100),
-                                    }, 500);
-                                }
-                            });
+                        if (typeof res['errors'] !== 'undefined' && renderBackendValidationErrors($form, res['errors'])) {
+                            // inline errors rendered
                         } else {
                             var m = res['message'];
                             // toastr["error"](m);
@@ -1570,7 +1588,11 @@ if (!$locale) {
                     $form.find('button[type="submit"]')
                         .text(txt)
                         .attr('disabled', false);
-                    show_msg(0, e.responseText)
+                    if (e.responseJSON && renderBackendValidationErrors($form, e.responseJSON.errors)) {
+                        return;
+                    }
+                    var message = (e.responseJSON && e.responseJSON.message) ? e.responseJSON.message : "An error occurred. Please try again.";
+                    show_msg(0, message)
                     // toastr["error"](e.responseText);
                 }
             });
@@ -2150,7 +2172,8 @@ if (!$locale) {
 
                 // Set loading state
                 $btn.text('Submitting...').attr('disabled', true);
-                $(".invalid-feedback").remove();
+                $form.find('.is-invalid').removeClass('is-invalid');
+                $form.find(".invalid-feedback").remove();
 
                 $.ajax({
                     url: $form.attr('action'),
@@ -2183,29 +2206,9 @@ if (!$locale) {
                         } else {
                             // Handle errors
                             if (response.errors) {
-                                var errorMsg = "";
-                                var error_index = 0;
-                                $.each(response.errors, function (key, value) {
-                                    errorMsg += value + "<br>";
-                                    // Highlight fields
-                                    if (value != '') {
-                                        $('[name="' + key + '"]').eq(0).addClass('is-invalid');
-                                        $('<div class="invalid-feedback">' + value + '</div>')
-                                            .insertAfter($('[name="' + key + '"]').eq(0));
-
-                                        // Scroll to first error
-                                        if (error_index == 0) {
-                                            var error = $form.find('.is-invalid').eq(0);
-                                            if (error.length > 0 && error.offset()) {
-                                                $('html, body').animate({
-                                                    scrollTop: (error.offset().top - 100),
-                                                }, 500);
-                                            }
-                                        }
-                                        error_index++;
-                                    }
-                                });
-                                // show_msg(0, errorMsg); // Optional if we show inline errors
+                                if (!renderBackendValidationErrors($form, response.errors) && response.message) {
+                                    show_msg(0, response.message);
+                                }
                             } else {
                                 show_msg(0, response.message);
                             }
@@ -2214,7 +2217,12 @@ if (!$locale) {
                         $btn.text(btnText).attr('disabled', false);
                     },
                     error: function (xhr) {
-                        show_msg(0, "An error occurred. Please try again.");
+                        if (xhr.responseJSON && renderBackendValidationErrors($form, xhr.responseJSON.errors)) {
+                            $btn.text(btnText).attr('disabled', false);
+                            return;
+                        }
+                        var errorMessage = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : "An error occurred. Please try again.";
+                        show_msg(0, errorMessage);
                         // Reset button
                         $btn.text(btnText).attr('disabled', false);
                     }
