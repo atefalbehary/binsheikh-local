@@ -44,7 +44,7 @@ class HomeController extends Controller
 {
     //
     public $lang = 'en';
-    private const NOTIFICATION_LOGO_URL = 'http://127.0.0.1:8000/admin-assets/assets/img/logo.png';
+    private const NOTIFICATION_LOGO_PATH = 'admin-assets/assets/img/logo.png';
     public function __construct()
     {
         $this->lang = session('sys_lang');
@@ -163,7 +163,14 @@ class HomeController extends Controller
 
     private function getNotificationLogoUrl(): string
     {
-        return self::NOTIFICATION_LOGO_URL;
+        $logoPath = ltrim(self::NOTIFICATION_LOGO_PATH, '/');
+
+        // For web requests, build URL from the active host so it works across domains.
+        if (!app()->runningInConsole() && request()) {
+            return request()->getSchemeAndHttpHost() . '/' . $logoPath;
+        }
+
+        return rtrim(config('app.url', ''), '/') . '/' . $logoPath;
     }
 
     private function notifyAdminClientRegistration(array $data = []): void
