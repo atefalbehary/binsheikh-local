@@ -12,9 +12,7 @@
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:760px;background:#050505;">
                     <tr>
                         <td align="center" style="padding:18px 20px 16px;">
-                            @if(!empty($logoUrl))
-                                <img src="{{ $logoUrl }}" alt="Bin Al Sheikh" style="max-width:180px;height:auto;border:0;display:block;margin:0 auto;">
-                            @endif
+                            <img src="{{ asset('logo.png') }}" alt="Bin Al Sheikh" style="max-width:180px;height:auto;border:0;display:block;margin:0 auto;">
                         </td>
                     </tr>
 

@@ -23,10 +23,8 @@
                                         A new agent has successfully registered on the Bin Al Sheikh platform.
                                         Please review the details below:
                                     </td>
-                                    <td valign="top" align="right" style="width:20%;padding-top:4px;">
-                                        @if(!empty($logoUrl))
-                                            <img src="{{ $logoUrl }}" alt="Bin Al Sheikh" style="width:168px;max-width:168px;height:auto;border:0;display:block;">
-                                        @endif
+                                    <td valign="top" align="right" style="width:20%;padding-top:2px;">
+                                        <img src="{{ asset('logo.png') }}" alt="Bin Al Sheikh" style="height:132px;width:auto;max-height:132px;border:0;display:block;margin-left:auto;">
                                     </td>
                                 </tr>
                             </table>
