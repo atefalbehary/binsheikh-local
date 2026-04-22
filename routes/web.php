@@ -27,6 +27,43 @@ Route::get('/payment-calculator', [PaymentCalculatorController::class, 'index'])
 Route::post('/payment-calculator/calculate', [PaymentCalculatorController::class, 'calculate'])
     ->name('payment-calculator.calculate');
 
+Route::get('/preview/agent-registration-email', function () {
+    return view('front_end.agent_registration_notification_email', [
+        'fullName' => 'John Doe',
+        'email' => 'john.doe@example.com',
+        'phone' => '+974 5555 1234',
+        'agency' => 'Bin Al Sheikh Realty',
+        'registrationDate' => now()->format('Y-m-d H:i:s'),
+        'logoUrl' => request()->getSchemeAndHttpHost() . '/admin-assets/assets/img/logo.png',
+        'reviewUrl' => url('/admin/agent'),
+    ]);
+});
+
+Route::get('/preview/client-registration-email', function () {
+    return view('front_end.client_registration_notification_email', [
+        'fullName' => 'Fatima Noor',
+        'email' => 'fatima.noor@example.com',
+        'phone' => '+974 5000 7788',
+        'agentName' => 'Ahmed Khan',
+        'registrationDate' => now()->format('Y-m-d H:i:s'),
+        'logoUrl' => request()->getSchemeAndHttpHost() . '/admin-assets/assets/img/logo.png',
+    ]);
+});
+
+Route::get('/preview/visit-schedule-email', function () {
+    return view('front_end.visit_schedule_notification_email', [
+        'agentName' => 'Ahmed Khan',
+        'email' => 'ahmed.khan@example.com',
+        'phone' => '+974 5111 2244',
+        'projectName' => 'Bin Al Sheikh Marina',
+        'unitNumber' => 'A-1203',
+        'visitDate' => now()->addDays(2)->format('Y-m-d'),
+        'clientName' => 'Fatima Noor',
+        'logoUrl' => request()->getSchemeAndHttpHost() . '/admin-assets/assets/img/logo.png',
+        'reviewUrl' => url('/admin/agent'),
+    ]);
+});
+
 
 
 Route::get('migrate', function () {

@@ -5,25 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Agent Registration</title>
 </head>
-<body style="margin:0;padding:0;background:#050505;font-family:Arial,Helvetica,sans-serif;color:#f5f5f5;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#050505;padding:24px 0;">
+<body style="margin:0;padding:0;background:#050505;font-family:'Poppins',Arial,Helvetica,sans-serif;color:#f5f5f5;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#050505;padding:22px 0 26px;">
         <tr>
             <td align="center">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:960px;background:#050505;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:980px;background:#050505;">
                     <tr>
-                        <td style="padding:0 26px 14px;">
+                        <td style="padding:0 26px 16px;">
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                                 <tr>
-                                    <td valign="top" style="font-size:0;">
-                                        <div style="display:inline-block;vertical-align:top;width:58%;min-width:260px;padding-top:10px;">
-                                            <div style="font-size:52px;line-height:1.02;font-weight:700;color:#f7f7f7;">New Agent</div>
-                                            <div style="font-size:52px;line-height:1.02;font-weight:700;color:#f7f7f7;">Registration</div>
-                                        </div>
-                                        <div style="display:inline-block;vertical-align:top;width:42%;min-width:220px;text-align:right;">
-                                            @if(!empty($logoUrl))
-                                                <img src="{{ $logoUrl }}" alt="Project Logo" style="max-width:165px;max-height:130px;height:auto;border:0;display:inline-block;">
-                                            @endif
-                                        </div>
+                                    <td valign="top" style="width:30%;padding:0 18px 0 0;">
+                                        <div style="font-size:63px;line-height:1.02;font-weight:700;letter-spacing:0.2px;color:#f7f7f7;">New Agent</div>
+                                        <div style="font-size:63px;line-height:1.02;font-weight:700;letter-spacing:0.2px;color:#f7f7f7;">Registration</div>
+                                    </td>
+                                    <td valign="top" style="width:50%;padding:12px 16px 0 0;font-size:16px;line-height:1.45;color:#f0f0f0;">
+                                        Dear Team,<br><br>
+                                        A new agent has successfully registered on the Bin Al Sheikh platform.
+                                        Please review the details below:
+                                    </td>
+                                    <td valign="top" align="right" style="width:20%;padding-top:4px;">
+                                        @if(!empty($logoUrl))
+                                            <img src="{{ $logoUrl }}" alt="Bin Al Sheikh" style="width:168px;max-width:168px;height:auto;border:0;display:block;">
+                                        @endif
                                     </td>
                                 </tr>
                             </table>
@@ -31,50 +34,81 @@
                     </tr>
 
                     <tr>
-                        <td style="padding:0 26px 10px;font-size:36px;line-height:1.35;color:#f1f1f1;">
-                            Dear Team,
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding:0 26px 24px;font-size:37px;line-height:1.32;color:#f1f1f1;">
-                            A new agent has successfully registered on the Bin Al Sheikh platform.<br>
-                            Please review the details below:
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td style="padding:0 20px;">
-                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #d5b36a;border-radius:12px;overflow:hidden;">
+                        <td style="padding:4px 20px 0;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #b9964f;border-radius:12px;overflow:hidden;">
                                 <tr>
-                                    <td style="padding:14px 24px;font-size:36px;line-height:1.35;color:#f8f8f8;border-bottom:1px solid #2a2a2a;">Full Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $fullName }}</td>
+                                    <td style="padding:14px 24px;font-size:20px;line-height:1.35;color:#f8f8f8;border-bottom:1px solid #2c2c2c;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="width:180px;">Full Name</td>
+                                                <td style="width:24px;text-align:center;">:</td>
+                                                <td>{{ $fullName }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding:14px 24px;font-size:36px;line-height:1.35;color:#f8f8f8;border-bottom:1px solid #2a2a2a;">Email&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $email }}</td>
+                                    <td style="padding:14px 24px;font-size:20px;line-height:1.35;color:#f8f8f8;border-bottom:1px solid #2c2c2c;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="width:180px;">Email</td>
+                                                <td style="width:24px;text-align:center;">:</td>
+                                                <td>{{ $email }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding:14px 24px;font-size:36px;line-height:1.35;color:#f8f8f8;border-bottom:1px solid #2a2a2a;">Phone&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $phone }}</td>
+                                    <td style="padding:14px 24px;font-size:20px;line-height:1.35;color:#f8f8f8;border-bottom:1px solid #2c2c2c;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="width:180px;">Phone</td>
+                                                <td style="width:24px;text-align:center;">:</td>
+                                                <td>{{ $phone }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding:14px 24px;font-size:36px;line-height:1.35;color:#f8f8f8;border-bottom:1px solid #2a2a2a;">Agency&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $agency }}</td>
+                                    <td style="padding:14px 24px;font-size:20px;line-height:1.35;color:#f8f8f8;border-bottom:1px solid #2c2c2c;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="width:180px;">Agency</td>
+                                                <td style="width:24px;text-align:center;">:</td>
+                                                <td>{{ $agency }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding:14px 24px;font-size:36px;line-height:1.35;color:#f8f8f8;">Registration Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $registrationDate }}</td>
+                                    <td style="padding:14px 24px;font-size:20px;line-height:1.35;color:#f8f8f8;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="width:180px;">Registration Date</td>
+                                                <td style="width:24px;text-align:center;">:</td>
+                                                <td>{{ $registrationDate }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
                                 </tr>
                             </table>
                         </td>
                     </tr>
 
                     <tr>
-                        <td style="padding:26px 20px 16px;">
-                            <a href="{{ $reviewUrl }}" style="display:inline-block;background:#d5b36a;color:#1b1b1b;text-decoration:none;font-weight:700;font-size:41px;line-height:1.15;padding:12px 34px;border-radius:14px;min-width:445px;text-align:center;">
-                                Review Agent Profile
-                            </a>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td align="center" style="padding:6px 20px 0;font-size:35px;line-height:1.35;color:#bdbdbd;">
-                            This is an automated system notification - Bin Al Sheikh Real Estate
+                        <td style="padding:26px 20px 0;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td valign="middle" style="width:36%;">
+                                        <a href="{{ $reviewUrl }}" style="display:inline-block;background:#b9964f;color:#171717;text-decoration:none;font-weight:700;font-size:18px;line-height:1.2;padding:14px 32px;border-radius:12px;min-width:245px;text-align:center;">
+                                            Review Agent Profile
+                                        </a>
+                                    </td>
+                                    <td valign="middle" align="right" style="width:64%;font-size:15px;line-height:1.4;color:#bdbdbd;padding-left:18px;">
+                                        This is an automated system notification - Bin Al Sheikh Real Estate
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
                 </table>
