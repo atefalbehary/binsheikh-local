@@ -49,6 +49,114 @@ class HomeController extends Controller
         $this->lang = session('sys_lang');
         $this->thmx_currency_convert();
     }
+
+    private function renderGenericEmailTemplate(string $title, string $brandName, string $bodyBlock, string $linkBlock = ''): string
+    {
+        $templatePath = resource_path('views/front_end/generic_notification_template.html');
+        if (!file_exists($templatePath)) {
+            return '<h2>' . e($title) . '</h2>' . $bodyBlock . $linkBlock;
+        }
+
+        $template = file_get_contents($templatePath);
+
+        return str_replace(
+            ['{{TITLE}}', '{{BRAND_NAME}}', '{{BODY_BLOCK}}', '{{LINK_BLOCK}}'],
+            [$title, $brandName, $bodyBlock, $linkBlock],
+            $template
+        );
+    }
+
+    private function notifyAdminRegistration(string $registrationType, array $data = []): void
+    {
+        try {
+            $adminEmail = env('REG_NOTIFY_TO_ADDRESS', 'info@bsbqa.com');
+            $safeType = e(ucfirst($registrationType));
+            $subject = $safeType . ' Registration Notification - Bin Al Sheikh';
+
+            $bodyBlock = '
+                <p style="margin: 0 0 10px; font-size: 15px; line-height: 1.6; color: #212529;">
+                    A new <strong>' . $safeType . '</strong> has been registered.
+                </p>
+                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Name:</strong> ' . e($data['name'] ?? '-') . '</p>
+                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Email:</strong> ' . e($data['email'] ?? '-') . '</p>
+                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Phone:</strong> ' . e($data['phone'] ?? '-') . '</p>
+                <p style="margin: 0; font-size: 14px; color: #495057;"><strong>Registered At:</strong> ' . now()->format('Y-m-d H:i:s') . '</p>
+            ';
+
+            if (!empty($data['extra']) && is_array($data['extra'])) {
+                foreach ($data['extra'] as $label => $value) {
+                    $bodyBlock .= '<p style="margin: 6px 0 0; font-size: 14px; color: #495057;"><strong>' . e($label) . ':</strong> ' . e((string) $value) . '</p>';
+                }
+            }
+
+            $mailbody = $this->renderGenericEmailTemplate(
+                $safeType . ' Registration Alert',
+                'Bin Al Sheikh',
+                $bodyBlock
+            );
+
+            $this->sendAdminNotificationWithDedicatedSmtp($adminEmail, $subject, $mailbody);
+        } catch (\Throwable $e) {
+            Log::error('Failed to send admin registration notification: ' . $e->getMessage());
+        }
+    }
+
+    private function notifyAdminVisitScheduleCreated(array $data = []): void
+    {
+        try {
+            $adminEmail = env('REG_NOTIFY_TO_ADDRESS', 'info@bsbqa.com');
+            $subject = 'Visit Schedule Notification - Bin Al Sheikh';
+
+            $bodyBlock = '
+                <p style="margin: 0 0 10px; font-size: 15px; line-height: 1.6; color: #212529;">
+                    A new <strong>visit schedule</strong> has been created.
+                </p>
+                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Client Name:</strong> ' . e($data['client_name'] ?? '-') . '</p>
+                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Client Phone:</strong> ' . e($data['client_phone'] ?? '-') . '</p>
+                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Client Email:</strong> ' . e($data['client_email'] ?? '-') . '</p>
+                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Agent:</strong> ' . e($data['agent_name'] ?? '-') . '</p>
+                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Project:</strong> ' . e($data['project_name'] ?? '-') . '</p>
+                <p style="margin: 0; font-size: 14px; color: #495057;"><strong>Visit Time:</strong> ' . e($data['visit_time'] ?? '-') . '</p>
+            ';
+
+            $mailbody = $this->renderGenericEmailTemplate(
+                'Visit Schedule Alert',
+                'Bin Al Sheikh',
+                $bodyBlock
+            );
+
+            $this->sendAdminNotificationWithDedicatedSmtp($adminEmail, $subject, $mailbody);
+        } catch (\Throwable $e) {
+            Log::error('Failed to send admin visit schedule notification: ' . $e->getMessage());
+        }
+    }
+
+    private function sendAdminNotificationWithDedicatedSmtp(string $to, string $subject, string $mailbody): void
+    {
+        $mail = new PHPMailer(true);
+        $smtpHost = env('REG_NOTIFY_MAIL_HOST', 'gator3155.hostgator.com');
+        $smtpPort = (int) env('REG_NOTIFY_MAIL_PORT', 465);
+        $smtpEncryption = env('REG_NOTIFY_MAIL_ENCRYPTION', 'ssl');
+        $smtpUsername = env('REG_NOTIFY_MAIL_USERNAME', '');
+        $smtpPassword = env('REG_NOTIFY_MAIL_PASSWORD', '');
+        $smtpFromAddress = env('REG_NOTIFY_MAIL_FROM_ADDRESS', $smtpUsername);
+        $smtpFromName = env('REG_NOTIFY_MAIL_FROM_NAME', 'Bin Al Sheikh');
+
+        $mail->isSMTP();
+        $mail->Host = $smtpHost;
+        $mail->SMTPAuth = true;
+        $mail->Username = $smtpUsername;
+        $mail->Password = $smtpPassword;
+        $mail->Port = $smtpPort;
+        $mail->SMTPSecure = $smtpEncryption;
+        $mail->setFrom($smtpFromAddress, $smtpFromName);
+        $mail->addAddress($to);
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body = $mailbody;
+        $mail->send();
+    }
+
     public function checkAvailability(Request $request)
     {
         $post = $request->all();
@@ -1123,6 +1231,17 @@ class HomeController extends Controller
                             $message = __('messages.account_submitted_for_approval');
                             $errors = '';
                         }
+
+                        if ((int) $request->user_type === 3) {
+                            $this->notifyAdminRegistration('agent', [
+                                'name' => $name,
+                                'email' => $request->email,
+                                'phone' => $request->phone,
+                                'extra' => [
+                                    'User ID' => $user_id,
+                                ],
+                            ]);
+                        }
                     } else {
                         $status = "0";
                         $message = __('messages.something_went_wrong');
@@ -1687,6 +1806,18 @@ class HomeController extends Controller
                 'nationality' => $request->nationality,
                 'apartment_no' => $request->apartment_no,
                 'apartment_type' => $request->apartment_type,
+            ]);
+
+            $this->notifyAdminRegistration('client', [
+                'name' => $client->client_name,
+                'email' => $client->email,
+                'phone' => $client->country_code . ' ' . $client->phone,
+                'extra' => [
+                    'Agent Name' => Auth::user()->name ?? '-',
+                    'Project ID' => $client->project_id,
+                    'Apartment No' => $client->apartment_no,
+                    'Apartment Type' => $client->apartment_type,
+                ],
             ]);
 
             return response()->json([
@@ -3616,6 +3747,16 @@ class HomeController extends Controller
                     'visit_status' => $request->status ?? 'rescheduled'
                 ]);
             }
+
+            $visitAgent = User::find($agentId);
+            $this->notifyAdminVisitScheduleCreated([
+                'client_name' => $visitSchedule->client_name,
+                'client_phone' => $visitSchedule->client_phone_number,
+                'client_email' => $visitSchedule->client_email_address,
+                'agent_name' => $visitAgent->name ?? ($user->name ?? '-'),
+                'project_name' => $project->name ?? '-',
+                'visit_time' => $visitDateTime->format('Y-m-d h:i A'),
+            ]);
 
             return response()->json([
                 'success' => true,
