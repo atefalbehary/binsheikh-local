@@ -44,6 +44,7 @@ class HomeController extends Controller
 {
     //
     public $lang = 'en';
+    private const NOTIFICATION_LOGO_URL = 'http://127.0.0.1:8000/admin-assets/assets/img/logo.png';
     public function __construct()
     {
         $this->lang = session('sys_lang');
@@ -66,38 +67,25 @@ class HomeController extends Controller
         );
     }
 
-    private function notifyAdminRegistration(string $registrationType, array $data = []): void
+    private function notifyAdminAgentRegistration(array $data = []): void
     {
         try {
             $adminEmail = env('REG_NOTIFY_TO_ADDRESS', 'info@bsbqa.com');
-            $safeType = e(ucfirst($registrationType));
-            $subject = $safeType . ' Registration Notification - Bin Al Sheikh';
+            $subject = 'New Agent Registration - Bin Al Sheikh';
 
-            $bodyBlock = '
-                <p style="margin: 0 0 10px; font-size: 15px; line-height: 1.6; color: #212529;">
-                    A new <strong>' . $safeType . '</strong> has been registered.
-                </p>
-                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Name:</strong> ' . e($data['name'] ?? '-') . '</p>
-                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Email:</strong> ' . e($data['email'] ?? '-') . '</p>
-                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Phone:</strong> ' . e($data['phone'] ?? '-') . '</p>
-                <p style="margin: 0; font-size: 14px; color: #495057;"><strong>Registered At:</strong> ' . now()->format('Y-m-d H:i:s') . '</p>
-            ';
-
-            if (!empty($data['extra']) && is_array($data['extra'])) {
-                foreach ($data['extra'] as $label => $value) {
-                    $bodyBlock .= '<p style="margin: 6px 0 0; font-size: 14px; color: #495057;"><strong>' . e($label) . ':</strong> ' . e((string) $value) . '</p>';
-                }
-            }
-
-            $mailbody = $this->renderGenericEmailTemplate(
-                $safeType . ' Registration Alert',
-                'Bin Al Sheikh',
-                $bodyBlock
-            );
+            $mailbody = view('front_end.agent_registration_notification_email', [
+                'fullName' => $data['fullName'] ?? '-',
+                'email' => $data['email'] ?? '-',
+                'phone' => $data['phone'] ?? '-',
+                'agency' => $data['agency'] ?? '-',
+                'registrationDate' => $data['registrationDate'] ?? now()->format('Y-m-d H:i:s'),
+                'logoUrl' => $data['logoUrl'] ?? $this->getNotificationLogoUrl(),
+                'reviewUrl' => $data['reviewUrl'] ?? url('/admin/agent'),
+            ])->render();
 
             $this->sendAdminNotificationWithDedicatedSmtp($adminEmail, $subject, $mailbody);
         } catch (\Throwable $e) {
-            Log::error('Failed to send admin registration notification: ' . $e->getMessage());
+            Log::error('Failed to send dedicated agent registration notification: ' . $e->getMessage());
         }
     }
 
@@ -107,23 +95,17 @@ class HomeController extends Controller
             $adminEmail = env('REG_NOTIFY_TO_ADDRESS', 'info@bsbqa.com');
             $subject = 'Visit Schedule Notification - Bin Al Sheikh';
 
-            $bodyBlock = '
-                <p style="margin: 0 0 10px; font-size: 15px; line-height: 1.6; color: #212529;">
-                    A new <strong>visit schedule</strong> has been created.
-                </p>
-                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Client Name:</strong> ' . e($data['client_name'] ?? '-') . '</p>
-                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Client Phone:</strong> ' . e($data['client_phone'] ?? '-') . '</p>
-                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Client Email:</strong> ' . e($data['client_email'] ?? '-') . '</p>
-                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Agent:</strong> ' . e($data['agent_name'] ?? '-') . '</p>
-                <p style="margin: 0 0 6px; font-size: 14px; color: #495057;"><strong>Project:</strong> ' . e($data['project_name'] ?? '-') . '</p>
-                <p style="margin: 0; font-size: 14px; color: #495057;"><strong>Visit Time:</strong> ' . e($data['visit_time'] ?? '-') . '</p>
-            ';
-
-            $mailbody = $this->renderGenericEmailTemplate(
-                'Visit Schedule Alert',
-                'Bin Al Sheikh',
-                $bodyBlock
-            );
+            $mailbody = view('front_end.visit_schedule_notification_email', [
+                'clientName' => $data['client_name'] ?? '-',
+                'email' => $data['client_email'] ?? '-',
+                'phone' => $data['client_phone'] ?? '-',
+                'agentName' => $data['agent_name'] ?? '-',
+                'visitDate' => $data['visit_time'] ?? '-',
+                'projectName' => $data['project_name'] ?? '-',
+                'unitNumber' => $data['unit_number'] ?? '-',
+                'logoUrl' => $data['logoUrl'] ?? $this->getNotificationLogoUrl(),
+                'reviewUrl' => $data['reviewUrl'] ?? url('/admin/agent/visit-schedules'),
+            ])->render();
 
             $this->sendAdminNotificationWithDedicatedSmtp($adminEmail, $subject, $mailbody);
         } catch (\Throwable $e) {
@@ -155,6 +137,54 @@ class HomeController extends Controller
         $mail->Subject = $subject;
         $mail->Body = $mailbody;
         $mail->send();
+    }
+
+    private function resolveProjectLogoUrl(?Projects $project): string
+    {
+        if (!$project) {
+            return '';
+        }
+
+        $rawLogoPath = $project->app_image ?: $project->image;
+        if (!$rawLogoPath) {
+            return '';
+        }
+
+        if (filter_var($rawLogoPath, FILTER_VALIDATE_URL)) {
+            return $rawLogoPath;
+        }
+
+        if (function_exists('aws_asset_path')) {
+            return aws_asset_path($rawLogoPath);
+        }
+
+        return asset($rawLogoPath);
+    }
+
+    private function getNotificationLogoUrl(): string
+    {
+        return self::NOTIFICATION_LOGO_URL;
+    }
+
+    private function notifyAdminClientRegistration(array $data = []): void
+    {
+        try {
+            $adminEmail = env('REG_NOTIFY_TO_ADDRESS', 'info@bsbqa.com');
+            $subject = 'New Client Registration - Bin Al Sheikh';
+
+            $mailbody = view('front_end.client_registration_notification_email', [
+                'fullName' => $data['fullName'] ?? '-',
+                'email' => $data['email'] ?? '-',
+                'phone' => $data['phone'] ?? '-',
+                'agentName' => $data['agentName'] ?? '-',
+                'registrationDate' => $data['registrationDate'] ?? now()->format('Y-m-d H:i:s'),
+                'logoUrl' => $data['logoUrl'] ?? $this->getNotificationLogoUrl(),
+            ])->render();
+
+            $this->sendAdminNotificationWithDedicatedSmtp($adminEmail, $subject, $mailbody);
+        } catch (\Throwable $e) {
+            Log::error('Failed to send dedicated client registration notification: ' . $e->getMessage());
+        }
     }
 
     public function checkAvailability(Request $request)
@@ -1233,13 +1263,18 @@ class HomeController extends Controller
                         }
 
                         if ((int) $request->user_type === 3) {
-                            $this->notifyAdminRegistration('agent', [
-                                'name' => $name,
+                            $agentProject = null;
+                            if ($request->project_id) {
+                                $agentProject = Projects::select('id', 'image', 'app_image')->find($request->project_id);
+                            }
+                            $this->notifyAdminAgentRegistration([
+                                'fullName' => $name,
                                 'email' => $request->email,
                                 'phone' => $request->phone,
-                                'extra' => [
-                                    'User ID' => $user_id,
-                                ],
+                                'agency' => $request->agency_id ? (User::find($request->agency_id)->name ?? '-') : '-',
+                                'registrationDate' => now()->format('d M Y, h:i A'),
+                                'logoUrl' => $this->getNotificationLogoUrl(),
+                                'reviewUrl' => url('/admin/agent'),
                             ]);
                         }
                     } else {
@@ -1808,16 +1843,14 @@ class HomeController extends Controller
                 'apartment_type' => $request->apartment_type,
             ]);
 
-            $this->notifyAdminRegistration('client', [
-                'name' => $client->client_name,
+            $project = Projects::select('id', 'name', 'image', 'app_image')->find($client->project_id);
+            $this->notifyAdminClientRegistration([
+                'fullName' => $client->client_name,
                 'email' => $client->email,
                 'phone' => $client->country_code . ' ' . $client->phone,
-                'extra' => [
-                    'Agent Name' => Auth::user()->name ?? '-',
-                    'Project ID' => $client->project_id,
-                    'Apartment No' => $client->apartment_no,
-                    'Apartment Type' => $client->apartment_type,
-                ],
+                'agentName' => Auth::user()->name ?? '-',
+                'registrationDate' => now()->format('d M Y, h:i A'),
+                'logoUrl' => $this->getNotificationLogoUrl(),
             ]);
 
             return response()->json([
@@ -3755,7 +3788,10 @@ class HomeController extends Controller
                 'client_email' => $visitSchedule->client_email_address,
                 'agent_name' => $visitAgent->name ?? ($user->name ?? '-'),
                 'project_name' => $project->name ?? '-',
+                'unit_number' => $visitSchedule->unit_type ?? '-',
                 'visit_time' => $visitDateTime->format('Y-m-d h:i A'),
+                'logoUrl' => $this->getNotificationLogoUrl(),
+                'reviewUrl' => url('/admin/agent/visit-schedules'),
             ]);
 
             return response()->json([
