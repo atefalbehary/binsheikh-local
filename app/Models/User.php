@@ -216,4 +216,19 @@ class User extends Authenticatable
     {
         return $this->role_details && $this->role_details->name === $roleName;
     }
+
+    /**
+     * Marina / Skyline payment calculators: allowed only for the configured agency (agents with that agency_id, or the agency user record).
+     */
+    public function canAccessPaymentCalculators(): bool
+    {
+        if ((string) $this->role === '1') {
+            return false;
+        }
+
+        $allowed = (int) config('payment_calculator.allowed_agency_id', 486);
+
+        return (int) ($this->agency_id ?? 0) === $allowed || (int) $this->id === $allowed;
+    }
 }
+

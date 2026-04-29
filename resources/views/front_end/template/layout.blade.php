@@ -319,8 +319,10 @@ if (!$locale) {
                                         <li><a
                                                 href="{{url('property-listing?sale_type=1')}}">{{ __("messages.buy") }}</a>
                                         </li>
-                                        <li><a href="{{ route('calculator.marina') }}">Marina Payment Calculator</a></li>
-                                        <li><a href="{{ route('calculator.skyline') }}">Skyline Payment Calculator</a></li>
+                                        @if (Auth::check() && Auth::user()->canAccessPaymentCalculators())
+                                            <li><a href="{{ route('calculator.marina') }}">Marina Payment Calculator</a></li>
+                                            <li><a href="{{ route('calculator.skyline') }}">Skyline Payment Calculator</a></li>
+                                        @endif
                                     </ul>
                                     <!--second level end-->
                                 </li>
@@ -397,10 +399,12 @@ if (!$locale) {
                                         <li><a class="dropdown-item"
                                                 href="{{url('property-listing?sale_type=1')}}">{{ __("messages.buy") }}</a>
                                         </li>
-                                        <li><a class="dropdown-item" href="{{ route('calculator.marina') }}">Marina Payment Calculator</a>
-                                        </li>
-                                        <li><a class="dropdown-item" href="{{ route('calculator.skyline') }}">Skyline Payment Calculator</a>
-                                        </li>
+                                        @if (Auth::check() && Auth::user()->canAccessPaymentCalculators())
+                                            <li><a class="dropdown-item" href="{{ route('calculator.marina') }}">Marina Payment Calculator</a>
+                                            </li>
+                                            <li><a class="dropdown-item" href="{{ route('calculator.skyline') }}">Skyline Payment Calculator</a>
+                                            </li>
+                                        @endif
 
                                     </ul>
                                 </div>
@@ -1149,43 +1153,48 @@ if (!$locale) {
     <script src="{{ asset('') }}front-assets/js/db-scripts.js"></script>
     <!--<script src="https://maps.googleapis.com/maps/api/js?key=YOU_API_KEY_HERE&libraries=places"></script>-->
     <!--<script src="{{ asset('') }}front-assets/js/map-single.js"></script>-->
-    <script src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('global.google_map_key') }}"></script>
     <!--<script src="{{ asset('') }}front-assets/js/bootstrap.bundle.min.js"></script>-->
 
     <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" defer></script>
     <script>
-        var locations = [
-            ['Bondi Beach', -33.890542, 151.274856, 4],
-            ['Coogee Beach', -33.923036, 151.259052, 5],
-            ['Cronulla Beach', -34.028249, 151.157507, 3],
-            ['Manly Beach', -33.80010128657071, 151.28747820854187, 2],
-            ['Maroubra Beach', -33.950198, 151.259302, 1]
-        ];
+        (function () {
+            var el = document.getElementById('map');
+            if (typeof google === 'undefined' || !google.maps || !el) {
+                return;
+            }
+            var locations = [
+                ['Bondi Beach', -33.890542, 151.274856, 4],
+                ['Coogee Beach', -33.923036, 151.259052, 5],
+                ['Cronulla Beach', -34.028249, 151.157507, 3],
+                ['Manly Beach', -33.80010128657071, 151.28747820854187, 2],
+                ['Maroubra Beach', -33.950198, 151.259302, 1]
+            ];
 
-        var map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 10,
-            center: new google.maps.LatLng(-33.92, 151.25),
-            mapTypeId: google.maps.MapTypeId.ROADMAP
-        });
-
-        var infowindow = new google.maps.InfoWindow();
-
-        var marker, i;
-
-        for (i = 0; i < locations.length; i++) {
-            marker = new google.maps.Marker({
-                position: new google.maps.LatLng(locations[i][1], locations[i][2]),
-                map: map
+            var map = new google.maps.Map(el, {
+                zoom: 10,
+                center: new google.maps.LatLng(-33.92, 151.25),
+                mapTypeId: google.maps.MapTypeId.ROADMAP
             });
 
-            google.maps.event.addListener(marker, 'click', (function (marker, i) {
-                return function () {
-                    infowindow.setContent(locations[i][0]);
-                    infowindow.open(map, marker);
-                }
-            })(marker, i));
-        }
+            var infowindow = new google.maps.InfoWindow();
+            var marker, i;
+
+            for (i = 0; i < locations.length; i++) {
+                marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+                    map: map
+                });
+
+                google.maps.event.addListener(marker, 'click', (function (marker, i) {
+                    return function () {
+                        infowindow.setContent(locations[i][0]);
+                        infowindow.open(map, marker);
+                    };
+                })(marker, i));
+            }
+        })();
     </script>
 
 
@@ -1434,8 +1443,46 @@ if (!$locale) {
         </script>
     @endif
     <script>
+        function renderBackendValidationErrors($form, errors) {
+            if (!errors || typeof errors !== 'object') {
+                return false;
+            }
 
+            $form.find('.is-invalid').removeClass('is-invalid');
+            $form.find('.invalid-feedback').remove();
 
+            var firstErrorField = null;
+            var hasError = false;
+
+            $.each(errors, function (field, message) {
+                var $field = $form.find('[name="' + field + '"]').eq(0);
+                if (!$field.length) {
+                    return;
+                }
+
+                var errorText = Array.isArray(message) ? message[0] : message;
+                if (typeof errorText !== 'string') {
+                    errorText = String(errorText || '');
+                }
+
+                if (errorText.trim() !== '') {
+                    $field.addClass('is-invalid');
+                    $('<div class="invalid-feedback">' + errorText + '</div>').insertAfter($field);
+                    if (!firstErrorField) {
+                        firstErrorField = $field;
+                    }
+                    hasError = true;
+                }
+            });
+
+            if (firstErrorField && firstErrorField.length && firstErrorField.offset()) {
+                $('html, body').animate({
+                    scrollTop: (firstErrorField.offset().top - 100),
+                }, 500);
+            }
+
+            return hasError;
+        }
 
         $('body').off('submit', '#user-form');
         $('body').on('submit', '#user-form', function (e) {
@@ -1467,10 +1514,9 @@ if (!$locale) {
                     console.log("Invalid field:", $(this).attr('name'), $(this).val());
                 });
 
-                // TEMPORARY: Skip validation for testing
-                console.log("=== SKIPPING VALIDATION FOR TESTING ===");
-                // $form.parsley().validate();
-                // return false;
+                // Keep frontend validation active and stop submit when invalid
+                $form.parsley().validate();
+                return false;
             } else {
                 console.log("=== VALIDATION PASSED - PROCEEDING WITH SUBMISSION ===");
             }
@@ -1478,7 +1524,8 @@ if (!$locale) {
             var timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             formData.append('timezone', timeZone);
 
-            $(".invalid-feedback").remove();
+            $form.find('.is-invalid').removeClass('is-invalid');
+            $form.find(".invalid-feedback").remove();
             txt = $form.find('button[type="submit"]').text();
 
             $form.find('button[type="submit"]')
@@ -1506,28 +1553,8 @@ if (!$locale) {
 
                     if (res.status == 0 || res.status === '0') {
                         console.log("Server returned error status");
-                        if (typeof res['errors'] !== 'undefined' && res['errors']) {
-                            var error_def = $.Deferred();
-                            var error_index = 0;
-                            jQuery.each(res['errors'], function (e_field, e_message) {
-                                if (e_message != '') {
-                                    $('[name="' + e_field + '"]').eq(0).addClass('is-invalid');
-                                    $('<div class="invalid-feedback">' + e_message + '</div>')
-                                        .insertAfter($('[name="' + e_field + '"]').eq(0));
-                                    if (error_index == 0) {
-                                        error_def.resolve();
-                                    }
-                                    error_index++;
-                                }
-                            });
-                            error_def.done(function () {
-                                var error = $form.find('.is-invalid').eq(0);
-                                if (error.length > 0 && error.offset()) {
-                                    $('html, body').animate({
-                                        scrollTop: (error.offset().top - 100),
-                                    }, 500);
-                                }
-                            });
+                        if (typeof res['errors'] !== 'undefined' && renderBackendValidationErrors($form, res['errors'])) {
+                            // inline errors rendered
                         } else {
                             var m = res['message'];
                             // toastr["error"](m);
@@ -1561,7 +1588,11 @@ if (!$locale) {
                     $form.find('button[type="submit"]')
                         .text(txt)
                         .attr('disabled', false);
-                    show_msg(0, e.responseText)
+                    if (e.responseJSON && renderBackendValidationErrors($form, e.responseJSON.errors)) {
+                        return;
+                    }
+                    var message = (e.responseJSON && e.responseJSON.message) ? e.responseJSON.message : "An error occurred. Please try again.";
+                    show_msg(0, message)
                     // toastr["error"](e.responseText);
                 }
             });
@@ -2141,7 +2172,8 @@ if (!$locale) {
 
                 // Set loading state
                 $btn.text('Submitting...').attr('disabled', true);
-                $(".invalid-feedback").remove();
+                $form.find('.is-invalid').removeClass('is-invalid');
+                $form.find(".invalid-feedback").remove();
 
                 $.ajax({
                     url: $form.attr('action'),
@@ -2174,29 +2206,9 @@ if (!$locale) {
                         } else {
                             // Handle errors
                             if (response.errors) {
-                                var errorMsg = "";
-                                var error_index = 0;
-                                $.each(response.errors, function (key, value) {
-                                    errorMsg += value + "<br>";
-                                    // Highlight fields
-                                    if (value != '') {
-                                        $('[name="' + key + '"]').eq(0).addClass('is-invalid');
-                                        $('<div class="invalid-feedback">' + value + '</div>')
-                                            .insertAfter($('[name="' + key + '"]').eq(0));
-
-                                        // Scroll to first error
-                                        if (error_index == 0) {
-                                            var error = $form.find('.is-invalid').eq(0);
-                                            if (error.length > 0 && error.offset()) {
-                                                $('html, body').animate({
-                                                    scrollTop: (error.offset().top - 100),
-                                                }, 500);
-                                            }
-                                        }
-                                        error_index++;
-                                    }
-                                });
-                                // show_msg(0, errorMsg); // Optional if we show inline errors
+                                if (!renderBackendValidationErrors($form, response.errors) && response.message) {
+                                    show_msg(0, response.message);
+                                }
                             } else {
                                 show_msg(0, response.message);
                             }
@@ -2205,7 +2217,12 @@ if (!$locale) {
                         $btn.text(btnText).attr('disabled', false);
                     },
                     error: function (xhr) {
-                        show_msg(0, "An error occurred. Please try again.");
+                        if (xhr.responseJSON && renderBackendValidationErrors($form, xhr.responseJSON.errors)) {
+                            $btn.text(btnText).attr('disabled', false);
+                            return;
+                        }
+                        var errorMessage = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : "An error occurred. Please try again.";
+                        show_msg(0, errorMessage);
                         // Reset button
                         $btn.text(btnText).attr('disabled', false);
                     }

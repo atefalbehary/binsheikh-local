@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\File;
 use Laravel\Socialite\Facades\Socialite;
-use App\Http\Controllers\PaymentCalculatorController;
+use App\Http\Controllers\Front\PaymentCalculatorController;
 
 Route::get('/clear', function () {
 
@@ -27,6 +27,43 @@ Route::get('/payment-calculator', [PaymentCalculatorController::class, 'index'])
 Route::post('/payment-calculator/calculate', [PaymentCalculatorController::class, 'calculate'])
     ->name('payment-calculator.calculate');
 
+Route::get('/preview/agent-registration-email', function () {
+    return view('front_end.agent_registration_notification_email', [
+        'fullName' => 'John Doe',
+        'email' => 'john.doe@example.com',
+        'phone' => '+974 5555 1234',
+        'agency' => 'Bin Al Sheikh Realty',
+        'registrationDate' => now()->format('Y-m-d H:i:s'),
+        'logoUrl' => request()->getSchemeAndHttpHost() . '/admin-assets/assets/img/logo.png',
+        'reviewUrl' => url('/admin/agent'),
+    ]);
+});
+
+Route::get('/preview/client-registration-email', function () {
+    return view('front_end.client_registration_notification_email', [
+        'fullName' => 'Fatima Noor',
+        'email' => 'fatima.noor@example.com',
+        'phone' => '+974 5000 7788',
+        'agentName' => 'Ahmed Khan',
+        'registrationDate' => now()->format('Y-m-d H:i:s'),
+        'logoUrl' => request()->getSchemeAndHttpHost() . '/admin-assets/assets/img/logo.png',
+    ]);
+});
+
+Route::get('/preview/visit-schedule-email', function () {
+    return view('front_end.visit_schedule_notification_email', [
+        'agentName' => 'Ahmed Khan',
+        'email' => 'ahmed.khan@example.com',
+        'phone' => '+974 5111 2244',
+        'projectName' => 'Bin Al Sheikh Marina',
+        'unitNumber' => 'A-1203',
+        'visitDate' => now()->addDays(2)->format('Y-m-d'),
+        'clientName' => 'Fatima Noor',
+        'logoUrl' => request()->getSchemeAndHttpHost() . '/admin-assets/assets/img/logo.png',
+        'reviewUrl' => url('/admin/agent'),
+    ]);
+});
+
 
 
 Route::get('migrate', function () {
@@ -34,23 +71,28 @@ Route::get('migrate', function () {
     die('migrate');
 });
 
-Route::get('/', 'App\Http\Controllers\front\HomeController@index')->name('home');
+Route::get('/', 'App\Http\Controllers\Front\HomeController@index')->name('home');
 Route::get('/google41802e3e0f5e94ab.html', function () {
     return File::get(public_path('google41802e3e0f5e94ab.html'));
 });
-Route::get('/property-details/{slug}', 'App\Http\Controllers\front\HomeController@property_details');
-Route::get('/property-details/{slug}/calculator', 'App\Http\Controllers\front\HomeController@payment_calculator')->name('property.calculator');
-Route::get('/property-details/{slug}/calculator/{type}', 'App\Http\Controllers\front\HomeController@payment_calculator_by_type')
+Route::get('/property-details/{slug}', 'App\Http\Controllers\Front\HomeController@property_details');
+Route::get('/property-details/{slug}/calculator', 'App\Http\Controllers\Front\HomeController@payment_calculator')->name('property.calculator');
+Route::get('/property-details/{slug}/calculator/{type}', 'App\Http\Controllers\Front\HomeController@payment_calculator_by_type')
     ->where('type', 'marina|skyline')
+    ->middleware('frontend.login')
     ->name('property.calculator.type');
-Route::get('/marina-payment-calculator', 'App\Http\Controllers\front\HomeController@marina_payment_calculator')->name('calculator.marina');
-Route::get('/skyline-payment-calculator', 'App\Http\Controllers\front\HomeController@skyline_payment_calculator')->name('calculator.skyline');
-Route::get('/property-listing', 'App\Http\Controllers\front\HomeController@property_listing');
-Route::post('/get-projects', 'App\Http\Controllers\front\HomeController@getProjects');
-Route::post('/calculate_emi', 'App\Http\Controllers\front\HomeController@calculate_emi');
-Route::post('/get_payment_dates', 'App\Http\Controllers\front\HomeController@get_payment_dates');
-Route::get('/download-payment-plan/{id}', 'App\Http\Controllers\front\HomeController@downloadPaymentPlan');
-Route::post('/download-calculator-result', 'App\Http\Controllers\front\HomeController@downloadCalculatorResult');
+Route::get('/marina-payment-calculator', 'App\Http\Controllers\Front\HomeController@marina_payment_calculator')
+    ->middleware('frontend.login')
+    ->name('calculator.marina');
+Route::get('/skyline-payment-calculator', 'App\Http\Controllers\Front\HomeController@skyline_payment_calculator')
+    ->middleware('frontend.login')
+    ->name('calculator.skyline');
+Route::get('/property-listing', 'App\Http\Controllers\Front\HomeController@property_listing');
+Route::post('/get-projects', 'App\Http\Controllers\Front\HomeController@getProjects');
+Route::post('/calculate_emi', 'App\Http\Controllers\Front\HomeController@calculate_emi');
+Route::post('/get_payment_dates', 'App\Http\Controllers\Front\HomeController@get_payment_dates');
+Route::get('/download-payment-plan/{id}', 'App\Http\Controllers\Front\HomeController@downloadPaymentPlan');
+Route::post('/download-calculator-result', 'App\Http\Controllers\Front\HomeController@downloadCalculatorResult');
 
 
 Route::get('/login/facebook', function () {
@@ -61,48 +103,48 @@ Route::get('/login/google', function () {
 });
 
 // Phone verification routes
-Route::post('/send-otp', 'App\Http\Controllers\front\HomeController@sendOtp');
-Route::post('/verify-otp', 'App\Http\Controllers\front\HomeController@verifyOtp');
+Route::post('/send-otp', 'App\Http\Controllers\Front\HomeController@sendOtp');
+Route::post('/verify-otp', 'App\Http\Controllers\Front\HomeController@verifyOtp');
 
-Route::get('/google/callback', 'App\Http\Controllers\front\HomeController@google_callback');
-Route::get('/facebook/callback', 'App\Http\Controllers\front\HomeController@facebook_callback');
+Route::get('/google/callback', 'App\Http\Controllers\Front\HomeController@google_callback');
+Route::get('/facebook/callback', 'App\Http\Controllers\Front\HomeController@facebook_callback');
 
-Route::get('/project-details/{slug}', 'App\Http\Controllers\front\HomeController@project_details');
-Route::get('/project-listing', 'App\Http\Controllers\front\HomeController@project_listing');
-Route::get('/photos', 'App\Http\Controllers\front\HomeController@photos');
-Route::get('/videos', 'App\Http\Controllers\front\HomeController@videos');
-Route::get('/blog-details/{slug}', 'App\Http\Controllers\front\HomeController@blog_details');
-Route::get('/blogs', 'App\Http\Controllers\front\HomeController@blogs');
-Route::get('/folder/{id}', 'App\Http\Controllers\front\FolderController@folder');
+Route::get('/project-details/{slug}', 'App\Http\Controllers\Front\HomeController@project_details');
+Route::get('/project-listing', 'App\Http\Controllers\Front\HomeController@project_listing');
+Route::get('/photos', 'App\Http\Controllers\Front\HomeController@photos');
+Route::get('/videos', 'App\Http\Controllers\Front\HomeController@videos');
+Route::get('/blog-details/{slug}', 'App\Http\Controllers\Front\HomeController@blog_details');
+Route::get('/blogs', 'App\Http\Controllers\Front\HomeController@blogs');
+Route::get('/folder/{id}', 'App\Http\Controllers\Front\FolderController@folder');
 
-Route::get('/service-details/{slug}', 'App\Http\Controllers\front\HomeController@service_details');
-Route::get('/services', 'App\Http\Controllers\front\HomeController@services');
-Route::get('contact-us', 'App\Http\Controllers\front\ContactUsController@index')->name('frontend.contact_us');
-Route::get('about-us', 'App\Http\Controllers\front\AboutUsController@index')->name('frontend.about_us');
-Route::get('find-agent-agency', 'App\Http\Controllers\front\AgentAgencyController@index')->name('frontend.find_agent_agency');
-Route::get('privacy-policy', 'App\Http\Controllers\front\HomeController@privacy_policy')->name('frontend.privacy_policy');
-Route::get('data-deletion', 'App\Http\Controllers\front\HomeController@data_deletion')->name('frontend.data_deletion');
-Route::get('terms-conditions', 'App\Http\Controllers\front\HomeController@terms_conditions')->name('frontend.terms_conditions');
-
-
-Route::get('/qib', 'App\Http\Controllers\front\HomeController@qib');
-Route::get('/qib_payment_status', 'App\Http\Controllers\front\HomeController@qib_payment_status');
-Route::get('/qib_reserve_payment_status', 'App\Http\Controllers\front\HomeController@qib_reserve_payment_status');
+Route::get('/service-details/{slug}', 'App\Http\Controllers\Front\HomeController@service_details');
+Route::get('/services', 'App\Http\Controllers\Front\HomeController@services');
+Route::get('contact-us', 'App\Http\Controllers\Front\ContactUsController@index')->name('frontend.contact_us');
+Route::get('about-us', 'App\Http\Controllers\Front\AboutUsController@index')->name('frontend.about_us');
+Route::get('find-agent-agency', 'App\Http\Controllers\Front\AgentAgencyController@index')->name('frontend.find_agent_agency');
+Route::get('privacy-policy', 'App\Http\Controllers\Front\HomeController@privacy_policy')->name('frontend.privacy_policy');
+Route::get('data-deletion', 'App\Http\Controllers\Front\HomeController@data_deletion')->name('frontend.data_deletion');
+Route::get('terms-conditions', 'App\Http\Controllers\Front\HomeController@terms_conditions')->name('frontend.terms_conditions');
 
 
-Route::get('/admin', 'App\Http\Controllers\admin\LoginController@login')->name('admin.login');
+Route::get('/qib', 'App\Http\Controllers\Front\HomeController@qib');
+Route::get('/qib_payment_status', 'App\Http\Controllers\Front\HomeController@qib_payment_status');
+Route::get('/qib_reserve_payment_status', 'App\Http\Controllers\Front\HomeController@qib_reserve_payment_status');
 
-Route::post('admin/check_login', 'App\Http\Controllers\admin\LoginController@check_login')->name('admin.check_login');
 
-Route::post('/checkAvailability', 'App\Http\Controllers\front\HomeController@checkAvailability');
+Route::get('/admin', 'App\Http\Controllers\Admin\LoginController@login')->name('admin.login');
 
-Route::post('/store_nearest_branch_details', 'App\Http\Controllers\front\HomeController@store_nearest_branch_details');
+Route::post('admin/check_login', 'App\Http\Controllers\Admin\LoginController@check_login')->name('admin.check_login');
 
-Route::get('/change_currency/{slug}', 'App\Http\Controllers\front\HomeController@change_currency');
-Route::post('save_subscribe', 'App\Http\Controllers\front\HomeController@save_subscribe');
+Route::post('/checkAvailability', 'App\Http\Controllers\Front\HomeController@checkAvailability');
+
+Route::post('/store_nearest_branch_details', 'App\Http\Controllers\Front\HomeController@store_nearest_branch_details');
+
+Route::get('/change_currency/{slug}', 'App\Http\Controllers\Front\HomeController@change_currency');
+Route::post('save_subscribe', 'App\Http\Controllers\Front\HomeController@save_subscribe');
 
 Route::
-        namespace('App\Http\Controllers\admin')->prefix('admin')->middleware('admin')->name('admin.')->group(function () {
+        namespace('App\Http\Controllers\Admin')->prefix('admin')->middleware('admin')->name('admin.')->group(function () {
 
             // Route::get('change-password', 'AdminController@changePassword')->name('change.password');
             // Route::post('change-password', 'AdminController@changePasswordSave')->name('change.password.save');
@@ -383,50 +425,54 @@ Route::
 
         });
 
-Route::any('/check_sms', 'App\Http\Controllers\front\HomeController@check_sms')
+Route::any('/check_sms', 'App\Http\Controllers\Front\HomeController@check_sms')
 ;
-Route::get('change-language/{lang}', 'App\Http\Controllers\front\HomeController@changeLang');
+Route::get('change-language/{lang}', 'App\Http\Controllers\Front\HomeController@changeLang');
 
-Route::post('frontend/check_login', 'App\Http\Controllers\front\HomeController@check_login')->name('frontend.check_login');
-Route::post('frontend/signup', 'App\Http\Controllers\front\HomeController@signup')->name('frontend.signup');
-Route::post('frontend/apply_career', 'App\Http\Controllers\front\ContactUsController@apply_career')->name('frontend.apply_career');
-Route::post('forget_password', 'App\Http\Controllers\front\HomeController@forget_password')->name('frontend.forget_password');
-Route::post('verify_forget_password_otp', 'App\Http\Controllers\front\HomeController@verify_forget_password_otp')->name('frontend.verify_forget_password_otp');
-Route::post('update_forget_password', 'App\Http\Controllers\front\HomeController@update_forget_password')->name('frontend.update_forget_password');
+Route::post('frontend/check_login', 'App\Http\Controllers\Front\HomeController@check_login')->name('frontend.check_login');
+Route::post('frontend/signup', 'App\Http\Controllers\Front\HomeController@signup')->name('frontend.signup');
+Route::post('frontend/apply_career', 'App\Http\Controllers\Front\ContactUsController@apply_career')->name('frontend.apply_career');
+Route::post('forget_password', 'App\Http\Controllers\Front\HomeController@forget_password')->name('frontend.forget_password');
+Route::post('verify_forget_password_otp', 'App\Http\Controllers\Front\HomeController@verify_forget_password_otp')->name('frontend.verify_forget_password_otp');
+Route::post('update_forget_password', 'App\Http\Controllers\Front\HomeController@update_forget_password')->name('frontend.update_forget_password');
 
 Route::middleware('user')->group(function () {
-    Route::get('my-profile', 'App\Http\Controllers\front\HomeController@my_profile')->name('frontend.my_profile');
-    Route::post('fav_property', 'App\Http\Controllers\front\HomeController@fav_property')->name('frontend.fav_property');
-    Route::post('update_profile', 'App\Http\Controllers\front\HomeController@update_profile')->name('frontend.update_profile');
-    Route::post('change_password', 'App\Http\Controllers\front\HomeController@change_password')->name('frontend.update_profile');
-    Route::get('favorite', 'App\Http\Controllers\front\HomeController@favorite')->name('frontend.favorite');
-    Route::get('my-bookings', 'App\Http\Controllers\front\HomeController@my_bookings')->name('frontend.my_bookings');
-    Route::get('my-reservations', 'App\Http\Controllers\front\HomeController@my_reservations')->name('frontend.my_reservations');
-    Route::get('my-employees', 'App\Http\Controllers\front\HomeController@my_employees')->name('frontend.my_employees');
-    Route::post('update-employee-status', 'App\Http\Controllers\front\HomeController@updateEmployeeStatus')->name('update_employee_status');
-    Route::get('visit-schedule', 'App\Http\Controllers\front\HomeController@visit_schedule')->name('frontend.visit_schedule');
-    Route::post('visit-schedule/store', 'App\Http\Controllers\front\HomeController@store_visit_schedule')->name('frontend.store_visit_schedule');
-    Route::post('update-visit-schedule-status', 'App\Http\Controllers\front\HomeController@update_visit_status')->name('frontend.update_visit_status');
-    Route::post('add-visit-note', 'App\\Http\\Controllers\\front\\HomeController@add_visit_note')->name('frontend.add_visit_note');
-    Route::post('visit-schedule/delete', 'App\Http\Controllers\front\HomeController@delete_visit_schedule')->name('frontend.delete_visit_schedule');
-    Route::get('client-list', 'App\Http\Controllers\front\HomeController@client_list')->name('frontend.client_list');
-    Route::get('search-clients', 'App\Http\Controllers\front\HomeController@search_clients')->name('frontend.search_clients');
-    Route::post('register-client', 'App\Http\Controllers\front\HomeController@register_client')->name('frontend.register_client');
-    Route::get('export-clients', 'App\Http\Controllers\front\HomeController@export_clients')->name('frontend.export_clients');
-    Route::get('book-now/{property}', 'App\Http\Controllers\front\HomeController@book_now')->name('frontend.book_now');
-    Route::get('specific-book-now/{property}', 'App\Http\Controllers\front\HomeController@specific_book_now')->name('frontend.book_now');
-    Route::get('book-rent-now/{property}', 'App\Http\Controllers\front\HomeController@book_rent_now')->name('frontend.book_rent_now');
+    Route::get('my-profile', 'App\Http\Controllers\Front\HomeController@my_profile')->name('frontend.my_profile');
+    Route::post('fav_property', 'App\Http\Controllers\Front\HomeController@fav_property')->name('frontend.fav_property');
+    Route::post('update_profile', 'App\Http\Controllers\Front\HomeController@update_profile')->name('frontend.update_profile');
+    Route::post('change_password', 'App\Http\Controllers\Front\HomeController@change_password')->name('frontend.update_profile');
+    Route::get('favorite', 'App\Http\Controllers\Front\HomeController@favorite')->name('frontend.favorite');
+    Route::get('my-bookings', 'App\Http\Controllers\Front\HomeController@my_bookings')->name('frontend.my_bookings');
+    Route::get('my-reservations', 'App\Http\Controllers\Front\HomeController@my_reservations')->name('frontend.my_reservations');
+    Route::get('my-notifications', 'App\Http\Controllers\Front\HomeController@my_notifications')->name('frontend.my_notifications');
+    Route::get('my-notifications/{id}', 'App\Http\Controllers\Front\HomeController@get_notification_detail')->name('frontend.notifications.detail');
+    Route::post('my-notifications/read/{id}', 'App\Http\Controllers\Front\HomeController@mark_notification_read')->name('frontend.notifications.read');
+    Route::post('my-notifications/read-all', 'App\Http\Controllers\Front\HomeController@mark_all_notifications_read')->name('frontend.notifications.read_all');
+    Route::get('my-employees', 'App\Http\Controllers\Front\HomeController@my_employees')->name('frontend.my_employees');
+    Route::post('update-employee-status', 'App\Http\Controllers\Front\HomeController@updateEmployeeStatus')->name('update_employee_status');
+    Route::get('visit-schedule', 'App\Http\Controllers\Front\HomeController@visit_schedule')->name('frontend.visit_schedule');
+    Route::post('visit-schedule/store', 'App\Http\Controllers\Front\HomeController@store_visit_schedule')->name('frontend.store_visit_schedule');
+    Route::post('update-visit-schedule-status', 'App\Http\Controllers\Front\HomeController@update_visit_status')->name('frontend.update_visit_status');
+    Route::post('add-visit-note', 'App\\Http\\Controllers\\Front\\HomeController@add_visit_note')->name('frontend.add_visit_note');
+    Route::post('visit-schedule/delete', 'App\Http\Controllers\Front\HomeController@delete_visit_schedule')->name('frontend.delete_visit_schedule');
+    Route::get('client-list', 'App\Http\Controllers\Front\HomeController@client_list')->name('frontend.client_list');
+    Route::get('search-clients', 'App\Http\Controllers\Front\HomeController@search_clients')->name('frontend.search_clients');
+    Route::post('register-client', 'App\Http\Controllers\Front\HomeController@register_client')->name('frontend.register_client');
+    Route::get('export-clients', 'App\Http\Controllers\Front\HomeController@export_clients')->name('frontend.export_clients');
+    Route::get('book-now/{property}', 'App\Http\Controllers\Front\HomeController@book_now')->name('frontend.book_now');
+    Route::get('specific-book-now/{property}', 'App\Http\Controllers\Front\HomeController@specific_book_now')->name('frontend.book_now');
+    Route::get('book-rent-now/{property}', 'App\Http\Controllers\Front\HomeController@book_rent_now')->name('frontend.book_rent_now');
 
-    Route::get('/checkout/{property}', 'App\Http\Controllers\front\HomeController@checkout');
+    Route::get('/checkout/{property}', 'App\Http\Controllers\Front\HomeController@checkout');
 
-    Route::get('/specific-checkout/{property}', 'App\Http\Controllers\front\HomeController@specific_checkout');
+    Route::get('/specific-checkout/{property}', 'App\Http\Controllers\Front\HomeController@specific_checkout');
 
-    Route::get('my-profile/sales-toolkit', 'App\Http\Controllers\front\SalesToolkitController@index')->name('frontend.sales_toolkit.index');
-    Route::get('my-profile/sales-toolkit/download/{id}', 'App\Http\Controllers\front\SalesToolkitController@download')->name('frontend.sales_toolkit.download');
+    Route::get('my-profile/sales-toolkit', 'App\Http\Controllers\Front\SalesToolkitController@index')->name('frontend.sales_toolkit.index');
+    Route::get('my-profile/sales-toolkit/download/{id}', 'App\Http\Controllers\Front\SalesToolkitController@download')->name('frontend.sales_toolkit.download');
 
-    Route::get('user/logout', 'App\Http\Controllers\front\HomeController@logout')->name('frontend.logout');
+    Route::get('user/logout', 'App\Http\Controllers\Front\HomeController@logout')->name('frontend.logout');
 
 });
 
-Route::get('get-property-count', 'App\Http\Controllers\front\HomeController@getPropertyCount');
-Route::get('/download-payment-plan/{id}', 'App\Http\Controllers\front\HomeController@downloadPaymentPlan');
+Route::get('get-property-count', 'App\Http\Controllers\Front\HomeController@getPropertyCount');
+Route::get('/download-payment-plan/{id}', 'App\Http\Controllers\Front\HomeController@downloadPaymentPlan');

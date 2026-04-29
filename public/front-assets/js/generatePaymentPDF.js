@@ -138,7 +138,7 @@ function buildSkylineCashbackScope(property) {
         return "—";
     }
     if (property.selectedScenario === "skyline_3m_5m") {
-        return "Until handover (paid yearly)";
+        return "Monthly through December 2029";
     }
     return "Across full payment period (paid yearly)";
 }
@@ -287,10 +287,16 @@ function buildAndSaveJsPdf(property, schedule, logoImgElem, bgImgElem) {
 
         var skylineMgmtText = (property.skylineManagementFeeRate > 0)
             ? (property.skylineManagementFeeRate * 100).toFixed(1) + "%"
-            : "Waived";
-        var skylineCashbackDatesText = (property.skylineCashbackMonths || []).length
-            ? property.skylineCashbackMonths.map(function (m) { return "M" + m; }).join(", ")
-            : "—";
+            : "0%";
+        var cbMonths = property.skylineCashbackMonths || [];
+        var skylineCashbackDatesText = "—";
+        if (cbMonths.length) {
+            if (property.selectedScenario === "skyline_3m_5m") {
+                skylineCashbackDatesText = "Monthly, M1–M" + cbMonths[cbMonths.length - 1] + " (through Dec 2029)";
+            } else {
+                skylineCashbackDatesText = cbMonths.map(function (m) { return "M" + m; }).join(", ");
+            }
+        }
 
         doc.autoTable({
             startY: curY,
@@ -299,7 +305,7 @@ function buildAndSaveJsPdf(property, schedule, logoImgElem, bgImgElem) {
                 buildSkylineUnitValueText(property),
                 buildSkylineBenefitText(property),
                 skylineMgmtText,
-                property.skylinePaymentPlanText || "Up to 10 years",
+                property.skylinePaymentPlanText || "Through December 2035",
                 buildSkylineCashbackScope(property),
                 property.selectedScenarioLabel || "Skyline"
             ]],
@@ -364,13 +370,29 @@ function buildAndSaveJsPdf(property, schedule, logoImgElem, bgImgElem) {
     }
 
     var tableBody = schedule.map(function (row) {
+        var cashbackCell = "—";
+        if (row.isCashbackRow) {
+            cashbackCell = "Cashback";
+        } else if (typeof row.cashbackAmount === "number" && !isNaN(row.cashbackAmount) && row.cashbackAmount > 0) {
+            cashbackCell = window.formatCurrency(row.cashbackAmount);
+        }
+        var timelineCell = (row.isMgmtFee || row.isDiscountRow || row.isCashbackRow || row.isAddedRow)
+            ? (row.label || row.month || "—")
+            : (row.isHighlight ? row.label : row.month);
+        var paymentCell = (row.isDiscountRow || row.isCashbackRow)
+            ? ("- " + window.formatCurrency(row.payment))
+            : window.formatCurrency(row.payment);
+        var accumCell = (row.isMgmtFee || row.isDiscountRow) ? "—" : window.formatCurrency(row.totalPayment);
+        var dueCell = row.isMgmtFee ? "—" : window.formatCurrency(row.dueAmount);
+        var totalPctCell = (row.isMgmtFee || row.isDiscountRow) ? "—" : window.formatPercent(row.totalPercentage);
         return [
-            row.isMgmtFee || row.isHighlight ? row.label : row.month,
+            timelineCell,
             window.formatPercent(row.percentage),
-            window.formatCurrency(row.payment),
-            row.isMgmtFee ? "—" : window.formatCurrency(row.totalPayment),
-            row.isMgmtFee ? "—" : window.formatCurrency(row.dueAmount),
-            row.isMgmtFee ? "—" : window.formatPercent(row.totalPercentage),
+            paymentCell,
+            cashbackCell,
+            accumCell,
+            dueCell,
+            totalPctCell,
         ];
     });
 
@@ -378,7 +400,7 @@ function buildAndSaveJsPdf(property, schedule, logoImgElem, bgImgElem) {
 
     doc.autoTable({
         startY: scheduleStartY,
-        head: [["Timeline", "Monthly %", "Payment", "Total Accumulated", "Due Amount", "Total %"]],
+        head: [["Timeline", "Monthly %", "Payment", "Cashback", "Total Accumulated", "Due Amount", "Total %"]],
         body: tableBody,
         headStyles: { fillColor: GOLD, textColor: WHITE, fontStyle: "bold", fontSize: 8.5 },
         bodyStyles: { fontSize: 8, textColor: CHARCOAL, fillColor: WHITE },

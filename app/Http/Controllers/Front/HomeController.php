@@ -27,7 +27,9 @@ use App\Models\Video;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use PHPMailer\PHPMailer\PHPMailer;
 use Validator;
 use Illuminate\Support\Facades\App;
@@ -42,11 +44,156 @@ class HomeController extends Controller
 {
     //
     public $lang = 'en';
+    private const NOTIFICATION_LOGO_PATH = 'admin-assets/assets/img/logo.png';
     public function __construct()
     {
         $this->lang = session('sys_lang');
         $this->thmx_currency_convert();
     }
+
+    private function renderGenericEmailTemplate(string $title, string $brandName, string $bodyBlock, string $linkBlock = ''): string
+    {
+        $templatePath = resource_path('views/front_end/generic_notification_template.html');
+        if (!file_exists($templatePath)) {
+            return '<h2>' . e($title) . '</h2>' . $bodyBlock . $linkBlock;
+        }
+
+        $template = file_get_contents($templatePath);
+
+        return str_replace(
+            ['{{TITLE}}', '{{BRAND_NAME}}', '{{BODY_BLOCK}}', '{{LINK_BLOCK}}'],
+            [$title, $brandName, $bodyBlock, $linkBlock],
+            $template
+        );
+    }
+
+    private function notifyAdminAgentRegistration(array $data = []): void
+    {
+        try {
+            $adminEmail = env('REG_NOTIFY_TO_ADDRESS', 'info@bsbqa.com');
+            $subject = 'New Agent Registration - Bin Al Sheikh';
+
+            $mailbody = view('front_end.agent_registration_notification_email', [
+                'fullName' => $data['fullName'] ?? '-',
+                'email' => $data['email'] ?? '-',
+                'phone' => $data['phone'] ?? '-',
+                'agency' => $data['agency'] ?? '-',
+                'registrationDate' => $data['registrationDate'] ?? now()->format('Y-m-d H:i:s'),
+                'logoUrl' => $data['logoUrl'] ?? $this->getNotificationLogoUrl(),
+                'reviewUrl' => $data['reviewUrl'] ?? url('/admin/agent'),
+            ])->render();
+
+            $this->sendAdminNotificationWithDedicatedSmtp($adminEmail, $subject, $mailbody);
+        } catch (\Throwable $e) {
+            Log::error('Failed to send dedicated agent registration notification: ' . $e->getMessage());
+        }
+    }
+
+    private function notifyAdminVisitScheduleCreated(array $data = []): void
+    {
+        try {
+            $adminEmail = env('REG_NOTIFY_TO_ADDRESS', 'info@bsbqa.com');
+            $subject = 'Visit Schedule Notification - Bin Al Sheikh';
+
+            $mailbody = view('front_end.visit_schedule_notification_email', [
+                'clientName' => $data['client_name'] ?? '-',
+                'email' => $data['client_email'] ?? '-',
+                'phone' => $data['client_phone'] ?? '-',
+                'agentName' => $data['agent_name'] ?? '-',
+                'visitDate' => $data['visit_time'] ?? '-',
+                'projectName' => $data['project_name'] ?? '-',
+                'unitNumber' => $data['unit_number'] ?? '-',
+                'logoUrl' => $data['logoUrl'] ?? $this->getNotificationLogoUrl(),
+                'reviewUrl' => $data['reviewUrl'] ?? url('/admin/agent/visit-schedules'),
+            ])->render();
+
+            $this->sendAdminNotificationWithDedicatedSmtp($adminEmail, $subject, $mailbody);
+        } catch (\Throwable $e) {
+            Log::error('Failed to send admin visit schedule notification: ' . $e->getMessage());
+        }
+    }
+
+    private function sendAdminNotificationWithDedicatedSmtp(string $to, string $subject, string $mailbody): void
+    {
+        $mail = new PHPMailer(true);
+        $smtpHost = env('REG_NOTIFY_MAIL_HOST', 'gator3155.hostgator.com');
+        $smtpPort = (int) env('REG_NOTIFY_MAIL_PORT', 465);
+        $smtpEncryption = env('REG_NOTIFY_MAIL_ENCRYPTION', 'ssl');
+        $smtpUsername = env('REG_NOTIFY_MAIL_USERNAME', '');
+        $smtpPassword = env('REG_NOTIFY_MAIL_PASSWORD', '');
+        $smtpFromAddress = env('REG_NOTIFY_MAIL_FROM_ADDRESS', $smtpUsername);
+        $smtpFromName = env('REG_NOTIFY_MAIL_FROM_NAME', 'Bin Al Sheikh');
+
+        $mail->isSMTP();
+        $mail->Host = $smtpHost;
+        $mail->SMTPAuth = true;
+        $mail->Username = $smtpUsername;
+        $mail->Password = $smtpPassword;
+        $mail->Port = $smtpPort;
+        $mail->SMTPSecure = $smtpEncryption;
+        $mail->setFrom($smtpFromAddress, $smtpFromName);
+        $mail->addAddress($to);
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body = $mailbody;
+        $mail->send();
+    }
+
+    private function resolveProjectLogoUrl(?Projects $project): string
+    {
+        if (!$project) {
+            return '';
+        }
+
+        $rawLogoPath = $project->app_image ?: $project->image;
+        if (!$rawLogoPath) {
+            return '';
+        }
+
+        if (filter_var($rawLogoPath, FILTER_VALIDATE_URL)) {
+            return $rawLogoPath;
+        }
+
+        if (function_exists('aws_asset_path')) {
+            return aws_asset_path($rawLogoPath);
+        }
+
+        return asset($rawLogoPath);
+    }
+
+    private function getNotificationLogoUrl(): string
+    {
+        $logoPath = ltrim(self::NOTIFICATION_LOGO_PATH, '/');
+
+        // For web requests, build URL from the active host so it works across domains.
+        if (!app()->runningInConsole() && request()) {
+            return request()->getSchemeAndHttpHost() . '/' . $logoPath;
+        }
+
+        return rtrim(config('app.url', ''), '/') . '/' . $logoPath;
+    }
+
+    private function notifyAdminClientRegistration(array $data = []): void
+    {
+        try {
+            $adminEmail = env('REG_NOTIFY_TO_ADDRESS', 'info@bsbqa.com');
+            $subject = 'New Client Registration - Bin Al Sheikh';
+
+            $mailbody = view('front_end.client_registration_notification_email', [
+                'fullName' => $data['fullName'] ?? '-',
+                'email' => $data['email'] ?? '-',
+                'phone' => $data['phone'] ?? '-',
+                'agentName' => $data['agentName'] ?? '-',
+                'registrationDate' => $data['registrationDate'] ?? now()->format('Y-m-d H:i:s'),
+                'logoUrl' => $data['logoUrl'] ?? $this->getNotificationLogoUrl(),
+            ])->render();
+
+            $this->sendAdminNotificationWithDedicatedSmtp($adminEmail, $subject, $mailbody);
+        } catch (\Throwable $e) {
+            Log::error('Failed to send dedicated client registration notification: ' . $e->getMessage());
+        }
+    }
+
     public function checkAvailability(Request $request)
     {
         $post = $request->all();
@@ -1121,6 +1268,22 @@ class HomeController extends Controller
                             $message = __('messages.account_submitted_for_approval');
                             $errors = '';
                         }
+
+                        if ((int) $request->user_type === 3) {
+                            $agentProject = null;
+                            if ($request->project_id) {
+                                $agentProject = Projects::select('id', 'image', 'app_image')->find($request->project_id);
+                            }
+                            $this->notifyAdminAgentRegistration([
+                                'fullName' => $name,
+                                'email' => $request->email,
+                                'phone' => $request->phone,
+                                'agency' => $request->agency_id ? (User::find($request->agency_id)->name ?? '-') : '-',
+                                'registrationDate' => now()->format('d M Y, h:i A'),
+                                'logoUrl' => $this->getNotificationLogoUrl(),
+                                'reviewUrl' => url('/admin/agent'),
+                            ]);
+                        }
                     } else {
                         $status = "0";
                         $message = __('messages.something_went_wrong');
@@ -1152,6 +1315,105 @@ class HomeController extends Controller
         $countries = Country::orderBy('name', 'asc')->select('name', 'name_ar', 'code_iso', 'phone_code')->get();
         return view('front_end.my_profile', compact('page_heading', 'countries'));
     }
+
+    public function my_notifications()
+    {
+        $user = Auth::user();
+        $page_heading = "My Notifications";
+        $notifications = collect();
+        $tableReady = Schema::hasTable('mobile_admin_user_notifications');
+        $isSampleData = false;
+
+        if ($tableReady) {
+            $notifications = DB::table('mobile_admin_user_notifications')
+                ->where('user_id', $user->id)
+                ->orderByDesc('created_at')
+                ->limit(200)
+                ->get();
+        }
+        return view('front_end.my_notifications', compact('page_heading', 'notifications', 'tableReady', 'isSampleData'));
+    }
+
+    public function get_notification_detail($id)
+    {
+        $user = Auth::user();
+
+        if (!Schema::hasTable('mobile_admin_user_notifications')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Notifications table not found.',
+            ], 404);
+        }
+
+        $notification = DB::table('mobile_admin_user_notifications')
+            ->where('id', $id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$notification) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Notification not found.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $notification->id,
+                'title' => $notification->title ?? '',
+                'body' => $notification->body ?? '',
+                'channel' => strtoupper($notification->channel ?? 'PUSH'),
+                'date' => $notification->created_at ? Carbon::parse($notification->created_at)->format('d M Y, h:i A') : '-',
+                'deep_link' => $notification->deep_link ?? '',
+            ],
+        ]);
+    }
+
+    public function mark_notification_read($id)
+    {
+        $user = Auth::user();
+
+        if (!Schema::hasTable('mobile_admin_user_notifications')) {
+            return redirect()->back()->with('error', __('messages.something_went_wrong'));
+        }
+
+        $updated = DB::table('mobile_admin_user_notifications')
+            ->where('id', $id)
+            ->where('user_id', $user->id)
+            ->update([
+                'is_read' => true,
+                'read_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+
+        if (!$updated) {
+            return redirect()->back()->with('error', __('messages.something_went_wrong'));
+        }
+
+        return redirect()->back()->with('success', __('messages.success'));
+    }
+
+    public function mark_all_notifications_read()
+    {
+        $user = Auth::user();
+
+        if (!Schema::hasTable('mobile_admin_user_notifications')) {
+            return redirect()->back()->with('error', __('messages.something_went_wrong'));
+        }
+
+        DB::table('mobile_admin_user_notifications')
+            ->where('user_id', $user->id)
+            ->where('is_read', false)
+            ->update([
+                'is_read' => true,
+                'read_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+
+        return redirect()->back()->with('success', __('messages.success'));
+    }
+
     public function update_profile(Request $request)
     {
         $user_id = Auth::user()->id;
@@ -1586,6 +1848,16 @@ class HomeController extends Controller
                 'nationality' => $request->nationality,
                 'apartment_no' => $request->apartment_no,
                 'apartment_type' => $request->apartment_type,
+            ]);
+
+            $project = Projects::select('id', 'name', 'image', 'app_image')->find($client->project_id);
+            $this->notifyAdminClientRegistration([
+                'fullName' => $client->client_name,
+                'email' => $client->email,
+                'phone' => $client->country_code . ' ' . $client->phone,
+                'agentName' => Auth::user()->name ?? '-',
+                'registrationDate' => now()->format('d M Y, h:i A'),
+                'logoUrl' => $this->getNotificationLogoUrl(),
             ]);
 
             return response()->json([
@@ -3515,6 +3787,19 @@ class HomeController extends Controller
                     'visit_status' => $request->status ?? 'rescheduled'
                 ]);
             }
+
+            $visitAgent = User::find($agentId);
+            $this->notifyAdminVisitScheduleCreated([
+                'client_name' => $visitSchedule->client_name,
+                'client_phone' => $visitSchedule->client_phone_number,
+                'client_email' => $visitSchedule->client_email_address,
+                'agent_name' => $visitAgent->name ?? ($user->name ?? '-'),
+                'project_name' => $project->name ?? '-',
+                'unit_number' => $visitSchedule->unit_type ?? '-',
+                'visit_time' => $visitDateTime->format('Y-m-d h:i A'),
+                'logoUrl' => $this->getNotificationLogoUrl(),
+                'reviewUrl' => url('/admin/agent/visit-schedules'),
+            ]);
 
             return response()->json([
                 'success' => true,

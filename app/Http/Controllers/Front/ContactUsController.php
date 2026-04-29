@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\front;
+namespace App\Http\Controllers\Front;
 use App\Models\Career;
 use App\Models\CareerApplication;
 use App\Http\Controllers\Controller;

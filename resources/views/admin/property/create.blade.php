@@ -685,58 +685,6 @@
         //     $(this).text(allChecked ? 'Select All' : 'Deselect All');
         // });
 
-        {
-            { --$('#delete-selected-images').on('click', function () { --}}
-            {
-                { --    if (confirm('Are you sure you want to delete the selected images?')) { --} }
-                { { --        var selectedIds = []; --} }
-                {
-                    { --$('.image-checkbox:checked').each(function () { --}}
-                    { { --selectedIds.push($(this).data('id')); --} }
-                    { { --        }); --}}
-
-    {
-        { --        if (selectedIds.length > 0) { --} }
-        { { --$.ajax({--} }
-        { { --url: '{{ url("admin/property/delete_multiple_images") }}', --} }
-        { { --type: 'POST', --} }
-        {
-            { --data: { --} }
-            { { --_token: '{{ csrf_token() }}', --} }
-            { { --image_ids: selectedIds-- } }
-            { { --                }, --}
-        }
-        {
-            { --success: function(response) { --} }
-            {
-                { --                    if (response.success) { --} }
-                { { --show_msg(1, response.message || 'Images deleted successfully'); --} }
-                {
-                    {
-                        --                        // Remove deleted images from the DOM--}}
-                        {{ --$('.image-checkbox:checked').each(function () { --}}
-                        { { --$(this).closest('.col-md-2').remove(); --} }
-                        { { --                        }); --}
-                    }
-                    { { --updateDeleteButtonVisibility(); --} }
-                    { { --                    } else { --} }
-                    { { --show_msg(0, response.message || 'Failed to delete images'); --} }
-                    { { --                    } --}
-                }
-                { { --                }, --}
-            }
-            {
-                { --error: function() { --} }
-                { { --show_msg(0, 'An error occurred while deleting images'); --} }
-                { { --                } --}
-            }
-            { { --            }); --}
-        }
-        { { --        } --}
-    }
-    { { --    } --}}
-    { { --}); --}}
-
     function updateDeleteButtonVisibility() {
         var selectedCount = $('.image-checkbox:checked').length;
         $('#delete-selected-images').toggle(selectedCount > 0);

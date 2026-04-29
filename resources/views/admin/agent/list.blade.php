@@ -779,8 +779,27 @@
         flex-shrink: 0;
     }
     
-    .schedule-info-grid .view-btn:hover {
+        .schedule-info-grid .view-btn:hover {
         background-color: #5a6268;
+    }
+
+    .visit-th-sort {
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+        border: none;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+        color: #000;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .visit-th-sort:hover {
+        opacity: 0.85;
     }
     
     /* Responsive */
@@ -902,14 +921,12 @@
                                         </div>
                                     </div>
                                     <div class="table-body">
-                                    <?php $i = $customers->perPage() * ($customers->currentPage() - 1); ?>
                                     @foreach ($customers as $cust)
-                                            <?php $i++; ?>
                                             <div class="table-row main-row" data-id="{{ $cust->id }}">
                                                 <div class="table-cell checkbox">
                                                     <input type="checkbox" class="box1" value="{{ $cust->id }}" onchange="updateSelectedCount()">
                                                 </div>
-                                                <div class="table-cell">{{ $i }}</div>
+                                                <div class="table-cell">{{ $loop->iteration }}</div>
                                                 <div class="table-cell">
                                                     <div style="display: flex; align-items: center; gap: 10px;">
                                                         <div style="position: relative;">
@@ -1109,7 +1126,7 @@
                                 <div class="search-filter-section">
                                     <div class="search-section">
                                         <div class="search-bar">
-                                            <input type="text" class="form-control" placeholder="Search By Name | Email | Phone Number" id="visitScheduleSearch">
+                                            <input type="text" class="form-control" placeholder="Search agent, client, email, phone, project, unit" id="visitScheduleSearch">
                                         </div>
                                     </div>
                                     
@@ -1144,11 +1161,36 @@
                                                 <th width="50">
                                                     <input type="checkbox" id="selectAllVisits" onclick="toggleAllVisits(this)">
                                                 </th>
-                                                <th>Agent Name</th>
-                                                <th>Project Name</th>
-                                                <th>Unit Type</th>
-                                                <th>Phone Number</th>
-                                                <th>Date Of Visit</th>
+                                                <th>
+                                                    <button type="button" class="visit-th-sort" data-sort-key="agent">
+                                                        Agent Name
+                                                        <i class="fas fa-sort visit-sort-icon text-muted" style="font-size:0.75em;"></i>
+                                                    </button>
+                                                </th>
+                                                <th>
+                                                    <button type="button" class="visit-th-sort" data-sort-key="project">
+                                                        Project Name
+                                                        <i class="fas fa-sort visit-sort-icon text-muted" style="font-size:0.75em;"></i>
+                                                    </button>
+                                                </th>
+                                                <th>
+                                                    <button type="button" class="visit-th-sort" data-sort-key="unit">
+                                                        Unit Type
+                                                        <i class="fas fa-sort visit-sort-icon text-muted" style="font-size:0.75em;"></i>
+                                                    </button>
+                                                </th>
+                                                <th>
+                                                    <button type="button" class="visit-th-sort" data-sort-key="phone">
+                                                        Phone Number
+                                                        <i class="fas fa-sort visit-sort-icon text-muted" style="font-size:0.75em;"></i>
+                                                    </button>
+                                                </th>
+                                                <th>
+                                                    <button type="button" class="visit-th-sort" data-sort-key="visit_ts">
+                                                        Date Of Visit
+                                                        <i class="fas fa-sort-up visit-sort-icon text-muted" style="font-size:0.75em;"></i>
+                                                    </button>
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody id="visitsTableBody">
@@ -1227,6 +1269,16 @@
             if (visitScheduleSearch) {
                 visitScheduleSearch.addEventListener('input', function() {
                     filterVisitSchedules();
+                });
+            }
+
+            const visitScheduleTable = document.getElementById('visitScheduleTable');
+            if (visitScheduleTable) {
+                visitScheduleTable.addEventListener('click', function (e) {
+                    const btn = e.target.closest('.visit-th-sort');
+                    if (!btn || !visitScheduleTable.contains(btn)) return;
+                    e.preventDefault();
+                    sortVisitScheduleRows(btn.getAttribute('data-sort-key'));
                 });
             }
             
@@ -1427,44 +1479,133 @@
             });
         }
         
+        window.visitScheduleSortState = { key: 'visit_ts', dir: 'asc' };
+
+        function updateVisitScheduleSortHeaderIcons() {
+            const state = window.visitScheduleSortState || { key: 'visit_ts', dir: 'asc' };
+            document.querySelectorAll('#visitScheduleTable thead .visit-th-sort').forEach(function (btn) {
+                const key = btn.getAttribute('data-sort-key');
+                const icon = btn.querySelector('.visit-sort-icon');
+                if (!icon) return;
+                if (state.key === key) {
+                    icon.className = 'fas visit-sort-icon text-muted ' + (state.dir === 'asc' ? 'fa-sort-up' : 'fa-sort-down');
+                    icon.style.fontSize = '0.75em';
+                } else {
+                    icon.className = 'fas visit-sort-icon text-muted fa-sort';
+                    icon.style.fontSize = '0.75em';
+                }
+            });
+        }
+
+        function sortVisitScheduleRows(sortKey) {
+            const tbody = document.getElementById('visitsTableBody');
+            if (!tbody || !sortKey) return;
+
+            if (!window.visitScheduleSortState) {
+                window.visitScheduleSortState = { key: 'visit_ts', dir: 'asc' };
+            }
+
+            if (window.visitScheduleSortState.key === sortKey) {
+                window.visitScheduleSortState.dir = window.visitScheduleSortState.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                window.visitScheduleSortState.key = sortKey;
+                window.visitScheduleSortState.dir = 'asc';
+            }
+
+            const activeKey = window.visitScheduleSortState.key;
+            const mult = window.visitScheduleSortState.dir === 'asc' ? 1 : -1;
+
+            const pairs = [];
+            tbody.querySelectorAll('tr.main-row').forEach(function (main) {
+                const id = main.getAttribute('data-id');
+                const detail = id ? tbody.querySelector('tr.detail-row[data-parent="' + id + '"]') : null;
+                pairs.push({ main: main, detail: detail });
+            });
+
+            function cellText(tr, idx) {
+                const c = tr.cells[idx];
+                return (c ? c.textContent : '').trim().toLowerCase();
+            }
+
+            function agentText(tr) {
+                const el = tr.querySelector('.agent-name');
+                return (el ? el.textContent : '').trim().toLowerCase();
+            }
+
+            pairs.sort(function (a, b) {
+                let va, vb;
+                if (activeKey === 'visit_ts') {
+                    va = parseInt(a.main.getAttribute('data-visit-ts') || '0', 10);
+                    vb = parseInt(b.main.getAttribute('data-visit-ts') || '0', 10);
+                    return mult * (va - vb);
+                }
+                if (activeKey === 'agent') {
+                    va = agentText(a.main);
+                    vb = agentText(b.main);
+                } else if (activeKey === 'project') {
+                    va = cellText(a.main, 2);
+                    vb = cellText(b.main, 2);
+                } else if (activeKey === 'unit') {
+                    va = cellText(a.main, 3);
+                    vb = cellText(b.main, 3);
+                } else if (activeKey === 'phone') {
+                    va = cellText(a.main, 4);
+                    vb = cellText(b.main, 4);
+                } else {
+                    return 0;
+                }
+                if (va < vb) return -1 * mult;
+                if (va > vb) return 1 * mult;
+                return 0;
+            });
+
+            pairs.forEach(function (p) {
+                tbody.appendChild(p.main);
+                if (p.detail) tbody.appendChild(p.detail);
+            });
+
+            updateVisitScheduleSortHeaderIcons();
+            filterVisitSchedules();
+        }
+
         // Filter visit schedules function
         function filterVisitSchedules() {
-            const searchTerm = document.getElementById('visitScheduleSearch').value.toLowerCase();
-            const fromDate = document.getElementById('fromDateVisit').value;
-            const toDate = document.getElementById('toDateVisit').value;
-            const rows = document.querySelectorAll('#visitScheduleTable tbody tr.main-row');
-            
+            const searchInput = document.getElementById('visitScheduleSearch');
+            const searchTerm = (searchInput && searchInput.value) ? searchInput.value.toLowerCase().trim() : '';
+            const fromDateEl = document.getElementById('fromDateVisit');
+            const toDateEl = document.getElementById('toDateVisit');
+            const fromDate = fromDateEl ? fromDateEl.value : '';
+            const toDate = toDateEl ? toDateEl.value : '';
+            const tbody = document.getElementById('visitsTableBody');
+            if (!tbody) return;
+            const rows = tbody.querySelectorAll('tr.main-row');
+
             rows.forEach(row => {
-                const agentName = row.querySelector('.agent-name')?.textContent.toLowerCase() || '';
-                const projectName = row.cells[2]?.textContent.toLowerCase() || '';
-                const unitType = row.cells[3]?.textContent.toLowerCase() || '';
-                const phoneNumber = row.cells[4]?.textContent.toLowerCase() || '';
-                const visitDateText = row.cells[5]?.textContent.toLowerCase() || '';
-                
-                // Get client email from detail row for search
-                const rowId = row.getAttribute('data-id');
-                const detailRow = document.querySelector(`tr.detail-row[data-parent="${rowId}"]`);
-                const clientEmail = detailRow ? detailRow.querySelector('.info-content span')?.textContent.toLowerCase() || '' : '';
-                
-                // Extract visit date from the visit date cell
+                const searchEncoded = row.getAttribute('data-search');
+                let haystack = '';
+                if (searchEncoded) {
+                    try {
+                        haystack = decodeURIComponent(searchEncoded);
+                    } catch (e) {
+                        haystack = '';
+                    }
+                }
+
                 const visitDateSpan = row.querySelector('.visit-date');
                 const visitDateValue = visitDateSpan ? visitDateSpan.getAttribute('data-date') : null;
-                
+
                 let showRow = true;
-                
-                // Apply search filter (including client email from detail row)
-                if (searchTerm && !agentName.includes(searchTerm) && !projectName.includes(searchTerm) && !unitType.includes(searchTerm) && !phoneNumber.includes(searchTerm) && !visitDateText.includes(searchTerm) && !clientEmail.includes(searchTerm)) {
+
+                if (searchTerm && !haystack.includes(searchTerm)) {
                     showRow = false;
                 }
-                
-                // Apply date filter
+
                 if (showRow && (fromDate || toDate)) {
                     if (visitDateValue) {
                         const visitDate = new Date(visitDateValue);
                         const fromDateObj = fromDate ? new Date(fromDate) : null;
                         const toDateObj = toDate ? new Date(toDate) : null;
-                        
-                        // Set time to start of day for inclusive comparison
+
                         if (fromDateObj) {
                             fromDateObj.setHours(0, 0, 0, 0);
                         }
@@ -1472,7 +1613,7 @@
                             toDateObj.setHours(23, 59, 59, 999);
                         }
                         visitDate.setHours(0, 0, 0, 0);
-                        
+
                         if (fromDateObj && visitDate < fromDateObj) {
                             showRow = false;
                         }
@@ -1480,25 +1621,17 @@
                             showRow = false;
                         }
                     } else {
-                        // If no data-date attribute, try to parse from the displayed text
-                        // This is a fallback for cases where the data-date attribute might not be set
                         showRow = false;
                     }
                 }
-                
+
+                const rowId = row.getAttribute('data-id');
+                const detailRow = rowId ? tbody.querySelector('tr.detail-row[data-parent="' + rowId + '"]') : null;
+
                 if (showRow) {
                     row.style.display = '';
-                    // Also show the corresponding detail row
-                    const rowId = row.getAttribute('data-id');
-                    const detailRow = document.querySelector(`tr.detail-row[data-parent="${rowId}"]`);
-                    if (detailRow) {
-                        detailRow.style.display = '';
-                    }
                 } else {
                     row.style.display = 'none';
-                    // Also hide the corresponding detail row
-                    const rowId = row.getAttribute('data-id');
-                    const detailRow = document.querySelector(`tr.detail-row[data-parent="${rowId}"]`);
                     if (detailRow) {
                         detailRow.style.display = 'none';
                     }
@@ -1605,6 +1738,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    window.visitScheduleSortState = { key: 'visit_ts', dir: 'asc' };
                     renderVisitSchedules(data.visits);
                 } else {
                     tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No visit schedules found</td></tr>';
@@ -1688,10 +1822,22 @@
                         minute: '2-digit',
                         hour12: true
                     }) : 'N/A';
+
+                    const visitTs = visit.visit_time_iso ? new Date(visit.visit_time_iso).getTime() : 0;
+                    const searchBlob = [
+                        visit.agent_name, visit.client_name, visit.client_email_address,
+                        visit.client_phone_number, visit.project_name, visit.unit_type,
+                        visit.visit_time, visit.visit_purpose
+                    ].filter(function (p) {
+                        if (p == null || p === '') return false;
+                        const s = String(p).trim();
+                        return s !== '' && s !== 'N/A';
+                    }).join(' ').toLowerCase();
+                    const searchAttr = encodeURIComponent(searchBlob);
                     
                     html += `
                         <!-- Main Row -->
-                        <tr class="main-row" data-id="${visit.id}">
+                        <tr class="main-row" data-id="${visit.id}" data-visit-ts="${visitTs}" data-search="${searchAttr}">
                             <td>
                                 <input type="checkbox" class="visit-checkbox" value="${visit.id}" onchange="updateSelectedCount()">
                             </td>
@@ -1709,7 +1855,7 @@
                             <td>${visit.client_phone_number || 'N/A'}</td>
                             <td>
                                 <div class="visit-section">
-                                    <span class="visit-date" data-date="${visit.visit_time}">${visitDate}</span>
+                                    <span class="visit-date" data-date="${visit.visit_time_iso || ''}">${visitDate}</span>
                                     <i class="fas fa-chevron-down expand-icon" style="margin-left: 10px; cursor: pointer;"></i>
                                 </div>
                             </td>
@@ -1825,7 +1971,9 @@
             
             tableBody.innerHTML = html;
             updateSelectedCount(); // Update count after rendering
-            
+            updateVisitScheduleSortHeaderIcons();
+            filterVisitSchedules();
+
             // Add expand/collapse functionality for visit schedules
             addVisitScheduleExpandFunctionality();
         }

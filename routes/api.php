@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers;
+use App\Http\Controllers\Api\AdminPanelAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +21,11 @@ Route::namespace('App\Http\Controllers\Api\V1')->prefix("v1/auth")->name("api.v1
    Route::post('social_login', 'AuthController@social_login')->name('social_login');
    Route::post('signup', 'AuthController@signup')->name('signup');
 });
+
+// Admin panel compatibility routes (used by Mobile app admin panel frontend)
+Route::post('/auth/login', [AdminPanelAuthController::class, 'login']);
+Route::middleware('auth:sanctum')->get('/auth/me', [AdminPanelAuthController::class, 'me']);
+
 Route::namespace('App\Http\Controllers\Api\V1')->prefix("v1")->middleware('auth:sanctum')->name("api.v1")->group(function(){
    Route::post('logout', 'AuthController@logout')->name('logout');
    Route::post('change_password', 'AuthController@change_password')->name('change_password');
